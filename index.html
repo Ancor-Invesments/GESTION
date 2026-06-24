@@ -137,7 +137,7 @@
   select:focus, input[type="text"]:focus { border-color: var(--accent); }
   input[type="text"] { width: 190px; }
 
-  /* ── TABLE ── */
+  /* ── TABLE (escritorio) ── */
   .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
   table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
   thead tr { background: var(--surface2); border-bottom: 1px solid var(--border); }
@@ -148,6 +148,100 @@
   td { padding: 12px 14px; color: var(--text); white-space: nowrap; }
   td.name { font-weight: 600; }
   td.phone { color: var(--muted2); font-size: 0.75rem; }
+
+  /* ── CARDS (móvil) ── */
+  .cards-wrap { display: none; flex-direction: column; gap: 10px; }
+
+  .lead-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    position: relative;
+  }
+  .lead-card:active { background: var(--surface2); }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    gap: 8px;
+  }
+  .card-name { font-weight: 700; font-size: 0.95rem; }
+  .card-phone { font-size: 0.75rem; color: var(--muted2); margin-top: 2px; }
+
+  .card-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .card-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    gap: 8px;
+  }
+  .card-agente { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--muted2); }
+  .card-fecha { font-size: 0.75rem; color: var(--muted2); }
+  .card-notas {
+    font-size: 0.75rem;
+    color: var(--muted2);
+    margin-top: 8px;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .card-notas-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+
+  .card-arrow {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 700px) {
+    body { padding: 16px 12px; }
+
+    .header { margin-bottom: 16px; }
+    .header-left h1 { font-size: 1.1rem; }
+
+    .breakdown { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .breakdown-card { padding: 12px; gap: 10px; }
+    .breakdown-icon { width: 34px; height: 34px; font-size: 1.1rem; }
+    .breakdown-name { font-size: 0.75rem; }
+    .breakdown-stat { font-size: 0.68rem; }
+
+    .kpis { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .kpi { padding: 12px; }
+    .kpi-value { font-size: 1.4rem; }
+
+    .filters { gap: 6px; }
+    .filters select { font-size: 0.75rem; padding: 6px 8px; }
+    #filter-search { width: 100%; }
+
+    /* Ocultar tabla, mostrar cards */
+    .table-wrap { display: none; }
+    .cards-wrap { display: flex; }
+
+    /* Botones header más compactos */
+    .header > div { gap: 6px; }
+    .btn { padding: 8px 12px; font-size: 0.78rem; }
+    .btn-outline { padding: 7px 10px; font-size: 0.74rem; }
+    .sync-status { font-size: 0.68rem; padding: 4px 10px; }
+  }
 
   .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
   .badge-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
@@ -303,7 +397,7 @@
   <input type="text" id="filter-search" placeholder="Buscar nombre..." oninput="renderAll()">
 </div>
 
-<!-- TABLE -->
+<!-- TABLE (escritorio) -->
 <div class="table-wrap">
   <table>
     <thead>
@@ -322,6 +416,11 @@
       <tr><td colspan="8" class="empty">Conecta con Google Sheets para ver los leads.</td></tr>
     </tbody>
   </table>
+</div>
+
+<!-- CARDS (móvil) -->
+<div class="cards-wrap" id="leads-cards">
+  <div class="empty" style="text-align:center;padding:48px 24px;color:var(--muted)">Conecta con Google Sheets para ver los leads.</div>
 </div>
 
 <!-- TOAST -->
@@ -641,23 +740,27 @@ function renderKPIs() {
 }
 
 function renderTable() {
-  const filtered = getFiltered();
-  const tbody    = document.getElementById('leads-tbody');
+  const filtered  = getFiltered();
+  const tbody     = document.getElementById('leads-tbody');
+  const cardsWrap = document.getElementById('leads-cards');
+
+  const emptyMsg = !scriptUrl ? 'Conecta con Google Sheets para ver los leads.' :
+    leads.length === 0 ? 'Sin leads. Pulsa «+ Nuevo lead» para empezar.' :
+    'Sin resultados para los filtros aplicados.';
+
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" class="empty">${
-      !scriptUrl ? 'Conecta con Google Sheets para ver los leads.' :
-      leads.length === 0 ? 'Sin leads. Pulsa «+ Nuevo lead» para empezar.' :
-      'Sin resultados para los filtros aplicados.'
-    }</td></tr>`;
+    tbody.innerHTML    = `<tr><td colspan="8" class="empty">${emptyMsg}</td></tr>`;
+    cardsWrap.innerHTML = `<div class="empty" style="text-align:center;padding:48px 24px;color:var(--muted)">${emptyMsg}</div>`;
     return;
   }
+
+  // ── Tabla escritorio ──
   tbody.innerHTML = filtered.map(l => {
     const prod      = getProduct(l.producto);
     const avatarCls = l.agente === 'Fernando' ? 'avatar-f' : 'avatar-g';
     const initials  = l.agente === 'Fernando' ? 'FB' : 'GR';
     const fechaStr  = l.fecha ? new Date(l.fecha + 'T00:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'short'}) : '—';
     const canalKey  = (l.canal||'').replace(/\s/g,'');
-    const estadoKey = (l.estado||'').replace(/\s/g,'_');
     return `<tr onclick="editLead('${l.id}')">
       <td class="name">${l.nombre}</td>
       <td class="phone">${l.telefono||'—'}</td>
@@ -668,6 +771,33 @@ function renderTable() {
       <td>${fechaStr}</td>
       <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;color:var(--muted2)">${l.notas||'—'}</td>
     </tr>`;
+  }).join('');
+
+  // ── Cards móvil ──
+  cardsWrap.innerHTML = filtered.map(l => {
+    const prod      = getProduct(l.producto);
+    const avatarCls = l.agente === 'Fernando' ? 'avatar-f' : 'avatar-g';
+    const initials  = l.agente === 'Fernando' ? 'FB' : 'GR';
+    const fechaStr  = l.fecha ? new Date(l.fecha + 'T00:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'}) : null;
+    const canalKey  = (l.canal||'').replace(/\s/g,'');
+    return `<div class="lead-card" onclick="editLead('${l.id}')">
+      <div class="card-top">
+        <div>
+          <div class="card-name">${l.nombre}</div>
+          <div class="card-phone">${l.telefono||'Sin teléfono'}</div>
+        </div>
+        <span class="badge ${ESTADO_CLASS[l.estado]||''}" style="flex-shrink:0">${l.estado||'—'}</span>
+      </div>
+      <div class="card-badges">
+        <span class="badge" style="background:${prod.bg};color:${prod.text};border:1px solid ${prod.border}">${prod.icon} ${prod.name}</span>
+        <span class="badge canal-${canalKey}"><span class="badge-dot"></span>${l.canal||'—'}</span>
+      </div>
+      ${l.notas ? `<div class="card-notas-label">Notas</div><div class="card-notas">${l.notas}</div>` : ''}
+      <div class="card-bottom">
+        <span class="card-agente"><span class="avatar ${avatarCls}">${initials}</span>${l.agente}</span>
+        ${fechaStr ? `<span class="card-fecha">📅 ${fechaStr}</span>` : '<span></span>'}
+      </div>
+    </div>`;
   }).join('');
 }
 
