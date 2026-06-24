@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestión de Leads — La Bella Group</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #222638;
+    --border: #2e3348;
+    --accent: #4f7cff;
+    --accent2: #ff6b35;
+    --green: #22c55e;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --purple: #a855f7;
+    --teal: #14b8a6;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --muted2: #94a3b8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px 16px;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .header-left h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; }
+  .header-left p { font-size: 0.78rem; color: var(--muted2); margin-top: 2px; }
+
+  .btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted2);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* TABS DE PRODUCTO */
+  .product-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--muted2);
+    user-select: none;
+  }
+  .tab:hover { border-color: var(--accent); color: var(--text); }
+  .tab.active { border-color: var(--accent); background: #4f7cff18; color: var(--text); }
+
+  .tab-icon {
+    font-size: 1rem;
+  }
+
+  .tab-info { display: flex; flex-direction: column; line-height: 1.3; }
+  .tab-name { font-weight: 600; font-size: 0.8rem; }
+  .tab-count { font-size: 0.68rem; color: var(--muted); }
+  .tab.active .tab-count { color: var(--accent); }
+
+  .tab-pill {
+    background: var(--surface2);
+    color: var(--muted2);
+    padding: 1px 8px;
+    border-radius: 20px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    min-width: 22px;
+    text-align: center;
+  }
+  .tab.active .tab-pill { background: var(--accent); color: white; }
+
+  /* KPIs */
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .kpi {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .kpi::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .kpi.accent::before { background: var(--accent); }
+  .kpi.green::before { background: var(--green); }
+  .kpi.orange::before { background: var(--accent2); }
+  .kpi.purple::before { background: var(--purple); }
+
+  .kpi-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .kpi-value { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.03em; }
+  .kpi-sub { font-size: 0.7rem; color: var(--muted2); margin-top: 2px; }
+  .kpi.accent .kpi-value { color: var(--accent); }
+  .kpi.green .kpi-value { color: var(--green); }
+  .kpi.orange .kpi-value { color: var(--accent2); }
+  .kpi.purple .kpi-value { color: var(--purple); }
+
+  /* PRODUCT BREAKDOWN */
+  .breakdown {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .breakdown-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .breakdown-card:hover { border-color: var(--accent); }
+  .breakdown-card.selected { border-color: var(--accent); background: #4f7cff0d; }
+
+  .breakdown-icon {
+    font-size: 1.6rem;
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .breakdown-icon.solar { background: #f59e0b18; }
+  .breakdown-icon.local { background: #14b8a618; }
+  .breakdown-icon.all { background: #4f7cff18; }
+
+  .breakdown-data { flex: 1; }
+  .breakdown-name { font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; }
+  .breakdown-stats { display: flex; gap: 12px; }
+  .breakdown-stat { font-size: 0.72rem; color: var(--muted2); }
+  .breakdown-stat strong { color: var(--text); font-weight: 600; }
+
+  .breakdown-bar-wrap { height: 3px; background: var(--border); border-radius: 2px; margin-top: 8px; }
+  .breakdown-bar { height: 3px; border-radius: 2px; transition: width 0.4s ease; }
+  .breakdown-bar.solar { background: var(--yellow); }
+  .breakdown-bar.local { background: var(--teal); }
+
+  /* FILTERS */
+  .filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-label { font-size: 0.75rem; color: var(--muted); margin-right: 4px; }
+
+  select, input[type="text"] {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    outline: none;
+  }
+  select:focus, input[type="text"]:focus { border-color: var(--accent); }
+  input[type="text"] { width: 190px; }
+
+  /* PRODUCT LABEL IN TABLE */
+  .prod-solar { background: #f59e0b18; color: #f59e0b; border: 1px solid #f59e0b33; }
+  .prod-local { background: #14b8a618; color: #14b8a6; border: 1px solid #14b8a633; }
+
+  /* TABLE */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+
+  thead tr { background: var(--surface2); border-bottom: 1px solid var(--border); }
+
+  th {
+    padding: 11px 14px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--muted2);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; cursor: pointer; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+
+  td { padding: 12px 14px; color: var(--text); white-space: nowrap; }
+  td.name { font-weight: 600; }
+  td.phone { color: var(--muted2); font-size: 0.75rem; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+  .canal-idealista { background: #1a2d1a; color: #4ade80; }
+  .canal-idealista .badge-dot { background: #4ade80; }
+  .canal-meta { background: #1a1f3a; color: #818cf8; }
+  .canal-meta .badge-dot { background: #818cf8; }
+  .canal-whatsapp { background: #1a2d1a; color: #22c55e; }
+  .canal-whatsapp .badge-dot { background: #25d366; }
+
+  .estado-nuevo { background: #1e2a3a; color: #60a5fa; }
+  .estado-contactado { background: #2a2a1e; color: #fbbf24; }
+  .estado-visita_agendada { background: #1a2d2a; color: #34d399; }
+  .estado-visita_realizada { background: #1e3a1e; color: #4ade80; }
+  .estado-negociacion { background: #2a1e2a; color: #c084fc; }
+  .estado-cerrado { background: #1e2a1e; color: #22c55e; }
+  .estado-descartado { background: #2a1e1e; color: #f87171; }
+
+  .agente { display: inline-flex; align-items: center; gap: 7px; }
+  .avatar { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; flex-shrink: 0; }
+  .avatar-f { background: #4f7cff22; color: var(--accent); border: 1px solid #4f7cff44; }
+  .avatar-g { background: #ff6b3522; color: var(--accent2); border: 1px solid #ff6b3544; }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; padding: 16px; }
+  .modal-overlay.open { display: flex; }
+
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto; }
+  .modal h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; letter-spacing: -0.02em; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+
+  label { font-size: 0.72rem; color: var(--muted2); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  .form-group select,
+  .form-group input,
+  .form-group textarea {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    padding: 9px 12px; border-radius: 8px; font-size: 0.82rem; font-family: 'Inter', sans-serif;
+    outline: none; transition: border-color 0.15s; width: 100%;
+  }
+  .form-group select:focus, .form-group input:focus, .form-group textarea:focus { border-color: var(--accent); }
+  .form-group textarea { resize: vertical; min-height: 72px; }
+
+  /* Product selector in modal */
+  .product-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .product-option {
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--muted2);
+    transition: all 0.15s;
+  }
+  .product-option:hover { border-color: var(--accent); }
+  .product-option.selected { border-color: var(--accent); background: #4f7cff18; color: var(--text); }
+  .product-option .po-icon { font-size: 1.1rem; }
+
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+  .empty { text-align: center; padding: 48px 24px; color: var(--muted); font-size: 0.85rem; }
+
+  /* Manage products */
+  .manage-link { font-size: 0.72rem; color: var(--accent); cursor: pointer; text-decoration: underline; margin-left: 8px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>📋 Gestión de Leads</h1>
+    <p>Fernando & Compañera · La Bella Group Real Estate</p>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn-outline" onclick="openManageProducts()">⚙ Gestionar activos</button>
+    <button class="btn-outline" onclick="exportCSV()">⬇ Exportar CSV</button>
+    <button class="btn" onclick="openModal()">+ Nuevo lead</button>
+  </div>
+</div>
+
+<!-- BREAKDOWN POR ACTIVO -->
+<div class="breakdown" id="breakdown-cards"></div>
+
+<!-- KPIs -->
+<div class="kpis">
+  <div class="kpi accent">
+    <div class="kpi-label">Leads visibles</div>
+    <div class="kpi-value" id="kpi-total">0</div>
+    <div class="kpi-sub" id="kpi-total-sub">total en pipeline</div>
+  </div>
+  <div class="kpi green">
+    <div class="kpi-label">Visitas agendadas</div>
+    <div class="kpi-value" id="kpi-visitas">0</div>
+    <div class="kpi-sub">pendientes de realizar</div>
+  </div>
+  <div class="kpi orange">
+    <div class="kpi-label">Visitas realizadas</div>
+    <div class="kpi-value" id="kpi-realizadas">0</div>
+    <div class="kpi-sub">confirmadas</div>
+  </div>
+  <div class="kpi purple">
+    <div class="kpi-label">% Conversión</div>
+    <div class="kpi-value" id="kpi-conv">—</div>
+    <div class="kpi-sub">lead → visita</div>
+  </div>
+</div>
+
+<!-- FILTERS -->
+<div class="filters">
+  <span class="filter-label">Filtrar:</span>
+  <select id="filter-producto" onchange="renderAll()">
+    <option value="">Todos los activos</option>
+  </select>
+  <select id="filter-agente" onchange="renderAll()">
+    <option value="">Ambos agentes</option>
+    <option value="Fernando">Fernando</option>
+    <option value="Compañera">Compañera</option>
+  </select>
+  <select id="filter-canal" onchange="renderAll()">
+    <option value="">Todos los canales</option>
+    <option value="Idealista">Idealista</option>
+    <option value="Meta">Meta</option>
+    <option value="WhatsApp">WhatsApp</option>
+  </select>
+  <select id="filter-estado" onchange="renderAll()">
+    <option value="">Todos los estados</option>
+    <option value="Nuevo">Nuevo</option>
+    <option value="Contactado">Contactado</option>
+    <option value="Visita agendada">Visita agendada</option>
+    <option value="Visita realizada">Visita realizada</option>
+    <option value="Negociación">Negociación</option>
+    <option value="Cerrado">Cerrado</option>
+    <option value="Descartado">Descartado</option>
+  </select>
+  <input type="text" id="filter-search" placeholder="Buscar nombre..." oninput="renderAll()">
+</div>
+
+<!-- TABLE -->
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Teléfono</th>
+        <th>Activo</th>
+        <th>Canal</th>
+        <th>Agente</th>
+        <th>Estado</th>
+        <th>Fecha visita</th>
+        <th>Notas</th>
+      </tr>
+    </thead>
+    <tbody id="leads-tbody"></tbody>
+  </table>
+</div>
+
+<!-- MODAL LEAD -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <h2 id="modal-title">➕ Nuevo lead</h2>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Nombre completo *</label>
+        <input type="text" id="f-nombre" placeholder="María García">
+      </div>
+      <div class="form-group">
+        <label>Teléfono</label>
+        <input type="text" id="f-telefono" placeholder="612 345 678">
+      </div>
+      <div class="form-group full">
+        <label>Activo de interés *</label>
+        <div class="product-selector" id="product-selector"></div>
+      </div>
+      <div class="form-group">
+        <label>Canal de entrada *</label>
+        <select id="f-canal">
+          <option value="Idealista">Idealista</option>
+          <option value="Meta">Meta</option>
+          <option value="WhatsApp">WhatsApp</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Agente asignado *</label>
+        <select id="f-agente">
+          <option value="Fernando">Fernando</option>
+          <option value="Compañera">Compañera</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Estado</label>
+        <select id="f-estado">
+          <option value="Nuevo">Nuevo</option>
+          <option value="Contactado">Contactado</option>
+          <option value="Visita agendada">Visita agendada</option>
+          <option value="Visita realizada">Visita realizada</option>
+          <option value="Negociación">Negociación</option>
+          <option value="Cerrado">Cerrado</option>
+          <option value="Descartado">Descartado</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Fecha visita</label>
+        <input type="date" id="f-fecha">
+      </div>
+      <div class="form-group full">
+        <label>Notas / Siguiente acción</label>
+        <textarea id="f-notas" placeholder="ej. Muy interesado, llamar el lunes..."></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="closeModal()">Cancelar</button>
+      <button class="btn" onclick="saveLead()">Guardar lead</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GESTIONAR ACTIVOS -->
+<div class="modal-overlay" id="products-overlay" onclick="closeProductsOutside(event)">
+  <div class="modal">
+    <h2>⚙ Gestionar activos en mandato</h2>
+    <div id="products-list" style="margin-bottom:16px"></div>
+    <div style="display:flex;gap:8px;margin-bottom:20px">
+      <input type="text" id="new-product-name" placeholder="Nombre del activo" style="flex:1">
+      <input type="text" id="new-product-icon" placeholder="Icono 🏗" style="width:70px">
+      <button class="btn" onclick="addProduct()">Añadir</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeProducts()">Listo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── DATA ──────────────────────────────────────────────────────
+  let products = JSON.parse(localStorage.getItem('products_v2') || 'null');
+  if (!products) {
+    products = [
+      { id: 'solar', name: 'Solar Vilafranca', icon: '🌍' },
+      { id: 'local', name: 'Local Aribau', icon: '🏢' },
+    ];
+    localStorage.setItem('products_v2', JSON.stringify(products));
+  }
+
+  let leads = JSON.parse(localStorage.getItem('leads_v2') || 'null');
+  if (!leads) {
+    leads = [
+      { nombre:'Carlos Mendoza', telefono:'612 111 222', producto:'solar', canal:'Idealista', agente:'Fernando', estado:'Visita agendada', fecha:'2026-06-26', notas:'Muy interesado. Confirmar hora.' },
+      { nombre:'Laura Sánchez', telefono:'634 555 666', producto:'solar', canal:'Meta', agente:'Compañera', estado:'Contactado', fecha:'', notas:'Pendiente de enviar dossier NDA.' },
+      { nombre:'Mikel Etxebarri', telefono:'677 888 999', producto:'solar', canal:'WhatsApp', agente:'Fernando', estado:'Nuevo', fecha:'', notas:'Entró anoche. Llamar mañana.' },
+      { nombre:'Ana Torres', telefono:'600 123 456', producto:'local', canal:'Idealista', agente:'Compañera', estado:'Visita realizada', fecha:'2026-06-20', notas:'Le gustó. Estudiando financiación.' },
+      { nombre:'Jordi Puig', telefono:'611 234 567', producto:'local', canal:'Meta', agente:'Fernando', estado:'Negociación', fecha:'2026-06-18', notas:'Oferta verbal 1.150.000€.' },
+    ];
+    localStorage.setItem('leads_v2', JSON.stringify(leads));
+  }
+
+  let editIndex = null;
+  let selectedProductInModal = null;
+
+  // ── HELPERS ───────────────────────────────────────────────────
+  const canalClass = { 'Idealista':'canal-idealista', 'Meta':'canal-meta', 'WhatsApp':'canal-whatsapp' };
+  const estadoClass = {
+    'Nuevo':'estado-nuevo','Contactado':'estado-contactado',
+    'Visita agendada':'estado-visita_agendada','Visita realizada':'estado-visita_realizada',
+    'Negociación':'estado-negociacion','Cerrado':'estado-cerrado','Descartado':'estado-descartado'
+  };
+
+  function getProduct(id) { return products.find(p => p.id === id) || { name: id, icon: '📦' }; }
+
+  function save() {
+    localStorage.setItem('leads_v2', JSON.stringify(leads));
+    localStorage.setItem('products_v2', JSON.stringify(products));
+  }
+
+  function getFiltered() {
+    const producto = document.getElementById('filter-producto').value;
+    const agente = document.getElementById('filter-agente').value;
+    const canal = document.getElementById('filter-canal').value;
+    const estado = document.getElementById('filter-estado').value;
+    const search = document.getElementById('filter-search').value.toLowerCase();
+    return leads.filter(l => {
+      if (producto && l.producto !== producto) return false;
+      if (agente && l.agente !== agente) return false;
+      if (canal && l.canal !== canal) return false;
+      if (estado && l.estado !== estado) return false;
+      if (search && !l.nombre.toLowerCase().includes(search)) return false;
+      return true;
+    });
+  }
+
+  // ── RENDER ────────────────────────────────────────────────────
+  function renderAll() {
+    renderProductFilter();
+    renderBreakdown();
+    renderKPIs();
+    renderTable();
+  }
+
+  function renderProductFilter() {
+    const sel = document.getElementById('filter-producto');
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">Todos los activos</option>' +
+      products.map(p => `<option value="${p.id}" ${cur === p.id ? 'selected':''}>${p.icon} ${p.name}</option>`).join('');
+  }
+
+  function renderBreakdown() {
+    const container = document.getElementById('breakdown-cards');
+    const total = leads.length;
+    const activeFilter = document.getElementById('filter-producto').value;
+
+    container.innerHTML = products.map(p => {
+      const pLeads = leads.filter(l => l.producto === p.id);
+      const pVisitas = pLeads.filter(l => ['Visita agendada','Visita realizada','Negociación','Cerrado'].includes(l.estado)).length;
+      const pct = total > 0 ? Math.round(pLeads.length / total * 100) : 0;
+      const isSelected = activeFilter === p.id;
+      return `<div class="breakdown-card ${isSelected ? 'selected' : ''}" onclick="toggleProductFilter('${p.id}')">
+        <div class="breakdown-icon" style="background:${p.color||'#4f7cff'}18">
+          <span style="font-size:1.4rem">${p.icon}</span>
+        </div>
+        <div class="breakdown-data">
+          <div class="breakdown-name">${p.name}</div>
+          <div class="breakdown-stats">
+            <span class="breakdown-stat"><strong>${pLeads.length}</strong> leads</span>
+            <span class="breakdown-stat"><strong>${pVisitas}</strong> visitas</span>
+          </div>
+          <div class="breakdown-bar-wrap">
+            <div class="breakdown-bar" style="width:${pct}%;background:${p.barColor||'var(--accent)'}"></div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function toggleProductFilter(id) {
+    const sel = document.getElementById('filter-producto');
+    sel.value = sel.value === id ? '' : id;
+    renderAll();
+  }
+
+  function renderKPIs() {
+    const filtered = getFiltered();
+    const total = filtered.length;
+    const agendadas = filtered.filter(l => l.estado === 'Visita agendada').length;
+    const realizadas = filtered.filter(l => ['Visita realizada','Negociación','Cerrado'].includes(l.estado)).length;
+    const conv = total > 0 ? Math.round((agendadas + realizadas) / total * 100) : null;
+    const activeFilter = document.getElementById('filter-producto').value;
+    const prod = activeFilter ? getProduct(activeFilter) : null;
+
+    document.getElementById('kpi-total').textContent = total;
+    document.getElementById('kpi-total-sub').textContent = prod ? `en ${prod.name}` : 'total en pipeline';
+    document.getElementById('kpi-visitas').textContent = agendadas;
+    document.getElementById('kpi-realizadas').textContent = realizadas;
+    document.getElementById('kpi-conv').textContent = conv !== null ? conv + '%' : '—';
+  }
+
+  function renderTable() {
+    const filtered = getFiltered();
+    const tbody = document.getElementById('leads-tbody');
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" class="empty">${leads.length === 0 ? 'Sin leads. Pulsa «+ Nuevo lead» para empezar.' : 'Sin resultados para los filtros aplicados.'}</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = filtered.map(l => {
+      const realIdx = leads.indexOf(l);
+      const avatarClass = l.agente === 'Fernando' ? 'avatar-f' : 'avatar-g';
+      const initials = l.agente === 'Fernando' ? 'FB' : 'GR';
+      const fechaStr = l.fecha ? new Date(l.fecha + 'T00:00:00').toLocaleDateString('es-ES', {day:'2-digit',month:'short'}) : '—';
+      const prod = getProduct(l.producto);
+      return `<tr onclick="editLead(${realIdx})">
+        <td class="name">${l.nombre}</td>
+        <td class="phone">${l.telefono || '—'}</td>
+        <td><span class="badge" style="background:${prod.bgColor||'#4f7cff18'};color:${prod.textColor||'var(--accent)'};border:1px solid ${prod.borderColor||'#4f7cff33'}">${prod.icon} ${prod.name}</span></td>
+        <td><span class="badge ${canalClass[l.canal]||''}"><span class="badge-dot"></span>${l.canal}</span></td>
+        <td><span class="agente"><span class="avatar ${avatarClass}">${initials}</span>${l.agente}</span></td>
+        <td><span class="badge ${estadoClass[l.estado]||''}">${l.estado}</span></td>
+        <td>${fechaStr}</td>
+        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;color:var(--muted2)">${l.notas||'—'}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── MODAL LEAD ────────────────────────────────────────────────
+  function renderProductSelector(selected) {
+    const container = document.getElementById('product-selector');
+    container.innerHTML = products.map(p =>
+      `<div class="product-option ${selected === p.id ? 'selected' : ''}" onclick="selectProduct('${p.id}')">
+        <span class="po-icon">${p.icon}</span> ${p.name}
+      </div>`
+    ).join('');
+    selectedProductInModal = selected || (products[0] ? products[0].id : null);
+  }
+
+  function selectProduct(id) {
+    selectedProductInModal = id;
+    document.querySelectorAll('.product-option').forEach(el => el.classList.remove('selected'));
+    event.currentTarget.classList.add('selected');
+  }
+
+  function openModal(idx = null) {
+    editIndex = idx;
+    if (idx !== null) {
+      const l = leads[idx];
+      document.getElementById('modal-title').textContent = '✏️ Editar lead';
+      document.getElementById('f-nombre').value = l.nombre;
+      document.getElementById('f-telefono').value = l.telefono || '';
+      document.getElementById('f-canal').value = l.canal;
+      document.getElementById('f-agente').value = l.agente;
+      document.getElementById('f-estado').value = l.estado;
+      document.getElementById('f-fecha').value = l.fecha || '';
+      document.getElementById('f-notas').value = l.notas || '';
+      renderProductSelector(l.producto);
+    } else {
+      document.getElementById('modal-title').textContent = '➕ Nuevo lead';
+      document.getElementById('f-nombre').value = '';
+      document.getElementById('f-telefono').value = '';
+      document.getElementById('f-canal').value = 'Idealista';
+      document.getElementById('f-agente').value = 'Fernando';
+      document.getElementById('f-estado').value = 'Nuevo';
+      document.getElementById('f-fecha').value = '';
+      document.getElementById('f-notas').value = '';
+      renderProductSelector(null);
+    }
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+
+  function editLead(idx) { openModal(idx); }
+
+  function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); editIndex = null; }
+  function closeModalOutside(e) { if (e.target === document.getElementById('modal-overlay')) closeModal(); }
+
+  function saveLead() {
+    const nombre = document.getElementById('f-nombre').value.trim();
+    if (!nombre) { alert('El nombre es obligatorio'); return; }
+    if (!selectedProductInModal) { alert('Selecciona un activo'); return; }
+    const lead = {
+      nombre,
+      telefono: document.getElementById('f-telefono').value.trim(),
+      producto: selectedProductInModal,
+      canal: document.getElementById('f-canal').value,
+      agente: document.getElementById('f-agente').value,
+      estado: document.getElementById('f-estado').value,
+      fecha: document.getElementById('f-fecha').value,
+      notas: document.getElementById('f-notas').value.trim(),
+    };
+    if (editIndex !== null) { leads[editIndex] = lead; } else { leads.unshift(lead); }
+    save();
+    closeModal();
+    renderAll();
+  }
+
+  // ── MODAL GESTIONAR ACTIVOS ───────────────────────────────────
+  const PRODUCT_COLORS = [
+    { bg:'#f59e0b18', text:'#f59e0b', border:'#f59e0b33', bar:'#f59e0b' },
+    { bg:'#14b8a618', text:'#14b8a6', border:'#14b8a633', bar:'#14b8a6' },
+    { bg:'#a855f718', text:'#a855f7', border:'#a855f733', bar:'#a855f7' },
+    { bg:'#ef444418', text:'#ef4444', border:'#ef444433', bar:'#ef4444' },
+    { bg:'#3b82f618', text:'#3b82f6', border:'#3b82f633', bar:'#3b82f6' },
+    { bg:'#ec489918', text:'#ec4899', border:'#ec489933', bar:'#ec4899' },
+  ];
+
+  function openManageProducts() {
+    renderProductsList();
+    document.getElementById('products-overlay').classList.add('open');
+  }
+  function closeProducts() { document.getElementById('products-overlay').classList.remove('open'); renderAll(); }
+  function closeProductsOutside(e) { if (e.target === document.getElementById('products-overlay')) closeProducts(); }
+
+  function renderProductsList() {
+    const container = document.getElementById('products-list');
+    if (products.length === 0) { container.innerHTML = '<p style="color:var(--muted);font-size:0.8rem">Sin activos. Añade el primero abajo.</p>'; return; }
+    container.innerHTML = products.map((p, i) =>
+      `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:8px;margin-bottom:8px">
+        <span style="font-size:1.2rem">${p.icon}</span>
+        <span style="flex:1;font-size:0.85rem;font-weight:500">${p.name}</span>
+        <span style="font-size:0.7rem;color:var(--muted)">${leads.filter(l=>l.producto===p.id).length} leads</span>
+        <button onclick="removeProduct('${p.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:2px 6px" title="Eliminar">✕</button>
+      </div>`
+    ).join('');
+  }
+
+  function addProduct() {
+    const name = document.getElementById('new-product-name').value.trim();
+    const icon = document.getElementById('new-product-icon').value.trim() || '📦';
+    if (!name) return;
+    const id = 'prod_' + Date.now();
+    const colorSet = PRODUCT_COLORS[products.length % PRODUCT_COLORS.length];
+    products.push({ id, name, icon, bgColor: colorSet.bg, textColor: colorSet.text, borderColor: colorSet.border, barColor: colorSet.bar });
+    document.getElementById('new-product-name').value = '';
+    document.getElementById('new-product-icon').value = '';
+    save();
+    renderProductsList();
+  }
+
+  function removeProduct(id) {
+    const count = leads.filter(l => l.producto === id).length;
+    if (count > 0 && !confirm(`Este activo tiene ${count} lead(s) asociados. ¿Eliminar igualmente?`)) return;
+    products = products.filter(p => p.id !== id);
+    save();
+    renderProductsList();
+  }
+
+  // ── EXPORT ────────────────────────────────────────────────────
+  function exportCSV() {
+    const cols = ['Nombre','Teléfono','Activo','Canal','Agente','Estado','Fecha visita','Notas'];
+    const rows = leads.map(l => {
+      const prod = getProduct(l.producto);
+      return [l.nombre, l.telefono, prod.name, l.canal, l.agente, l.estado, l.fecha, l.notas]
+        .map(v => `"${(v||'').replace(/"/g,'""')}"`).join(',');
+    });
+    const csv = [cols.join(','), ...rows].join('\n');
+    const blob = new Blob(['\ufeff' + csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'leads_labellagroup.csv'; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // Asignar colores a los productos por defecto si no los tienen
+  products = products.map((p, i) => {
+    if (!p.bgColor) {
+      const colorSet = PRODUCT_COLORS[i % PRODUCT_COLORS.length];
+      return { ...p, bgColor: colorSet.bg, textColor: colorSet.text, borderColor: colorSet.border, barColor: colorSet.bar };
+    }
+    return p;
+  });
+
+  renderAll();
+</script>
+</body>
+</html>
