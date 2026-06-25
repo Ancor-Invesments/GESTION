@@ -159,9 +159,9 @@
     padding: 16px;
     cursor: pointer;
     transition: border-color 0.15s;
-    position: relative;
   }
   .lead-card:active { background: var(--surface2); }
+  .lead-card.has-cita { border-left: 3px solid var(--green); }
 
   .card-top {
     display: flex;
@@ -172,6 +172,24 @@
   }
   .card-name { font-weight: 700; font-size: 0.95rem; }
   .card-phone { font-size: 0.75rem; color: var(--muted2); margin-top: 2px; }
+  .card-email-line { font-size: 0.73rem; color: var(--muted2); margin-top: 1px; }
+
+  /* Cita destacada */
+  .card-cita {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #22c55e12;
+    border: 1px solid #22c55e33;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    font-size: 0.78rem;
+  }
+  .card-cita-icon { font-size: 1rem; }
+  .card-cita-info { flex: 1; }
+  .card-cita-label { font-size: 0.65rem; color: var(--green); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+  .card-cita-date { font-weight: 700; color: var(--text); font-size: 0.85rem; }
 
   .card-badges {
     display: flex;
@@ -189,26 +207,90 @@
     gap: 8px;
   }
   .card-agente { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--muted2); }
-  .card-fecha { font-size: 0.75rem; color: var(--muted2); }
-  .card-notas {
-    font-size: 0.75rem;
-    color: var(--muted2);
-    margin-top: 8px;
-    line-height: 1.5;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  .card-notas-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
 
-  .card-arrow {
-    position: absolute;
-    right: 16px;
-    top: 50%;
-    transform: translateY(-50%);
+  /* ── FICHA CLIENTE (modal vista) ── */
+  .ficha-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; align-items: flex-end; justify-content: center; }
+  .ficha-overlay.open { display: flex; }
+
+  .ficha {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px 20px 0 0;
+    padding: 0;
+    width: 100%;
+    max-width: 600px;
+    max-height: 92vh;
+    overflow-y: auto;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(40px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+
+  .ficha-handle {
+    width: 40px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 12px auto 0;
+  }
+
+  .ficha-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .ficha-nombre { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.02em; }
+  .ficha-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+  .ficha-body { padding: 20px 24px; }
+
+  .ficha-cita-banner {
+    background: #22c55e12;
+    border: 1px solid #22c55e44;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .ficha-cita-banner .icon { font-size: 1.4rem; }
+  .ficha-cita-banner .info-label { font-size: 0.68rem; color: var(--green); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+  .ficha-cita-banner .info-value { font-size: 1rem; font-weight: 700; color: var(--text); }
+
+  .ficha-section { margin-bottom: 20px; }
+  .ficha-section-title {
+    font-size: 0.68rem;
     color: var(--muted);
-    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .ficha-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .ficha-field {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 10px 14px;
+  }
+  .ficha-field.full { grid-column: 1 / -1; }
+  .ficha-field-label { font-size: 0.68rem; color: var(--muted2); margin-bottom: 4px; }
+  .ficha-field-value { font-size: 0.85rem; font-weight: 500; color: var(--text); word-break: break-word; }
+  .ficha-field-value.muted { color: var(--muted); font-style: italic; }
+
+  .ficha-notas {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 0.83rem;
+    line-height: 1.6;
+    color: var(--text);
+    white-space: pre-wrap;
   }
 
   /* ── RESPONSIVE ── */
@@ -426,18 +508,22 @@
 <!-- TOAST -->
 <div id="toast"></div>
 
-<!-- MODAL LEAD -->
+<!-- MODAL LEAD (edición/creación) -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
   <div class="modal">
     <h2 id="modal-title">➕ Nuevo lead</h2>
     <div class="form-grid">
       <div class="form-group">
         <label>Nombre completo *</label>
-        <input type="text" id="f-nombre" placeholder="María García">
+        <input type="text" id="f-nombre" placeholder="María García" autocomplete="off">
       </div>
       <div class="form-group">
         <label>Teléfono</label>
-        <input type="text" id="f-telefono" placeholder="612 345 678">
+        <input type="tel" id="f-telefono" placeholder="612 345 678" autocomplete="off">
+      </div>
+      <div class="form-group full">
+        <label>Email</label>
+        <input type="email" id="f-email" placeholder="maria@ejemplo.com" autocomplete="off">
       </div>
       <div class="form-group full">
         <label>Activo de interés *</label>
@@ -473,7 +559,7 @@
       </div>
       <div class="form-group">
         <label>Fecha visita</label>
-        <input type="date" id="f-fecha">
+        <input type="date" id="f-fecha" autocomplete="off">
       </div>
       <div class="form-group full">
         <label>Notas / Siguiente acción</label>
@@ -485,6 +571,24 @@
       <button class="btn-outline" onclick="closeModal()">Cancelar</button>
       <button class="btn" id="btn-save-lead" onclick="saveLead()">Guardar lead</button>
     </div>
+  </div>
+</div>
+
+<!-- FICHA CLIENTE (solo lectura, con botón editar) -->
+<div class="ficha-overlay" id="ficha-overlay" onclick="closeFichaOutside(event)">
+  <div class="ficha" id="ficha-panel">
+    <div class="ficha-handle"></div>
+    <div class="ficha-header">
+      <div>
+        <div class="ficha-nombre" id="ficha-nombre">—</div>
+        <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap" id="ficha-badges"></div>
+      </div>
+      <div class="ficha-actions">
+        <button class="btn-outline" onclick="closeFicha()">✕</button>
+        <button class="btn" onclick="editFromFicha()">✏ Editar</button>
+      </div>
+    </div>
+    <div class="ficha-body" id="ficha-body"></div>
   </div>
 </div>
 
@@ -604,6 +708,7 @@ async function saveLead() {
     id:       editRowId || ('lead_' + Date.now()),
     nombre,
     telefono: document.getElementById('f-telefono').value.trim(),
+    email:    document.getElementById('f-email').value.trim(),
     producto: selectedProd,
     canal:    document.getElementById('f-canal').value,
     agente:   document.getElementById('f-agente').value,
@@ -778,24 +883,43 @@ function renderTable() {
     const prod      = getProduct(l.producto);
     const avatarCls = l.agente === 'Fernando' ? 'avatar-f' : 'avatar-g';
     const initials  = l.agente === 'Fernando' ? 'FB' : 'GR';
-    const fechaStr  = l.fecha ? new Date(l.fecha + 'T00:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'}) : null;
     const canalKey  = (l.canal||'').replace(/\s/g,'');
-    return `<div class="lead-card" onclick="editLead('${l.id}')">
-      <div class="card-top">
-        <div>
-          <div class="card-name">${l.nombre}</div>
-          <div class="card-phone">${l.telefono||'Sin teléfono'}</div>
+    const tieneCita = l.fecha && l.estado === 'Visita agendada';
+    const fechaStr  = l.fecha ? new Date(l.fecha + 'T00:00:00').toLocaleDateString('es-ES',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}) : null;
+
+    const citaBanner = tieneCita ? `
+      <div class="card-cita">
+        <div class="card-cita-icon">📅</div>
+        <div class="card-cita-info">
+          <div class="card-cita-label">Cita agendada</div>
+          <div class="card-cita-date">${fechaStr}</div>
         </div>
-        <span class="badge ${ESTADO_CLASS[l.estado]||''}" style="flex-shrink:0">${l.estado||'—'}</span>
+      </div>` : (l.fecha && fechaStr ? `
+      <div class="card-cita" style="background:#4f7cff0d;border-color:#4f7cff33">
+        <div class="card-cita-icon">📋</div>
+        <div class="card-cita-info">
+          <div class="card-cita-label" style="color:var(--accent)">Fecha visita</div>
+          <div class="card-cita-date">${fechaStr}</div>
+        </div>
+      </div>` : '');
+
+    return `<div class="lead-card ${tieneCita?'has-cita':''}" onclick="openFicha('${l.id}')">
+      <div class="card-top">
+        <div style="min-width:0;flex:1">
+          <div class="card-name">${l.nombre}</div>
+          ${l.telefono ? `<div class="card-phone">📞 ${l.telefono}</div>` : ''}
+          ${l.email    ? `<div class="card-email-line">✉ ${l.email}</div>` : ''}
+        </div>
+        <span class="badge ${ESTADO_CLASS[l.estado]||''}" style="flex-shrink:0;margin-top:2px">${l.estado||'—'}</span>
       </div>
+      ${citaBanner}
       <div class="card-badges">
         <span class="badge" style="background:${prod.bg};color:${prod.text};border:1px solid ${prod.border}">${prod.icon} ${prod.name}</span>
         <span class="badge canal-${canalKey}"><span class="badge-dot"></span>${l.canal||'—'}</span>
       </div>
-      ${l.notas ? `<div class="card-notas-label">Notas</div><div class="card-notas">${l.notas}</div>` : ''}
       <div class="card-bottom">
         <span class="card-agente"><span class="avatar ${avatarCls}">${initials}</span>${l.agente}</span>
-        ${fechaStr ? `<span class="card-fecha">📅 ${fechaStr}</span>` : '<span></span>'}
+        <span style="font-size:0.72rem;color:var(--muted)">Ver ficha →</span>
       </div>
     </div>`;
   }).join('');
@@ -825,19 +949,121 @@ function openModal(id = null) {
   document.getElementById('modal-title').textContent = lead ? '✏️ Editar lead' : '➕ Nuevo lead';
   document.getElementById('f-nombre').value   = lead?.nombre   || '';
   document.getElementById('f-telefono').value = lead?.telefono || '';
+  document.getElementById('f-email').value    = lead?.email    || '';
   document.getElementById('f-canal').value    = lead?.canal    || 'Idealista';
   document.getElementById('f-agente').value   = lead?.agente   || 'Fernando';
   document.getElementById('f-estado').value   = lead?.estado   || 'Nuevo';
-  document.getElementById('f-fecha').value    = lead?.fecha    || '';
   document.getElementById('f-notas').value    = lead?.notas    || '';
   document.getElementById('btn-delete-lead').style.display = lead ? 'inline-flex' : 'none';
   renderProductSelector(lead?.producto || null);
+  // Fix fecha: asignar después de que el DOM esté listo
+  const fechaEl = document.getElementById('f-fecha');
+  fechaEl.value = '';
+  if (lead?.fecha) { setTimeout(() => { fechaEl.value = lead.fecha; }, 50); }
   document.getElementById('modal-overlay').classList.add('open');
 }
 
 function editLead(id) { openModal(id); }
 function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); editRowId = null; }
 function closeModalOutside(e) { if (e.target === document.getElementById('modal-overlay')) closeModal(); }
+
+// ─────────────────────────────────────────────
+// FICHA CLIENTE (solo lectura)
+// ─────────────────────────────────────────────
+let fichaLeadId = null;
+
+function openFicha(id) {
+  const l = leads.find(l => l.id === id);
+  if (!l) return;
+  fichaLeadId = id;
+  const prod      = getProduct(l.producto);
+  const avatarCls = l.agente === 'Fernando' ? 'avatar-f' : 'avatar-g';
+  const initials  = l.agente === 'Fernando' ? 'FB' : 'GR';
+  const canalKey  = (l.canal||'').replace(/\s/g,'');
+  const fechaStr  = l.fecha ? new Date(l.fecha + 'T00:00:00').toLocaleDateString('es-ES',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}) : null;
+  const tieneCita = l.fecha && l.estado === 'Visita agendada';
+
+  document.getElementById('ficha-nombre').textContent = l.nombre;
+
+  document.getElementById('ficha-badges').innerHTML =
+    `<span class="badge ${ESTADO_CLASS[l.estado]||''}">${l.estado||'—'}</span>
+     <span class="badge" style="background:${prod.bg};color:${prod.text};border:1px solid ${prod.border}">${prod.icon} ${prod.name}</span>
+     <span class="badge canal-${canalKey}"><span class="badge-dot"></span>${l.canal||'—'}</span>`;
+
+  let body = '';
+
+  // Banner cita si existe fecha
+  if (l.fecha) {
+    const color = tieneCita ? '#22c55e' : 'var(--accent)';
+    const bg    = tieneCita ? '#22c55e12' : '#4f7cff0d';
+    const bc    = tieneCita ? '#22c55e44' : '#4f7cff33';
+    const icon  = tieneCita ? '📅' : '📋';
+    const lbl   = tieneCita ? 'Cita agendada' : 'Fecha de visita';
+    body += `<div class="ficha-cita-banner" style="background:${bg};border-color:${bc}">
+      <div class="icon">${icon}</div>
+      <div>
+        <div class="info-label" style="color:${color}">${lbl}</div>
+        <div class="info-value">${fechaStr}</div>
+      </div>
+    </div>`;
+  }
+
+  // Datos de contacto
+  body += `<div class="ficha-section">
+    <div class="ficha-section-title">Datos de contacto</div>
+    <div class="ficha-grid">
+      <div class="ficha-field">
+        <div class="ficha-field-label">Teléfono</div>
+        <div class="ficha-field-value">${l.telefono ? `<a href="tel:${l.telefono}" style="color:var(--accent);text-decoration:none">${l.telefono}</a>` : '<span class="muted">—</span>'}</div>
+      </div>
+      <div class="ficha-field">
+        <div class="ficha-field-label">Email</div>
+        <div class="ficha-field-value">${l.email ? `<a href="mailto:${l.email}" style="color:var(--accent);text-decoration:none;font-size:0.8rem">${l.email}</a>` : '<span class="muted">—</span>'}</div>
+      </div>
+    </div>
+  </div>`;
+
+  // Datos del lead
+  body += `<div class="ficha-section">
+    <div class="ficha-section-title">Información del lead</div>
+    <div class="ficha-grid">
+      <div class="ficha-field">
+        <div class="ficha-field-label">Canal de entrada</div>
+        <div class="ficha-field-value">${l.canal||'—'}</div>
+      </div>
+      <div class="ficha-field">
+        <div class="ficha-field-label">Agente responsable</div>
+        <div class="ficha-field-value"><span class="agente-chip"><span class="avatar ${avatarCls}" style="width:20px;height:20px;font-size:0.55rem">${initials}</span>${l.agente}</span></div>
+      </div>
+    </div>
+  </div>`;
+
+  // Notas
+  if (l.notas) {
+    body += `<div class="ficha-section">
+      <div class="ficha-section-title">Notas / Siguiente acción</div>
+      <div class="ficha-notas">${l.notas}</div>
+    </div>`;
+  }
+
+  document.getElementById('ficha-body').innerHTML = body;
+  document.getElementById('ficha-overlay').classList.add('open');
+}
+
+function closeFicha() {
+  document.getElementById('ficha-overlay').classList.remove('open');
+  fichaLeadId = null;
+}
+
+function closeFichaOutside(e) {
+  if (e.target === document.getElementById('ficha-overlay')) closeFicha();
+}
+
+function editFromFicha() {
+  const id = fichaLeadId;
+  closeFicha();
+  setTimeout(() => openModal(id), 100);
+}
 
 // ─────────────────────────────────────────────
 // MODAL PRODUCTOS
