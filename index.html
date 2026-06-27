@@ -434,17 +434,17 @@
   <div class="kpi green">
     <div class="kpi-label">Visitas agendadas</div>
     <div class="kpi-value" id="kpi-visitas">—</div>
-    <div class="kpi-sub">pendientes de realizar</div>
+    <div class="kpi-sub" id="kpi-visitas-sub">estado "Visita agendada"</div>
   </div>
   <div class="kpi orange">
     <div class="kpi-label">Visitas realizadas</div>
     <div class="kpi-value" id="kpi-realizadas">—</div>
-    <div class="kpi-sub">confirmadas</div>
+    <div class="kpi-sub" id="kpi-realizadas-sub">Realizada / Negociación / Cerrado</div>
   </div>
   <div class="kpi purple">
     <div class="kpi-label">% Conversión</div>
     <div class="kpi-value" id="kpi-conv">—</div>
-    <div class="kpi-sub">lead → visita</div>
+    <div class="kpi-sub" id="kpi-conv-sub">leads con visita / total</div>
   </div>
 </div>
 
@@ -733,9 +733,26 @@ function setSyncStatus(state, text) {
 async function loadLeads() {
   if (!scriptUrl) return;
   setSyncStatus('loading', 'Sincronizando…');
+
+  // Timeout de 12 segundos — si el Apps Script no responde, no se queda colgado
+  const controller = new AbortController();
+  const timeoutId  = setTimeout(() => controller.abort(), 12000);
+
   try {
-    const res  = await fetch(scriptUrl + '?action=getLeads', { method: 'GET' });
+    const res  = await fetch(scriptUrl + '?action=getLeads', {
+      method: 'GET',
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
     const data = await res.json();
+
+    if (!data.ok && data.error) {
+      throw new Error(data.error);
+    }
+
     leads = (data.leads || []).map(l => ({
       id:       l.id       || '',
       nombre:   l.nombre   || '',
@@ -748,11 +765,19 @@ async function loadLeads() {
       fecha:    l.fecha    || '',
       notas:    l.notas    || '',
     }));
+
     setSyncStatus('ok', 'Sincronizado · ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'}));
     renderAll();
+
   } catch(e) {
-    setSyncStatus('error', 'Error de conexión');
-    showToast('No se pudo conectar con Google Sheets. Comprueba la URL.', 'error');
+    clearTimeout(timeoutId);
+    if (e.name === 'AbortError') {
+      setSyncStatus('error', 'Tiempo de espera agotado');
+      showToast('⏱ La conexión tardó demasiado. Pulsa ↻ para reintentar.', 'error');
+    } else {
+      setSyncStatus('error', 'Error de conexión');
+      showToast('❌ No se pudo conectar: ' + e.message, 'error');
+    }
   }
 }
 
@@ -761,9 +786,25 @@ async function loadLeads() {
 // ─────────────────────────────────────────────
 async function saveLead() {
   if (isSaving) return;
+
+  // ── Validación campos obligatorios ──
   const nombre = document.getElementById('f-nombre').value.trim();
-  if (!nombre) { showToast('El nombre es obligatorio', 'error'); return; }
-  if (!selectedProd) { showToast('Selecciona un activo', 'error'); return; }
+  const canal  = document.getElementById('f-canal').value;
+
+  if (!nombre) {
+    showToast('⚠️ El nombre es obligatorio', 'error');
+    document.getElementById('f-nombre').focus();
+    return;
+  }
+  if (!selectedProd) {
+    showToast('⚠️ Selecciona un activo', 'error');
+    return;
+  }
+  if (!canal) {
+    showToast('⚠️ Selecciona un canal', 'error');
+    document.getElementById('f-canal').focus();
+    return;
+  }
 
   const lead = {
     id:       editRowId || ('lead_' + Date.now()),
@@ -771,7 +812,7 @@ async function saveLead() {
     telefono: document.getElementById('f-telefono').value.trim(),
     email:    document.getElementById('f-email').value.trim(),
     producto: selectedProd,
-    canal:    document.getElementById('f-canal').value,
+    canal,
     agente:   document.getElementById('f-agente').value,
     estado:   document.getElementById('f-estado').value,
     fecha:    document.getElementById('f-fecha').value,
@@ -782,22 +823,34 @@ async function saveLead() {
   const btn = document.getElementById('btn-save-lead');
   btn.disabled = true; btn.textContent = 'Guardando…';
 
+  // Timeout de 12 segundos para el guardado
+  const controller = new AbortController();
+  const timeoutId  = setTimeout(() => controller.abort(), 12000);
+
   try {
     const action = editRowId ? 'updateLead' : 'addLead';
     const res = await fetch(scriptUrl, {
       method: 'POST',
       body: JSON.stringify({ action, lead }),
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
+
     const data = await res.json();
     if (data.ok) {
       showToast(editRowId ? '✅ Lead actualizado' : '✅ Lead añadido', 'success');
       closeModal();
       await loadLeads();
     } else {
-      showToast('Error: ' + (data.error || 'desconocido'), 'error');
+      showToast('❌ Error: ' + (data.error || 'desconocido'), 'error');
     }
   } catch(e) {
-    showToast('Error de conexión al guardar', 'error');
+    clearTimeout(timeoutId);
+    if (e.name === 'AbortError') {
+      showToast('⏱ Tiempo de espera agotado. Verifica tu conexión.', 'error');
+    } else {
+      showToast('❌ Error de conexión al guardar', 'error');
+    }
   } finally {
     isSaving = false; btn.disabled = false; btn.textContent = 'Guardar lead';
   }
@@ -808,21 +861,30 @@ async function saveLead() {
 // ─────────────────────────────────────────────
 async function deleteLead() {
   if (!editRowId || !confirm('¿Eliminar este lead?')) return;
+  const controller = new AbortController();
+  const timeoutId  = setTimeout(() => controller.abort(), 12000);
   try {
     const res = await fetch(scriptUrl, {
       method: 'POST',
       body: JSON.stringify({ action: 'deleteLead', lead: { id: editRowId } }),
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
     const data = await res.json();
     if (data.ok) {
       showToast('🗑 Lead eliminado', 'success');
       closeModal();
       await loadLeads();
     } else {
-      showToast('Error al eliminar', 'error');
+      showToast('❌ Error al eliminar: ' + (data.error || ''), 'error');
     }
   } catch(e) {
-    showToast('Error de conexión', 'error');
+    clearTimeout(timeoutId);
+    if (e.name === 'AbortError') {
+      showToast('⏱ Tiempo de espera agotado', 'error');
+    } else {
+      showToast('❌ Error de conexión al eliminar', 'error');
+    }
   }
 }
 
@@ -890,19 +952,27 @@ function toggleProductFilter(id) {
 }
 
 function renderKPIs() {
-  const filtered    = getFiltered();
-  const total       = filtered.length;
-  const agendadas   = filtered.filter(l => l.estado === 'Visita agendada').length;
-  const realizadas  = filtered.filter(l => ['Visita realizada','Negociación','Cerrado'].includes(l.estado)).length;
-  const conv        = total > 0 ? Math.round((agendadas + realizadas) / total * 100) : null;
+  const filtered   = getFiltered();
+  const total      = filtered.length;
+  const agendadas  = filtered.filter(l => l.estado === 'Visita agendada').length;
+  const realizadas = filtered.filter(l => ['Visita realizada','Negociación','Cerrado'].includes(l.estado)).length;
+  const conv       = total > 0 ? Math.round((agendadas + realizadas) / total * 100) : null;
   const activeFilter = document.getElementById('filter-producto').value;
-  const prod        = activeFilter ? getProduct(activeFilter) : null;
+  const prod       = activeFilter ? getProduct(activeFilter) : null;
 
-  document.getElementById('kpi-total').textContent    = total;
-  document.getElementById('kpi-total-sub').textContent = prod ? `en ${prod.name}` : 'total en pipeline';
-  document.getElementById('kpi-visitas').textContent   = agendadas;
+  document.getElementById('kpi-total').textContent      = total;
+  document.getElementById('kpi-total-sub').textContent  = prod ? `en ${prod.name}` : 'total en pipeline';
+  document.getElementById('kpi-visitas').textContent    = agendadas;
   document.getElementById('kpi-realizadas').textContent = realizadas;
-  document.getElementById('kpi-conv').textContent      = conv !== null ? conv + '%' : '—';
+  document.getElementById('kpi-conv').textContent       = conv !== null ? conv + '%' : '—';
+
+  // Tooltips dinámicos en KPI subtítulos
+  document.getElementById('kpi-visitas-sub').textContent =
+    agendadas === 0 ? 'ninguna pendiente' : `estado "Visita agendada"`;
+  document.getElementById('kpi-realizadas-sub').textContent =
+    realizadas === 0 ? 'ninguna aún' : `Visita realizada / Negociación / Cerrado`;
+  document.getElementById('kpi-conv-sub').textContent =
+    conv !== null ? `${agendadas + realizadas} de ${total} leads` : 'sin datos';
 }
 
 function renderTable() {
