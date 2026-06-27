@@ -684,14 +684,12 @@ function toInputDate(raw) {
   return `${y}-${m}-${dd}`;
 }
 let scriptUrl = localStorage.getItem(SCRIPT_URL_KEY) || '';
-let products  = JSON.parse(localStorage.getItem(PRODUCTS_KEY) || 'null') || [
-  { id:'solar', name:'Solar Vilafranca', icon:'🌍', ...PRODUCT_COLORS[0] },
-  { id:'local', name:'Local Aribau',     icon:'🏢', ...PRODUCT_COLORS[1] },
-];
+let products  = [];
 let leads        = [];
 let editRowId    = null;
 let selectedProd = null;
 let isSaving     = false;
+let isSavingProduct = false;
 
 // ─────────────────────────────────────────────
 // SETUP
@@ -728,32 +726,44 @@ function setSyncStatus(state, text) {
 }
 
 // ─────────────────────────────────────────────
-// LOAD LEADS FROM SHEETS
+// LOAD — Leads Y Activos desde Sheet
 // ─────────────────────────────────────────────
 async function loadLeads() {
   if (!scriptUrl) return;
   setSyncStatus('loading', 'Sincronizando…');
 
-  // Timeout de 12 segundos — si el Apps Script no responde, no se queda colgado
   const controller = new AbortController();
   const timeoutId  = setTimeout(() => controller.abort(), 12000);
 
   try {
-    const res  = await fetch(scriptUrl + '?action=getLeads', {
-      method: 'GET',
-      signal: controller.signal,
-    });
+    // Cargamos leads y activos en paralelo
+    const [resLeads, resProducts] = await Promise.all([
+      fetch(scriptUrl + '?action=getLeads',    { method:'GET', signal: controller.signal }),
+      fetch(scriptUrl + '?action=getProducts', { method:'GET', signal: controller.signal }),
+    ]);
     clearTimeout(timeoutId);
 
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const dataLeads    = await resLeads.json();
+    const dataProducts = await resProducts.json();
 
-    const data = await res.json();
-
-    if (!data.ok && data.error) {
-      throw new Error(data.error);
+    // ── Procesar activos ──
+    if (dataProducts.ok && dataProducts.products && dataProducts.products.length > 0) {
+      products = dataProducts.products.map((p, i) => ({
+        id:     p.id   || 'prod_' + i,
+        name:   p.name || 'Sin nombre',
+        icon:   p.icon || '📦',
+        ...(PRODUCT_COLORS[i % PRODUCT_COLORS.length]),
+      }));
+    } else if (products.length === 0) {
+      // Fallback si la hoja de activos está vacía — defaults
+      products = [
+        { id:'solar', name:'Solar Vilafranca', icon:'🌍', ...PRODUCT_COLORS[0] },
+        { id:'local', name:'Local Aribau',     icon:'🏢', ...PRODUCT_COLORS[1] },
+      ];
     }
 
-    leads = (data.leads || []).map(l => ({
+    // ── Procesar leads ──
+    leads = (dataLeads.leads || []).map(l => ({
       id:       l.id       || '',
       nombre:   l.nombre   || '',
       telefono: l.telefono || '',
@@ -1201,13 +1211,13 @@ function editFromFicha() {
 // MODAL PRODUCTOS
 // ─────────────────────────────────────────────
 function openManageProducts() { renderProductsList(); document.getElementById('products-overlay').classList.add('open'); }
-function closeProducts() { document.getElementById('products-overlay').classList.remove('open'); saveProducts(); renderAll(); }
+function closeProducts() { document.getElementById('products-overlay').classList.remove('open'); renderAll(); }
 function closeProductsOutside(e) { if (e.target === document.getElementById('products-overlay')) closeProducts(); }
 
 function renderProductsList() {
   const c = document.getElementById('products-list');
   if (!products.length) { c.innerHTML = '<p style="color:var(--muted);font-size:0.8rem">Sin activos todavía.</p>'; return; }
-  c.innerHTML = products.map((p,i) =>
+  c.innerHTML = products.map(p =>
     `<div class="prod-row">
       <span style="font-size:1.2rem">${p.icon}</span>
       <span>${p.name}</span>
@@ -1217,25 +1227,70 @@ function renderProductsList() {
   ).join('');
 }
 
-function addProduct() {
+async function addProduct() {
+  if (isSavingProduct) return;
   const name = document.getElementById('new-product-name').value.trim();
   const icon = document.getElementById('new-product-icon').value.trim() || '📦';
-  if (!name) return;
-  const colorSet = PRODUCT_COLORS[products.length % PRODUCT_COLORS.length];
-  products.push({ id:'prod_'+Date.now(), name, icon, ...colorSet });
-  document.getElementById('new-product-name').value = '';
-  document.getElementById('new-product-icon').value = '';
-  saveProducts(); renderProductsList();
+  if (!name) { showToast('⚠️ Escribe el nombre del activo', 'error'); return; }
+
+  const newProduct = {
+    id:   'prod_' + Date.now(),
+    name,
+    icon,
+  };
+
+  isSavingProduct = true;
+  const btn = document.querySelector('#products-overlay .btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando…'; }
+
+  try {
+    const res  = await fetch(scriptUrl, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'addProduct', product: newProduct }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      document.getElementById('new-product-name').value = '';
+      document.getElementById('new-product-icon').value = '';
+      showToast('✅ Activo añadido y sincronizado', 'success');
+      await loadLeads(); // recarga activos y leads
+      renderProductsList();
+    } else {
+      showToast('❌ Error al guardar activo: ' + (data.error||''), 'error');
+    }
+  } catch(e) {
+    showToast('❌ Error de conexión', 'error');
+  } finally {
+    isSavingProduct = false;
+    if (btn) { btn.disabled = false; btn.textContent = 'Añadir'; }
+  }
 }
 
-function removeProduct(id) {
-  const count = leads.filter(l=>l.producto===id).length;
-  if (count > 0 && !confirm(`Este activo tiene ${count} lead(s). ¿Eliminar igualmente?`)) return;
-  products = products.filter(p=>p.id!==id);
-  saveProducts(); renderProductsList();
+async function removeProduct(id) {
+  const count = leads.filter(l => l.producto === id).length;
+  if (count > 0 && !confirm(`Este activo tiene ${count} lead(s) asociados. ¿Eliminar igualmente?`)) return;
+  if (!confirm('¿Eliminar este activo del Sheet?')) return;
+
+  try {
+    const res  = await fetch(scriptUrl, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'deleteProduct', product: { id } }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      showToast('🗑 Activo eliminado', 'success');
+      await loadLeads();
+      renderProductsList();
+    } else {
+      showToast('❌ Error al eliminar: ' + (data.error||''), 'error');
+    }
+  } catch(e) {
+    showToast('❌ Error de conexión', 'error');
+  }
 }
 
-function saveProducts() { localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products)); }
+// Mantener compatibilidad (ya no se usa localStorage para productos)
+function saveProducts() { /* sincronización ahora via Sheet */ }
 
 // ─────────────────────────────────────────────
 // TOAST
