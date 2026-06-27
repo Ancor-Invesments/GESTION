@@ -468,7 +468,7 @@
   </select>
   <select id="filter-estado" onchange="renderAll()">
     <option value="">Todos los estados</option>
-    <option value="Nuevo">Nuevo</option>
+    <option value="No contactado">No contactado</option>
     <option value="Contactado">Contactado</option>
     <option value="Visita agendada">Visita agendada</option>
     <option value="Visita realizada">Visita realizada</option>
@@ -486,6 +486,7 @@
       <tr>
         <th>Nombre</th>
         <th>Teléfono</th>
+        <th>Email</th>
         <th>Activo</th>
         <th>Canal</th>
         <th>Agente</th>
@@ -495,7 +496,7 @@
       </tr>
     </thead>
     <tbody id="leads-tbody">
-      <tr><td colspan="8" class="empty">Conecta con Google Sheets para ver los leads.</td></tr>
+      <tr><td colspan="9" class="empty">Conecta con Google Sheets para ver los leads.</td></tr>
     </tbody>
   </table>
 </div>
@@ -519,7 +520,7 @@
       </div>
       <div class="form-group">
         <label>Teléfono</label>
-        <input type="tel" id="f-telefono" placeholder="612 345 678" autocomplete="off">
+        <input type="tel" id="f-telefono" placeholder="612 345 678" autocomplete="tel" inputmode="tel" pattern="[+0-9\s\-()]*">
       </div>
       <div class="form-group full">
         <label>Email</label>
@@ -548,7 +549,7 @@
       <div class="form-group">
         <label>Estado</label>
         <select id="f-estado">
-          <option value="Nuevo">Nuevo</option>
+          <option value="No contactado">No contactado</option>
           <option value="Contactado">Contactado</option>
           <option value="Visita agendada">Visita agendada</option>
           <option value="Visita realizada">Visita realizada</option>
@@ -625,14 +626,63 @@ const PRODUCT_COLORS = [
 ];
 
 const ESTADO_CLASS = {
-  'Nuevo':'estado-Nuevo','Contactado':'estado-Contactado',
+  'No contactado':'estado-Nuevo','Contactado':'estado-Contactado',
   'Visita agendada':'estado-Visita_agendada','Visita realizada':'estado-Visita_realizada',
   'Negociación':'estado-Negociación','Cerrado':'estado-Cerrado','Descartado':'estado-Descartado'
 };
 
 // ─────────────────────────────────────────────
-// STATE
+// DATE UTILS — maneja múltiples formatos del Sheet
 // ─────────────────────────────────────────────
+function parseDate(raw) {
+  if (!raw || raw === '' || raw === 'Invalid Date') return null;
+  // Ya es formato YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    const [y,m,d] = raw.split('-').map(Number);
+    return new Date(y, m-1, d);
+  }
+  // Formato DD/MM/YYYY (Google Sheets a veces lo devuelve así)
+  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(raw)) {
+    const [d,m,y] = raw.split('/').map(Number);
+    return new Date(y, m-1, d);
+  }
+  // Formato MM/DD/YYYY (locale US)
+  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(raw)) {
+    const parts = raw.split('/');
+    return new Date(Number(parts[2]), Number(parts[0])-1, Number(parts[1]));
+  }
+  // Intento genérico
+  const d = new Date(raw);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function formatDateShort(raw) {
+  const d = parseDate(raw);
+  if (!d) return '—';
+  return d.toLocaleDateString('es-ES', {day:'2-digit', month:'short'});
+}
+
+function formatDateLong(raw) {
+  const d = parseDate(raw);
+  if (!d) return null;
+  return d.toLocaleDateString('es-ES', {weekday:'long', day:'2-digit', month:'long', year:'numeric'});
+}
+
+function formatDateFull(raw) {
+  const d = parseDate(raw);
+  if (!d) return null;
+  return d.toLocaleDateString('es-ES', {weekday:'short', day:'2-digit', month:'short', year:'numeric'});
+}
+
+// Convierte fecha parseada a YYYY-MM-DD para el input date
+function toInputDate(raw) {
+  const d = parseDate(raw);
+  if (!d) return '';
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dd}`;
+}
 let scriptUrl = localStorage.getItem(SCRIPT_URL_KEY) || '';
 let products  = JSON.parse(localStorage.getItem(PRODUCTS_KEY) || 'null') || [
   { id:'solar', name:'Solar Vilafranca', icon:'🌍', ...PRODUCT_COLORS[0] },
@@ -686,7 +736,18 @@ async function loadLeads() {
   try {
     const res  = await fetch(scriptUrl + '?action=getLeads', { method: 'GET' });
     const data = await res.json();
-    leads = data.leads || [];
+    leads = (data.leads || []).map(l => ({
+      id:       l.id       || '',
+      nombre:   l.nombre   || '',
+      telefono: l.telefono || '',
+      email:    l.email    || l.correo || l['e-mail'] || l.mail || '',
+      producto: l.producto || '',
+      canal:    l.canal    || '',
+      agente:   l.agente   || '',
+      estado:   l.estado   || 'No contactado',
+      fecha:    l.fecha    || '',
+      notas:    l.notas    || '',
+    }));
     setSyncStatus('ok', 'Sincronizado · ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'}));
     renderAll();
   } catch(e) {
@@ -854,7 +915,7 @@ function renderTable() {
     'Sin resultados para los filtros aplicados.';
 
   if (filtered.length === 0) {
-    tbody.innerHTML    = `<tr><td colspan="8" class="empty">${emptyMsg}</td></tr>`;
+    tbody.innerHTML    = `<tr><td colspan="9" class="empty">${emptyMsg}</td></tr>`;
     cardsWrap.innerHTML = `<div class="empty" style="text-align:center;padding:48px 24px;color:var(--muted)">${emptyMsg}</div>`;
     return;
   }
@@ -864,11 +925,12 @@ function renderTable() {
     const prod      = getProduct(l.producto);
     const avatarCls = l.agente === 'Fernando' ? 'avatar-f' : 'avatar-g';
     const initials  = l.agente === 'Fernando' ? 'FB' : 'GR';
-    const fechaStr  = l.fecha ? new Date(l.fecha + 'T00:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'short'}) : '—';
+    const fechaStr  = formatDateShort(l.fecha);
     const canalKey  = (l.canal||'').replace(/\s/g,'');
     return `<tr onclick="editLead('${l.id}')">
       <td class="name">${l.nombre}</td>
       <td class="phone">${l.telefono||'—'}</td>
+      <td style="color:var(--muted2);font-size:0.75rem">${l.email ? `<a href="mailto:${l.email}" style="color:var(--accent);text-decoration:none" onclick="event.stopPropagation()">${l.email}</a>` : '—'}</td>
       <td><span class="badge" style="background:${prod.bg};color:${prod.text};border:1px solid ${prod.border}">${prod.icon} ${prod.name}</span></td>
       <td><span class="badge canal-${canalKey}"><span class="badge-dot"></span>${l.canal||'—'}</span></td>
       <td><span class="agente-chip"><span class="avatar ${avatarCls}">${initials}</span>${l.agente}</span></td>
@@ -885,7 +947,7 @@ function renderTable() {
     const initials  = l.agente === 'Fernando' ? 'FB' : 'GR';
     const canalKey  = (l.canal||'').replace(/\s/g,'');
     const tieneCita = l.fecha && l.estado === 'Visita agendada';
-    const fechaStr  = l.fecha ? new Date(l.fecha + 'T00:00:00').toLocaleDateString('es-ES',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}) : null;
+    const fechaStr  = formatDateFull(l.fecha);
 
     const citaBanner = tieneCita ? `
       <div class="card-cita">
@@ -952,14 +1014,14 @@ function openModal(id = null) {
   document.getElementById('f-email').value    = lead?.email    || '';
   document.getElementById('f-canal').value    = lead?.canal    || 'Idealista';
   document.getElementById('f-agente').value   = lead?.agente   || 'Fernando';
-  document.getElementById('f-estado').value   = lead?.estado   || 'Nuevo';
+  document.getElementById('f-estado').value   = lead?.estado   || 'No contactado';
   document.getElementById('f-notas').value    = lead?.notas    || '';
   document.getElementById('btn-delete-lead').style.display = lead ? 'inline-flex' : 'none';
   renderProductSelector(lead?.producto || null);
-  // Fix fecha: asignar después de que el DOM esté listo
+  // Fix fecha: normalizar formato para input[type=date]
   const fechaEl = document.getElementById('f-fecha');
   fechaEl.value = '';
-  if (lead?.fecha) { setTimeout(() => { fechaEl.value = lead.fecha; }, 50); }
+  if (lead?.fecha) { setTimeout(() => { fechaEl.value = toInputDate(lead.fecha); }, 50); }
   document.getElementById('modal-overlay').classList.add('open');
 }
 
@@ -980,7 +1042,7 @@ function openFicha(id) {
   const avatarCls = l.agente === 'Fernando' ? 'avatar-f' : 'avatar-g';
   const initials  = l.agente === 'Fernando' ? 'FB' : 'GR';
   const canalKey  = (l.canal||'').replace(/\s/g,'');
-  const fechaStr  = l.fecha ? new Date(l.fecha + 'T00:00:00').toLocaleDateString('es-ES',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}) : null;
+  const fechaStr  = formatDateLong(l.fecha);
   const tieneCita = l.fecha && l.estado === 'Visita agendada';
 
   document.getElementById('ficha-nombre').textContent = l.nombre;
