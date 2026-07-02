@@ -218,10 +218,17 @@
     border-radius: 20px 20px 0 0;
     padding: 0;
     width: 100%;
-    max-width: 600px;
-    max-height: 92vh;
+    max-width: 620px;
+    max-height: 88vh;
     overflow-y: auto;
     animation: slideUp 0.25s ease;
+  }
+
+  /* En escritorio: centrado como modal normal */
+  @media (min-width: 701px) {
+    .ficha-overlay { align-items: center; }
+    .ficha { border-radius: 16px; max-height: 85vh; }
+    .ficha-handle { display: none; }
   }
   @keyframes slideUp { from { transform: translateY(40px); opacity:0; } to { transform: translateY(0); opacity:1; } }
 
@@ -1515,7 +1522,7 @@ function renderTable() {
       i.nombre.toLowerCase() === l.nombre.toLowerCase() ||
       (l.telefono && i.telefono === l.telefono)
     );
-    return `<tr onclick="editLead('${l.id}')">
+    return `<tr onclick="openFicha('${l.id}')" style="cursor:pointer">
       <td class="name">${l.nombre}${esInversor ? ' <span style="font-size:0.62rem;background:#c9a84c22;color:#c9a84c;border:1px solid #c9a84c44;padding:1px 6px;border-radius:10px;font-weight:700;vertical-align:middle">💼</span>' : ''}</td>
       <td class="phone">${l.telefono||'—'}</td>
       <td style="color:var(--muted2);font-size:0.75rem">${l.email ? `<a href="mailto:${l.email}" style="color:var(--accent);text-decoration:none" onclick="event.stopPropagation()">${l.email}</a>` : '—'}</td>
