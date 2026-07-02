@@ -617,15 +617,74 @@
 
   .match-empty { text-align: center; padding: 48px 24px; color: var(--muted); font-size: 0.85rem; grid-column: 1/-1; }
 
-  @media (max-width: 700px) {
-    .match-selectors { grid-template-columns: 1fr; }
-    .match-or { display: none; }
-    .match-grid { grid-template-columns: 1fr; }
-    .nav-tabs { width: 100%; }
-    .nav-tab { flex: 1; text-align: center; padding: 8px 4px; font-size: 0.7rem; }
-    .inv-grid { grid-template-columns: 1fr; }
-    .inv-ficha-grid { grid-template-columns: 1fr; }
-    .inv-ficha-field.full { grid-column: 1; }
+  /* ── PROSPECCIÓN ── */
+  .prosp-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:12px; margin-bottom:24px; }
+  .prosp-kpi { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; }
+  .prosp-kpi::before { content:''; display:block; height:3px; border-radius:2px; margin-bottom:10px; background:linear-gradient(90deg,#ff6b35,#fbbf24); }
+  .prosp-kpi-label { font-size:0.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px; }
+  .prosp-kpi-value { font-size:1.6rem; font-weight:700; color:#ff6b35; letter-spacing:-0.03em; }
+  .prosp-kpi-sub { font-size:0.68rem; color:var(--muted2); margin-top:2px; }
+
+  .prosp-filters { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; align-items:center; }
+
+  .prosp-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; }
+
+  .prosp-card {
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:18px;
+    cursor:pointer;
+    transition:border-color 0.15s;
+    border-left:3px solid #ff6b35;
+    position:relative;
+  }
+  .prosp-card:hover { border-color:#ff6b3588; }
+
+  .prosp-card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; gap:8px; }
+  .prosp-card-name { font-weight:700; font-size:0.95rem; }
+  .prosp-card-company { font-size:0.78rem; color:#ff6b35; font-weight:600; margin-top:2px; }
+  .prosp-card-contact { font-size:0.73rem; color:var(--muted2); margin-top:2px; }
+
+  .badge-tipo-prosp { padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700;
+    background:#ff6b3518; color:#ff6b35; border:1px solid #ff6b3533; }
+  .badge-estado-prosp { padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; }
+  .bep-pendiente  { background:#f59e0b18; color:#f59e0b; border:1px solid #f59e0b33; }
+  .bep-enviado    { background:#4f7cff18; color:#818cf8; border:1px solid #4f7cff33; }
+  .bep-respondido { background:#22c55e18; color:#22c55e; border:1px solid #22c55e33; }
+  .bep-sin-respuesta { background:#64748b18; color:#64748b; border:1px solid #64748b33; }
+  .bep-descartado { background:#ef444418; color:#ef4444; border:1px solid #ef444433; }
+
+  .prosp-card-bottom { display:flex; justify-content:space-between; align-items:center;
+    padding-top:10px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--muted); margin-top:10px; }
+
+  /* Ficha prospecto */
+  .prosp-pipeline-btns { display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
+
+  /* Modal email */
+  .email-preview {
+    background:var(--surface2);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:16px;
+    font-size:0.82rem;
+    line-height:1.7;
+    color:var(--text);
+    white-space:pre-wrap;
+    margin-top:8px;
+    max-height:280px;
+    overflow-y:auto;
+  }
+  .template-btns { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+  .template-btn { padding:6px 12px; border-radius:8px; border:1px solid var(--border);
+    background:var(--surface2); color:var(--muted2); font-size:0.75rem; cursor:pointer; transition:all 0.15s; }
+  .template-btn:hover { border-color:#ff6b35; color:#ff6b35; }
+  .template-btn.active { background:#ff6b3518; border-color:#ff6b35; color:#ff6b35; font-weight:600; }
+
+  @media (max-width:700px) {
+    .prosp-grid { grid-template-columns:1fr; }
+    .nav-tabs { overflow-x:auto; width:100%; }
+    .nav-tab { flex-shrink:0; font-size:0.7rem; padding:8px 10px; }
   }
 </style>
 </head>
@@ -662,6 +721,7 @@
   <button class="nav-tab active" id="tab-leads" onclick="switchTab('leads')">📋 Leads</button>
   <button class="nav-tab inv" id="tab-inversores" onclick="switchTab('inversores')">💼 Inversores</button>
   <button class="nav-tab inv" id="tab-matching" onclick="switchTab('matching')">🎯 Matching</button>
+  <button class="nav-tab inv" id="tab-prospeccion" onclick="switchTab('prospeccion')">📡 Prospección</button>
 </div>
 
 <!-- ══════════════════════════════════════ -->
@@ -876,6 +936,202 @@
   </div>
 
 </div><!-- /page-matching -->
+
+<!-- ══════════════════════════════════════ -->
+<!-- PAGE: PROSPECCIÓN                     -->
+<!-- ══════════════════════════════════════ -->
+<div class="page" id="page-prospeccion">
+
+<!-- KPIs -->
+<div class="prosp-kpis">
+  <div class="prosp-kpi">
+    <div class="prosp-kpi-label">Total prospectos</div>
+    <div class="prosp-kpi-value" id="prosp-kpi-total">0</div>
+    <div class="prosp-kpi-sub">en cartera outbound</div>
+  </div>
+  <div class="prosp-kpi">
+    <div class="prosp-kpi-label">Emails enviados</div>
+    <div class="prosp-kpi-value" id="prosp-kpi-enviados">0</div>
+    <div class="prosp-kpi-sub">contactos alcanzados</div>
+  </div>
+  <div class="prosp-kpi">
+    <div class="prosp-kpi-label">Respondidos</div>
+    <div class="prosp-kpi-value" id="prosp-kpi-respondidos">0</div>
+    <div class="prosp-kpi-sub">han contestado</div>
+  </div>
+  <div class="prosp-kpi">
+    <div class="prosp-kpi-label">% Respuesta</div>
+    <div class="prosp-kpi-value" id="prosp-kpi-tasa">—</div>
+    <div class="prosp-kpi-sub">tasa de respuesta</div>
+  </div>
+</div>
+
+<!-- Filtros -->
+<div class="prosp-filters">
+  <span class="filter-label">Filtrar:</span>
+  <select id="prosp-filter-tipo" onchange="renderProspeccion()">
+    <option value="">Todos los tipos</option>
+    <option value="Promotora inmobiliaria">Promotora inmobiliaria</option>
+    <option value="Empresa constructora">Empresa constructora</option>
+    <option value="Family office / fondo">Family office / fondo</option>
+    <option value="Propietario local / nave">Propietario local / nave</option>
+    <option value="Gestora de patrimonio">Gestora de patrimonio</option>
+    <option value="Empresa con activos propios">Empresa con activos propios</option>
+  </select>
+  <select id="prosp-filter-estado" onchange="renderProspeccion()">
+    <option value="">Todos los estados</option>
+    <option value="Pendiente de contactar">Pendiente de contactar</option>
+    <option value="Email enviado">Email enviado</option>
+    <option value="Respondido">Respondido</option>
+    <option value="Sin respuesta">Sin respuesta</option>
+    <option value="Descartado">Descartado</option>
+  </select>
+  <select id="prosp-filter-agente" onchange="renderProspeccion()">
+    <option value="">Ambos agentes</option>
+    <option value="Fernando">Fernando</option>
+    <option value="Greta">Greta</option>
+  </select>
+  <input type="text" id="prosp-filter-search" placeholder="Buscar empresa..." oninput="renderProspeccion()" style="width:180px">
+  <button class="btn" onclick="openProspModal()" style="margin-left:auto;background:linear-gradient(135deg,#ff6b35,#fbbf24);border:none">+ Nuevo prospecto</button>
+</div>
+
+<!-- Grid -->
+<div class="prosp-grid" id="prosp-grid">
+  <div class="match-empty" style="grid-column:1/-1">Cargando prospectos…</div>
+</div>
+
+</div><!-- /page-prospeccion -->
+
+<!-- FICHA PROSPECTO -->
+<div class="ficha-overlay" id="prosp-ficha-overlay" onclick="closeProspFichaOutside(event)">
+  <div class="ficha" id="prosp-ficha-panel">
+    <div class="ficha-handle"></div>
+    <div class="ficha-header">
+      <div style="min-width:0;flex:1">
+        <div class="ficha-nombre" id="prosp-ficha-nombre">—</div>
+        <div style="font-size:0.8rem;color:#ff6b35;font-weight:600;margin-top:2px" id="prosp-ficha-empresa"></div>
+        <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap" id="prosp-ficha-badges"></div>
+      </div>
+      <div class="ficha-actions">
+        <button class="btn-outline" onclick="closeProspFicha()">✕</button>
+        <button class="btn-outline" onclick="openEmailModal()" style="color:#ff6b35;border-color:#ff6b3544">✉ Email</button>
+        <button class="btn" onclick="editFromProspFicha()" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)">✏ Editar</button>
+      </div>
+    </div>
+    <div class="ficha-body" id="prosp-ficha-body"></div>
+    <!-- Botones pipeline -->
+    <div style="padding:0 24px 24px">
+      <div style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;font-weight:600">¿Ha respondido? Pásalo al pipeline</div>
+      <div class="prosp-pipeline-btns">
+        <button class="btn" onclick="convertProspToLead()" style="background:var(--accent);flex:1">📋 Convertir en Lead</button>
+        <button class="btn" onclick="convertProspToInversor()" style="background:linear-gradient(135deg,#b8975a,#c9a84c);border:none;flex:1">💼 Convertir en Inversor</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PROSPECTO (edición/creación) -->
+<div class="modal-overlay" id="prosp-modal-overlay" onclick="closeProspModalOutside(event)">
+  <div class="modal" style="max-width:580px">
+    <h2 id="prosp-modal-title">📡 Nuevo prospecto</h2>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Nombre contacto *</label>
+        <input type="text" id="prosp-nombre" placeholder="Ana Martínez" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>Empresa / Sociedad *</label>
+        <input type="text" id="prosp-empresa" placeholder="Promotora XYZ S.L." autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>Teléfono</label>
+        <input type="tel" id="prosp-telefono" placeholder="612 345 678" inputmode="tel">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="prosp-email" placeholder="ana@promotora.com">
+      </div>
+      <div class="form-group">
+        <label>Tipo de empresa *</label>
+        <select id="prosp-tipo">
+          <option value="Promotora inmobiliaria">Promotora inmobiliaria</option>
+          <option value="Empresa constructora">Empresa constructora</option>
+          <option value="Family office / fondo">Family office / fondo</option>
+          <option value="Propietario local / nave">Propietario local / nave</option>
+          <option value="Gestora de patrimonio">Gestora de patrimonio</option>
+          <option value="Empresa con activos propios">Empresa con activos propios</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Agente</label>
+        <select id="prosp-agente">
+          <option value="Fernando">Fernando</option>
+          <option value="Greta">Greta</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label>Ubicación / Ciudad</label>
+        <input type="text" id="prosp-ubicacion" placeholder="ej. Barcelona, Hospitalet, Sabadell...">
+      </div>
+      <div class="form-group full">
+        <label>Activo que le vamos a ofrecer</label>
+        <select id="prosp-activo-ofrecido">
+          <option value="">— Selecciona —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Estado</label>
+        <select id="prosp-estado">
+          <option value="Pendiente de contactar">Pendiente de contactar</option>
+          <option value="Email enviado">Email enviado</option>
+          <option value="Respondido">Respondido</option>
+          <option value="Sin respuesta">Sin respuesta</option>
+          <option value="Descartado">Descartado</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Fecha de contacto</label>
+        <input type="date" id="prosp-fecha">
+      </div>
+      <div class="form-group full">
+        <label>Notas / cómo lo has encontrado</label>
+        <textarea id="prosp-notas" placeholder="ej. Encontrado en Google Maps, página web de la promotora. Tienen varios solares en el Penedès." style="min-height:70px"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" id="prosp-btn-delete" onclick="deleteProspecto()" style="display:none;color:var(--red);border-color:var(--red)">🗑 Eliminar</button>
+      <button class="btn-outline" onclick="closeProspModal()">Cancelar</button>
+      <button class="btn" id="prosp-btn-save" onclick="saveProspecto()" style="background:linear-gradient(135deg,#ff6b35,#fbbf24);border:none">Guardar prospecto</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EMAIL (plantillas) -->
+<div class="modal-overlay" id="email-modal-overlay" onclick="closeEmailModalOutside(event)">
+  <div class="modal" style="max-width:620px">
+    <h2>✉ Redactar email de prospección</h2>
+    <div style="margin-bottom:14px">
+      <div style="font-size:0.72rem;color:var(--muted2);margin-bottom:8px">Selecciona plantilla por activo:</div>
+      <div class="template-btns" id="template-btns"></div>
+    </div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label>Asunto</label>
+      <input type="text" id="email-asunto" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:8px;font-size:0.82rem;font-family:Inter,sans-serif;outline:none">
+    </div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label>Cuerpo del email</label>
+      <div class="email-preview" id="email-body" contenteditable="true"></div>
+    </div>
+    <div style="font-size:0.73rem;color:var(--muted2);margin-bottom:16px">
+      💡 El email se ha adaptado con los datos del prospecto. Cópialo y envíalo desde tu cliente de correo. Después marca el estado como "Email enviado".
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="closeEmailModal()">Cancelar</button>
+      <button class="btn-outline" onclick="copyEmail()" style="border-color:#4f7cff;color:#818cf8">📋 Copiar email</button>
+      <button class="btn" onclick="markEmailSent()" style="background:linear-gradient(135deg,#ff6b35,#fbbf24);border:none">✅ Marcar como enviado</button>
+    </div>
+  </div>
+</div>
 
 <!-- FICHA INVERSOR (solo lectura) -->
 <div class="ficha-overlay" id="inv-ficha-overlay" onclick="closeInvFichaOutside(event)">
@@ -1106,16 +1362,61 @@
 
 <!-- MODAL GESTIONAR ACTIVOS -->
 <div class="modal-overlay" id="products-overlay" onclick="closeProductsOutside(event)">
-  <div class="modal">
+  <div class="modal" style="max-width:560px">
     <h2>⚙ Activos en mandato</h2>
-    <div id="products-list" style="margin-bottom:16px"></div>
-    <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
-      <input type="text" id="new-product-name" placeholder="Nombre del activo" style="flex:1;min-width:140px">
-      <input type="text" id="new-product-icon" placeholder="🏗" style="width:60px">
-      <button class="btn" onclick="addProduct()">Añadir</button>
+    <div id="products-list" style="margin-bottom:20px"></div>
+
+    <div style="border-top:1px solid var(--border);padding-top:18px">
+      <div style="font-size:0.75rem;color:var(--accent);font-weight:600;margin-bottom:14px">➕ Añadir nuevo activo</div>
+      <div class="form-grid" style="margin-bottom:14px">
+        <div class="form-group">
+          <label>Nombre del activo *</label>
+          <input type="text" id="new-product-name" placeholder="ej. Solar Vilafranca">
+        </div>
+        <div class="form-group">
+          <label>Icono</label>
+          <input type="text" id="new-product-icon" placeholder="🏗" style="width:100%">
+        </div>
+        <div class="form-group full">
+          <label>Tipo de activo *</label>
+          <select id="new-product-tipo">
+            <option value="">— Selecciona —</option>
+            <option value="naves">🏭 Naves / Logística</option>
+            <option value="solar">🌍 Solar / Suelo</option>
+            <option value="edificios">🏛 Edificio completo</option>
+            <option value="parking">🅿️ Parking / Garajes</option>
+            <option value="traspaso">🏪 Traspaso de negocio</option>
+            <option value="hotel">🏨 Hotel / Turístico</option>
+            <option value="corona">🔁 Activo corona metropolitana</option>
+            <option value="local">🏬 Local comercial</option>
+            <option value="piso">🏠 Piso suelto</option>
+            <option value="oficina">💼 Oficina</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>Zona geográfica *</label>
+          <select id="new-product-zona">
+            <option value="">— Selecciona —</option>
+            <option value="bcn">🏙 Barcelona ciudad</option>
+            <option value="corona_metro">🔁 Corona metropolitana</option>
+            <option value="maresme">🌊 Maresme</option>
+            <option value="valles">🌿 Vallès</option>
+            <option value="baix">🏞 Baix Llobregat</option>
+            <option value="penedes">🍇 Penedès / Garraf</option>
+            <option value="rest_cat">🗺 Resto Cataluña</option>
+            <option value="nacional">🇪🇸 Nacional</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>Precio / Descripción breve</label>
+          <input type="text" id="new-product-precio" placeholder="ej. 1.250.000€ · 489m² · Uso comercial">
+        </div>
+      </div>
+      <button class="btn" onclick="addProduct()" style="width:100%">Añadir activo</button>
     </div>
-    <div class="modal-actions">
-      <button class="btn" onclick="closeProducts()">Listo</button>
+
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn-outline" onclick="closeProducts()">Cerrar</button>
     </div>
   </div>
 </div>
@@ -1260,9 +1561,12 @@ async function loadLeads() {
     // ── Procesar activos ──
     if (dataProducts.ok && dataProducts.products && dataProducts.products.length > 0) {
       products = dataProducts.products.map((p, i) => ({
-        id:     p.id   || 'prod_' + i,
-        name:   p.name || 'Sin nombre',
-        icon:   p.icon || '📦',
+        id:     p.id    || 'prod_' + i,
+        name:   p.name  || 'Sin nombre',
+        icon:   p.icon  || '📦',
+        tipo:   p.tipo  || '',
+        zona:   p.zona  || '',
+        precio: p.precio|| '',
         ...(PRODUCT_COLORS[i % PRODUCT_COLORS.length]),
       }));
     } else if (products.length === 0) {
@@ -1460,6 +1764,10 @@ function renderBreakdown() {
           <span class="breakdown-stat"><strong>${pLeads.length}</strong> leads</span>
           <span class="breakdown-stat"><strong>${pVisitas}</strong> visitas</span>
         </div>
+        ${(p.tipo||p.zona)?`<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:5px">
+          ${p.tipo?`<span style="font-size:0.6rem;background:#c9a84c18;color:#c9a84c;border:1px solid #c9a84c33;padding:1px 5px;border-radius:6px">${TIPOS_ACTIVO.find(t=>t.id===p.tipo)?.icon||''} ${TIPOS_ACTIVO.find(t=>t.id===p.tipo)?.label||p.tipo}</span>`:''}
+          ${p.zona?`<span style="font-size:0.6rem;background:#4f7cff18;color:#818cf8;border:1px solid #4f7cff33;padding:1px 5px;border-radius:6px">${ZONAS.find(z=>z.id===p.zona)?.icon||''} ${ZONAS.find(z=>z.id===p.zona)?.label||p.zona}</span>`:''}
+        </div>`:''}
         <div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${pct}%;background:${p.bar||'var(--accent)'}"></div></div>
       </div>
     </div>`;
@@ -1773,31 +2081,54 @@ function closeProductsOutside(e) { if (e.target === document.getElementById('pro
 
 function renderProductsList() {
   const c = document.getElementById('products-list');
-  if (!products.length) { c.innerHTML = '<p style="color:var(--muted);font-size:0.8rem">Sin activos todavía.</p>'; return; }
-  c.innerHTML = products.map(p =>
-    `<div class="prod-row">
-      <span style="font-size:1.2rem">${p.icon}</span>
-      <span>${p.name}</span>
-      <span class="prod-count">${leads.filter(l=>l.producto===p.id).length} leads</span>
-      <button class="btn-del" onclick="removeProduct('${p.id}')">✕</button>
-    </div>`
-  ).join('');
+  if (!products.length) { c.innerHTML = '<p style="color:var(--muted);font-size:0.8rem;padding:8px 0">Sin activos todavía. Añade el primero abajo.</p>'; return; }
+  c.innerHTML = products.map(p => {
+    const tipoObj = TIPOS_ACTIVO.find(t => t.id === p.tipo);
+    const zonaObj = ZONAS.find(z => z.id === p.zona);
+    const nLeads  = leads.filter(l => l.producto === p.id).length;
+    return `<div class="prod-row" style="flex-direction:column;align-items:flex-start;gap:6px">
+      <div style="display:flex;align-items:center;gap:10px;width:100%">
+        <span style="font-size:1.3rem">${p.icon}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;font-size:0.88rem">${p.name}</div>
+          ${p.precio ? `<div style="font-size:0.73rem;color:var(--muted2)">${p.precio}</div>` : ''}
+        </div>
+        <span class="prod-count">${nLeads} lead${nLeads!==1?'s':''}</span>
+        <button class="btn-del" onclick="removeProduct('${p.id}')">✕</button>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;padding-left:2px">
+        ${tipoObj ? `<span class="match-tag">${tipoObj.icon} ${tipoObj.label}</span>` : '<span style="font-size:0.7rem;color:var(--muted)">Sin tipo</span>'}
+        ${zonaObj ? `<span class="match-tag zona">${zonaObj.icon} ${zonaObj.label}</span>` : '<span style="font-size:0.7rem;color:var(--muted)">Sin zona</span>'}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 async function addProduct() {
   if (isSavingProduct) return;
-  const name = document.getElementById('new-product-name').value.trim();
-  const icon = document.getElementById('new-product-icon').value.trim() || '📦';
+  const name  = document.getElementById('new-product-name').value.trim();
+  const icon  = document.getElementById('new-product-icon').value.trim() || '📦';
+  const tipo  = document.getElementById('new-product-tipo').value;
+  const zona  = document.getElementById('new-product-zona').value;
+  const precio= document.getElementById('new-product-precio').value.trim();
   if (!name) { showToast('⚠️ Escribe el nombre del activo', 'error'); return; }
+  if (!tipo) { showToast('⚠️ Selecciona el tipo de activo', 'error'); return; }
+  if (!zona) { showToast('⚠️ Selecciona la zona', 'error'); return; }
+
+  // Auto-icono si no se ha escrito uno
+  const autoIcon = icon !== '📦' ? icon : (TIPOS_ACTIVO.find(t=>t.id===tipo)?.icon || '📦');
 
   const newProduct = {
-    id:   'prod_' + Date.now(),
+    id:     'prod_' + Date.now(),
     name,
-    icon,
+    icon:   autoIcon,
+    tipo,
+    zona,
+    precio,
   };
 
   isSavingProduct = true;
-  const btn = document.querySelector('#products-overlay .btn');
+  const btn = document.getElementById('new-product-add-btn');
   if (btn) { btn.disabled = true; btn.textContent = 'Guardando…'; }
 
   try {
@@ -1807,10 +2138,13 @@ async function addProduct() {
     });
     const data = await res.json();
     if (data.ok) {
-      document.getElementById('new-product-name').value = '';
-      document.getElementById('new-product-icon').value = '';
+      document.getElementById('new-product-name').value  = '';
+      document.getElementById('new-product-icon').value  = '';
+      document.getElementById('new-product-tipo').value  = '';
+      document.getElementById('new-product-zona').value  = '';
+      document.getElementById('new-product-precio').value= '';
       showToast('✅ Activo añadido y sincronizado', 'success');
-      await loadLeads(); // recarga activos y leads
+      await loadLeads();
       renderProductsList();
     } else {
       showToast('❌ Error al guardar activo: ' + (data.error||''), 'error');
@@ -1819,7 +2153,7 @@ async function addProduct() {
     showToast('❌ Error de conexión', 'error');
   } finally {
     isSavingProduct = false;
-    if (btn) { btn.disabled = false; btn.textContent = 'Añadir'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'Añadir activo'; }
   }
 }
 
@@ -2039,6 +2373,7 @@ function matchDesdeActivo() {
   let matched, titulo;
 
   if (val.startsWith('tipo:')) {
+    // Filtro por tipo genérico
     const tipoId = val.replace('tipo:', '');
     const tipo   = TIPOS_ACTIVO.find(t => t.id === tipoId);
     matched = inversores.filter(i => {
@@ -2050,24 +2385,28 @@ function matchDesdeActivo() {
     });
     titulo = `Inversores interesados en: ${tipo?.icon} ${tipo?.label}`;
   } else {
-    // Activo concreto de la app — matcheamos por nombre del activo en zonas/motivacion
+    // Activo concreto — usar tipo y zona del activo para matching preciso
     const prod = products.find(p => p.id === val);
+    if (!prod) return;
+
     matched = inversores.filter(i => {
       const tipos = parseTipos(i.tipos_activo);
       const zonas = parseZonas(i.zonas_geo);
-      const hayTipo = tipos.length === 0 || tipos.some(t => {
-        if (prod?.name?.toLowerCase().includes('solar') && t === 'solar') return true;
-        if (prod?.name?.toLowerCase().includes('local') && t === 'local') return true;
-        if (prod?.name?.toLowerCase().includes('nave') && t === 'naves') return true;
-        if (prod?.name?.toLowerCase().includes('parking') && t === 'parking') return true;
-        if (prod?.name?.toLowerCase().includes('hotel') && t === 'hotel') return true;
-        if (prod?.name?.toLowerCase().includes('edificio') && t === 'edificios') return true;
-        return true; // si no hay pista del nombre, incluir
-      });
+
+      // Si el inversor tiene tipos definidos, debe coincidir con el tipo del activo
+      const tipoMatch = !tipos.length || !prod.tipo || tipos.includes(prod.tipo);
+      // Si el inversor tiene zonas definidas, debe coincidir con la zona del activo
+      const zonaMatch = !zonas.length || !prod.zona || zonas.includes(prod.zona);
+      // Filtro adicional del chip activo
       if (matchZonaActive && !zonas.includes(matchZonaActive)) return false;
-      return hayTipo;
+      if (matchTipoActive && !tipos.includes(matchTipoActive)) return false;
+
+      return tipoMatch && zonaMatch;
     });
-    titulo = `Inversores que pueden interesarse en: ${prod?.icon} ${prod?.name}`;
+
+    const tipoObj = prod.tipo ? TIPOS_ACTIVO.find(t=>t.id===prod.tipo) : null;
+    const zonaObj = prod.zona ? ZONAS.find(z=>z.id===prod.zona) : null;
+    titulo = `Inversores que encajan con: ${prod.icon} ${prod.name}${tipoObj?` · ${tipoObj.icon} ${tipoObj.label}`:''}${zonaObj?` · ${zonaObj.icon} ${zonaObj.label}`:''}`;
   }
 
   renderMatchResults(matched, titulo, 'inversor');
@@ -2085,18 +2424,13 @@ function matchDesdeInversor() {
   const tipos  = parseTipos(inv.tipos_activo);
   const zonas  = parseZonas(inv.zonas_geo);
 
-  // Activos de la app que encajan
+  // Activos de la app que encajan — ahora usando tipo y zona del activo
   const activosMatch = products.filter(p => {
-    if (tipos.length === 0) return true;
-    return tipos.some(t => {
-      if (t==='solar'    && p.name.toLowerCase().includes('solar'))   return true;
-      if (t==='local'    && p.name.toLowerCase().includes('local'))   return true;
-      if (t==='naves'    && p.name.toLowerCase().includes('nave'))    return true;
-      if (t==='parking'  && p.name.toLowerCase().includes('parking')) return true;
-      if (t==='hotel'    && p.name.toLowerCase().includes('hotel'))   return true;
-      if (t==='edificios'&& p.name.toLowerCase().includes('edificio'))return true;
-      return false;
-    });
+    const tipos = parseTipos(inv.tipos_activo);
+    const zonas = parseZonas(inv.zonas_geo);
+    const tipoMatch = !tipos.length || !p.tipo || tipos.includes(p.tipo);
+    const zonaMatch = !zonas.length || !p.zona || zonas.includes(p.zona);
+    return tipoMatch && zonaMatch;
   });
 
   // Tipos de activo que busca como tarjetas informativas
@@ -2135,15 +2469,22 @@ function matchDesdeInversor() {
       Activos actuales que pueden encajar
       <span class="match-count">${activosMatch.length}</span>
     </div>
-    ${activosMatch.length ? `<div class="match-grid">${activosMatch.map(p => `
+    ${activosMatch.length ? `<div class="match-grid">${activosMatch.map(p => {
+      const tipoObj = p.tipo ? TIPOS_ACTIVO.find(t=>t.id===p.tipo) : null;
+      const zonaObj = p.zona ? ZONAS.find(z=>z.id===p.zona) : null;
+      return `
       <div class="match-card" onclick="switchTab('leads');setTimeout(()=>{document.getElementById('filter-producto').value='${p.id}';renderAll();},200)">
         <div class="match-card-name">${p.icon} ${p.name}</div>
-        <div class="match-card-sub">Ver leads asociados a este activo</div>
+        <div class="match-card-sub">${p.precio||'Sin precio indicado'}</div>
+        <div class="match-card-tags">
+          ${tipoObj?`<span class="match-tag">${tipoObj.icon} ${tipoObj.label}</span>`:''}
+          ${zonaObj?`<span class="match-tag zona">${zonaObj.icon} ${zonaObj.label}</span>`:''}
+        </div>
         <div class="match-card-bottom">
           <span>${leads.filter(l=>l.producto===p.id).length} leads en pipeline</span>
           <span style="color:var(--accent)">Ver leads →</span>
         </div>
-      </div>`).join('')}</div>` :
+      </div>`}).join('')}</div>` :
       `<div class="match-empty">Ningún activo actual encaja con sus preferencias.<br>Quizás es una oportunidad de captación.</div>`}
   `;
 }
@@ -2186,8 +2527,9 @@ function switchTab(tab) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('page-' + tab).classList.add('active');
   document.getElementById('tab-' + tab).classList.add('active');
-  if (tab === 'inversores') renderInversores();
-  if (tab === 'matching')   renderMatchingPage();
+  if (tab === 'inversores')  renderInversores();
+  if (tab === 'matching')    renderMatchingPage();
+  if (tab === 'prospeccion') renderProspeccion();
 }
 
 // ─────────────────────────────────────────────
@@ -2543,8 +2885,8 @@ function closeInvModalOutside(e) { if (e.target === document.getElementById('inv
 // Cargar inversores al iniciar
 const _origInitSetup = initSetup;
 
-// Auto-refresh incluye inversores
-setInterval(() => { if (scriptUrl) { loadLeads(); loadInversores(); } }, 60000);
+// Auto-refresh incluye inversores y prospectos
+setInterval(() => { if (scriptUrl) { loadLeads(); loadInversores(); loadProspectos(); } }, 60000);
 
 // ─────────────────────────────────────────────
 // TOAST
@@ -2557,16 +2899,345 @@ function showToast(msg, type='') {
   toastTimer = setTimeout(() => { t.className = ''; }, 3500);
 }
 
-// ─────────────────────────────────────────────
-// AUTO-REFRESH cada 60s
-// ─────────────────────────────────────────────
-setInterval(() => { if (scriptUrl) loadLeads(); }, 60000);
+// ═══════════════════════════════════════════════════════════════════
+// PROSPECCIÓN OUTBOUND — funciones completas
+// ═══════════════════════════════════════════════════════════════════
+
+let prospectos    = [];
+let editProspId   = null;
+let fichaProspId  = null;
+let isSavingProsp = false;
+
+const TIPO_PROSP_ICONS = {
+  'Promotora inmobiliaria':     '🏗',
+  'Empresa constructora':       '🔨',
+  'Family office / fondo':      '💎',
+  'Propietario local / nave':   '🏭',
+  'Gestora de patrimonio':      '📊',
+  'Empresa con activos propios':'🏛',
+};
+
+const ESTADO_PROSP_CLS = {
+  'Pendiente de contactar': 'bep-pendiente',
+  'Email enviado':          'bep-enviado',
+  'Respondido':             'bep-respondido',
+  'Sin respuesta':          'bep-sin-respuesta',
+  'Descartado':             'bep-descartado',
+};
+
+const EMAIL_TEMPLATES = [
+  { id:'solar', label:'🌍 Solar / Suelo',
+    asunto:'Oportunidad de inversión – Solar urbanizable en el Penedès',
+    body:`Estimado/a {nombre},\n\nMe pongo en contacto con usted desde Ancor Investments, consultora especializada en activos inmobiliarios singulares en Cataluña.\n\nContamos en exclusiva con un solar urbanizable en Vilafranca del Penedès con una superficie de interés para proyectos residenciales o industriales, con excelente accesibilidad y en zona de alta demanda.\n\nDado el perfil de {empresa}, creemos que este activo puede encajar perfectamente en su estrategia de adquisición o desarrollo.\n\n¿Tendría disponibilidad para una breve llamada esta semana? Con mucho gusto le enviamos el dossier completo.\n\nUn cordial saludo,\nFernando Benítez\nAncor Investments 2023 S.L.\n📞 [Tu teléfono] · ✉ [Tu email]` },
+  { id:'local', label:'🏬 Local Comercial',
+    asunto:'Activo comercial prime en Barcelona – Oportunidad exclusiva',
+    body:`Estimado/a {nombre},\n\nDesde Ancor Investments le escribimos para presentarle una oportunidad puntual en el mercado barcelonés.\n\nTenemos en exclusiva un local comercial de primer nivel en zona prime de Barcelona, con excelentes condiciones de rentabilidad y traspaso activo.\n\nConociendo la actividad de {empresa} en el sector inmobiliario, pensamos que puede ser de su interés analizarlo.\n\n¿Le parece si le enviamos el dossier completo de forma confidencial?\n\nUn cordial saludo,\nFernando Benítez\nAncor Investments 2023 S.L.\n📞 [Tu teléfono] · ✉ [Tu email]` },
+  { id:'nave', label:'🏭 Nave / Industrial',
+    asunto:'Nave logística disponible – Zona estratégica Barcelona',
+    body:`Estimado/a {nombre},\n\nMe dirijo a usted desde Ancor Investments para comunicarle la disponibilidad de un activo industrial/logístico en ubicación estratégica dentro del área metropolitana de Barcelona.\n\nDada la trayectoria de {empresa}, consideramos que puede ser de su interés estudiar esta operación.\n\nPodemos enviarle el dossier técnico y acordar una visita sin compromiso.\n\nUn cordial saludo,\nFernando Benítez\nAncor Investments 2023 S.L.\n📞 [Tu teléfono] · ✉ [Tu email]` },
+  { id:'edificio', label:'🏛 Edificio completo',
+    asunto:'Edificio completo en venta – Operación singular en Barcelona',
+    body:`Estimado/a {nombre},\n\nDesde Ancor Investments le presentamos una operación de carácter singular: un edificio completo en venta en Barcelona, con potencial de reposicionamiento y alta rentabilidad.\n\nPensamos en {empresa} como un perfil que puede encajar perfectamente.\n\n¿Estaría interesado/a en recibir información confidencial sobre el activo?\n\nUn cordial saludo,\nFernando Benítez\nAncor Investments 2023 S.L.\n📞 [Tu teléfono] · ✉ [Tu email]` },
+  { id:'traspaso', label:'🏪 Traspaso negocio',
+    asunto:'Oportunidad de traspaso – Negocio en marcha en Barcelona',
+    body:`Estimado/a {nombre},\n\nMe pongo en contacto desde Ancor Investments para comunicarle la disponibilidad de un traspaso de negocio en marcha en Barcelona, con clientela consolidada y licencia de actividad en vigor.\n\nSi el perfil de {empresa} incluye este tipo de operaciones, estaremos encantados de facilitarle toda la documentación de forma confidencial.\n\nUn cordial saludo,\nFernando Benítez\nAncor Investments 2023 S.L.\n📞 [Tu teléfono] · ✉ [Tu email]` },
+];
+
+let currentTemplateId    = EMAIL_TEMPLATES[0].id;
+let currentProspForEmail = null;
+
+// ── LOAD ──────────────────────────────────────
+async function loadProspectos() {
+  if (!scriptUrl) return;
+  const controller = new AbortController();
+  const timeoutId  = setTimeout(() => controller.abort(), 12000);
+  try {
+    const res  = await fetch(scriptUrl + '?action=getProspectos', { method:'GET', signal: controller.signal });
+    clearTimeout(timeoutId);
+    const data = await res.json();
+    prospectos = (data.prospectos || []).map(p => ({
+      id:              p.id              || '',
+      nombre:          p.nombre          || '',
+      empresa:         p.empresa         || '',
+      telefono:        p.telefono        || '',
+      email:           p.email           || '',
+      tipo:            p.tipo            || '',
+      agente:          p.agente          || '',
+      ubicacion:       p.ubicacion       || '',
+      activo_ofrecido: p.activo_ofrecido || '',
+      estado:          p.estado          || 'Pendiente de contactar',
+      fecha:           p.fecha           || '',
+      notas:           p.notas           || '',
+    }));
+    renderProspeccion();
+  } catch(e) { clearTimeout(timeoutId); }
+}
+
+// ── SAVE ──────────────────────────────────────
+async function saveProspecto() {
+  if (isSavingProsp) return;
+  const nombre  = document.getElementById('prosp-nombre').value.trim();
+  const empresa = document.getElementById('prosp-empresa').value.trim();
+  if (!nombre)  { showToast('⚠️ El nombre es obligatorio', 'error'); return; }
+  if (!empresa) { showToast('⚠️ La empresa es obligatoria', 'error'); return; }
+
+  const prosp = {
+    id:              editProspId || ('prosp_' + Date.now()),
+    nombre, empresa,
+    telefono:        document.getElementById('prosp-telefono').value.trim(),
+    email:           document.getElementById('prosp-email').value.trim(),
+    tipo:            document.getElementById('prosp-tipo').value,
+    agente:          document.getElementById('prosp-agente').value,
+    ubicacion:       document.getElementById('prosp-ubicacion').value.trim(),
+    activo_ofrecido: document.getElementById('prosp-activo-ofrecido').value,
+    estado:          document.getElementById('prosp-estado').value,
+    fecha:           document.getElementById('prosp-fecha').value,
+    notas:           document.getElementById('prosp-notas').value.trim(),
+  };
+
+  isSavingProsp = true;
+  const btn = document.getElementById('prosp-btn-save');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  const controller = new AbortController();
+  const timeoutId  = setTimeout(() => controller.abort(), 12000);
+  try {
+    const res  = await fetch(scriptUrl, { method:'POST', body: JSON.stringify({ action: editProspId ? 'updateProspecto' : 'addProspecto', prospecto: prosp }), signal: controller.signal });
+    clearTimeout(timeoutId);
+    const data = await res.json();
+    if (data.ok) { showToast(editProspId ? '✅ Prospecto actualizado' : '✅ Prospecto añadido', 'success'); closeProspModal(); await loadProspectos(); }
+    else showToast('❌ ' + (data.error||''), 'error');
+  } catch(e) { clearTimeout(timeoutId); showToast(e.name==='AbortError'?'⏱ Tiempo agotado':'❌ Error de conexión','error'); }
+  finally { isSavingProsp=false; btn.disabled=false; btn.textContent='Guardar prospecto'; }
+}
+
+// ── DELETE ─────────────────────────────────────
+async function deleteProspecto() {
+  if (!editProspId || !confirm('¿Eliminar este prospecto?')) return;
+  try {
+    const res  = await fetch(scriptUrl, { method:'POST', body: JSON.stringify({ action:'deleteProspecto', prospecto:{ id: editProspId } }) });
+    const data = await res.json();
+    if (data.ok) { showToast('🗑 Eliminado','success'); closeProspModal(); await loadProspectos(); }
+    else showToast('❌ '+(data.error||''),'error');
+  } catch(e) { showToast('❌ Error de conexión','error'); }
+}
+
+// ── RENDER ─────────────────────────────────────
+function renderProspeccion() {
+  const tipo   = document.getElementById('prosp-filter-tipo')?.value    || '';
+  const estado = document.getElementById('prosp-filter-estado')?.value  || '';
+  const agente = document.getElementById('prosp-filter-agente')?.value  || '';
+  const search = (document.getElementById('prosp-filter-search')?.value || '').toLowerCase();
+
+  const filtered = prospectos.filter(p => {
+    if (tipo   && p.tipo   !== tipo)   return false;
+    if (estado && p.estado !== estado) return false;
+    if (agente && p.agente !== agente) return false;
+    if (search && !p.nombre.toLowerCase().includes(search) && !p.empresa.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  const env  = prospectos.filter(p=>['Email enviado','Respondido','Sin respuesta'].includes(p.estado)).length;
+  const resp = prospectos.filter(p=>p.estado==='Respondido').length;
+  document.getElementById('prosp-kpi-total').textContent      = prospectos.length;
+  document.getElementById('prosp-kpi-enviados').textContent   = env;
+  document.getElementById('prosp-kpi-respondidos').textContent= resp;
+  document.getElementById('prosp-kpi-tasa').textContent       = env>0 ? Math.round(resp/env*100)+'%' : '—';
+
+  const grid = document.getElementById('prosp-grid');
+  if (!grid) return;
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="match-empty" style="grid-column:1/-1">${prospectos.length===0?'📡 Sin prospectos todavía.<br>Pulsa «+ Nuevo prospecto» para empezar.':'Sin resultados para los filtros aplicados.'}</div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(p => {
+    const icon      = TIPO_PROSP_ICONS[p.tipo] || '🏢';
+    const estadoCls = ESTADO_PROSP_CLS[p.estado] || '';
+    const avatarCls = p.agente==='Fernando' ? 'avatar-f' : 'avatar-g';
+    const initials  = p.agente==='Fernando' ? 'FB' : 'GR';
+    const fechaStr  = formatDateShort(p.fecha);
+    const prod      = p.activo_ofrecido ? getProduct(p.activo_ofrecido) : null;
+    return `<div class="prosp-card" onclick="openProspFicha('${p.id}')">
+      <div class="prosp-card-top">
+        <div style="min-width:0;flex:1">
+          <div class="prosp-card-name">${p.nombre}</div>
+          <div class="prosp-card-company">${icon} ${p.empresa}</div>
+          <div class="prosp-card-contact">${p.ubicacion||''}${p.ubicacion&&(p.email||p.telefono)?' · ':''}${p.email||p.telefono||''}</div>
+        </div>
+        <span class="badge-estado-prosp ${estadoCls}">${p.estado}</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <span class="badge-tipo-prosp">${p.tipo}</span>
+        ${prod?`<span class="badge" style="background:${prod.bg};color:${prod.text};border:1px solid ${prod.border};font-size:0.68rem">${prod.icon} ${prod.name}</span>`:''}
+      </div>
+      ${p.notas?`<div style="font-size:0.75rem;color:var(--muted2);margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${p.notas}</div>`:''}
+      <div class="prosp-card-bottom">
+        <span class="agente-chip"><span class="avatar ${avatarCls}" style="width:20px;height:20px;font-size:0.55rem">${initials}</span>${p.agente}</span>
+        <span>${fechaStr!=='—'?'📅 '+fechaStr:''}</span>
+        <span style="color:#ff6b35">Ver ficha →</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── FICHA ──────────────────────────────────────
+function openProspFicha(id) {
+  const p = prospectos.find(x=>x.id===id);
+  if (!p) return;
+  fichaProspId = id;
+  const icon      = TIPO_PROSP_ICONS[p.tipo]||'🏢';
+  const estadoCls = ESTADO_PROSP_CLS[p.estado]||'';
+  const avatarCls = p.agente==='Fernando'?'avatar-f':'avatar-g';
+  const initials  = p.agente==='Fernando'?'FB':'GR';
+  const prod      = p.activo_ofrecido ? getProduct(p.activo_ofrecido) : null;
+  const fechaStr  = formatDateLong(p.fecha);
+
+  document.getElementById('prosp-ficha-nombre').textContent  = p.nombre;
+  document.getElementById('prosp-ficha-empresa').textContent = `${icon} ${p.empresa}`;
+  document.getElementById('prosp-ficha-badges').innerHTML =
+    `<span class="badge-tipo-prosp">${p.tipo}</span>
+     <span class="badge-estado-prosp ${estadoCls}">${p.estado}</span>
+     ${prod?`<span class="badge" style="background:${prod.bg};color:${prod.text};border:1px solid ${prod.border};font-size:0.68rem">${prod.icon} ${prod.name}</span>`:''}`;
+
+  let body = `<div class="inv-ficha-section"><div class="inv-ficha-title">Contacto</div><div class="inv-ficha-grid">
+    ${p.telefono?`<div class="inv-ficha-field"><div class="inv-ficha-field-label">Teléfono</div><div class="inv-ficha-field-value"><a href="tel:${p.telefono}" style="color:var(--accent);text-decoration:none">${p.telefono}</a></div></div>`:''}
+    ${p.email?`<div class="inv-ficha-field"><div class="inv-ficha-field-label">Email</div><div class="inv-ficha-field-value"><a href="mailto:${p.email}" style="color:var(--accent);text-decoration:none;font-size:0.8rem">${p.email}</a></div></div>`:''}
+    ${p.ubicacion?`<div class="inv-ficha-field"><div class="inv-ficha-field-label">Ubicación</div><div class="inv-ficha-field-value">${p.ubicacion}</div></div>`:''}
+    <div class="inv-ficha-field"><div class="inv-ficha-field-label">Agente</div><div class="inv-ficha-field-value"><span class="agente-chip"><span class="avatar ${avatarCls}" style="width:20px;height:20px;font-size:0.55rem">${initials}</span>${p.agente}</span></div></div>
+  </div></div>`;
+  if (fechaStr||prod) body += `<div class="inv-ficha-section"><div class="inv-ficha-title">Campaña outbound</div><div class="inv-ficha-grid">
+    ${fechaStr?`<div class="inv-ficha-field"><div class="inv-ficha-field-label">Fecha contacto</div><div class="inv-ficha-field-value">📅 ${fechaStr}</div></div>`:''}
+    ${prod?`<div class="inv-ficha-field"><div class="inv-ficha-field-label">Activo ofrecido</div><div class="inv-ficha-field-value">${prod.icon} ${prod.name}</div></div>`:''}
+  </div></div>`;
+  if (p.notas) body += `<div class="inv-ficha-section"><div class="inv-ficha-title">Notas</div><div class="ficha-notas">${p.notas}</div></div>`;
+
+  document.getElementById('prosp-ficha-body').innerHTML = body;
+  document.getElementById('prosp-ficha-overlay').classList.add('open');
+}
+
+function closeProspFicha() { document.getElementById('prosp-ficha-overlay').classList.remove('open'); fichaProspId=null; }
+function closeProspFichaOutside(e) { if (e.target===document.getElementById('prosp-ficha-overlay')) closeProspFicha(); }
+function editFromProspFicha() { const id=fichaProspId; closeProspFicha(); setTimeout(()=>openProspModal(id),100); }
+
+// ── CONVERTIR ──────────────────────────────────
+function convertProspToLead() {
+  const p = prospectos.find(x=>x.id===fichaProspId);
+  if (!p) return;
+  closeProspFicha();
+  setTimeout(()=>{ switchTab('leads'); setTimeout(()=>{
+    openModal();
+    document.getElementById('f-nombre').value   = p.nombre;
+    document.getElementById('f-telefono').value = p.telefono;
+    document.getElementById('f-email').value    = p.email;
+    document.getElementById('f-agente').value   = p.agente;
+    document.getElementById('f-canal').value    = 'Otros';
+    if (p.activo_ofrecido) { selectedProd=p.activo_ofrecido; renderProductSelector(p.activo_ofrecido); }
+    document.getElementById('f-notas').value = `Prospecto outbound · ${p.empresa}${p.ubicacion?' · '+p.ubicacion:''}${p.notas?'\n\nNotas: '+p.notas:''}`;
+    document.getElementById('modal-title').textContent = '📋 Convertir prospecto → Lead';
+    showToast('✅ Datos pre-cargados. Completa el lead.','success');
+  },150); },100);
+}
+
+function convertProspToInversor() {
+  const p = prospectos.find(x=>x.id===fichaProspId);
+  if (!p) return;
+  closeProspFicha();
+  setTimeout(()=>{ switchTab('inversores'); setTimeout(()=>{
+    openInvModal();
+    document.getElementById('inv-nombre').value   = p.nombre;
+    document.getElementById('inv-telefono').value = p.telefono;
+    document.getElementById('inv-email').value    = p.email;
+    document.getElementById('inv-empresa').value  = p.empresa;
+    document.getElementById('inv-agente').value   = p.agente;
+    document.getElementById('inv-notas').value = `Prospecto outbound · ${p.empresa}${p.ubicacion?' · '+p.ubicacion:''}${p.notas?'\n\nNotas: '+p.notas:''}`;
+    document.getElementById('inv-modal-title').textContent = '💼 Convertir prospecto → Inversor';
+    showToast('✅ Datos pre-cargados. Completa el perfil.','success');
+  },150); },100);
+}
+
+// ── MODAL PROSPECTO ────────────────────────────
+function openProspModal(id=null) {
+  editProspId = id;
+  const p = id ? prospectos.find(x=>x.id===id) : null;
+  document.getElementById('prosp-modal-title').textContent = p ? '✏️ Editar prospecto' : '📡 Nuevo prospecto';
+  document.getElementById('prosp-nombre').value    = p?.nombre    || '';
+  document.getElementById('prosp-empresa').value   = p?.empresa   || '';
+  document.getElementById('prosp-telefono').value  = p?.telefono  || '';
+  document.getElementById('prosp-email').value     = p?.email     || '';
+  document.getElementById('prosp-tipo').value      = p?.tipo      || 'Promotora inmobiliaria';
+  document.getElementById('prosp-agente').value    = p?.agente    || 'Fernando';
+  document.getElementById('prosp-ubicacion').value = p?.ubicacion || '';
+  document.getElementById('prosp-estado').value    = p?.estado    || 'Pendiente de contactar';
+  document.getElementById('prosp-notas').value     = p?.notas     || '';
+  const fechaEl = document.getElementById('prosp-fecha');
+  fechaEl.value = '';
+  if (p?.fecha) setTimeout(()=>{ fechaEl.value=toInputDate(p.fecha); },50);
+  const sel = document.getElementById('prosp-activo-ofrecido');
+  sel.innerHTML = '<option value="">— Selecciona —</option>' +
+    products.map(pr=>`<option value="${pr.id}" ${p?.activo_ofrecido===pr.id?'selected':''}>${pr.icon} ${pr.name}</option>`).join('');
+  document.getElementById('prosp-btn-delete').style.display = p ? 'inline-flex' : 'none';
+  document.getElementById('prosp-modal-overlay').classList.add('open');
+}
+
+function closeProspModal() { document.getElementById('prosp-modal-overlay').classList.remove('open'); editProspId=null; }
+function closeProspModalOutside(e) { if (e.target===document.getElementById('prosp-modal-overlay')) closeProspModal(); }
+
+// ── EMAIL ──────────────────────────────────────
+function openEmailModal() {
+  const p = prospectos.find(x=>x.id===fichaProspId);
+  if (!p) return;
+  currentProspForEmail = p;
+  currentTemplateId = EMAIL_TEMPLATES[0].id;
+  document.getElementById('template-btns').innerHTML = EMAIL_TEMPLATES.map(t=>
+    `<div class="template-btn ${t.id===currentTemplateId?'active':''}" onclick="selectTemplate('${t.id}')">${t.label}</div>`
+  ).join('');
+  applyTemplate(currentTemplateId);
+  document.getElementById('email-modal-overlay').classList.add('open');
+}
+
+function selectTemplate(id) {
+  currentTemplateId = id;
+  document.querySelectorAll('.template-btn').forEach(b=>b.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  applyTemplate(id);
+}
+
+function applyTemplate(id) {
+  const p   = currentProspForEmail;
+  const tpl = EMAIL_TEMPLATES.find(t=>t.id===id);
+  if (!tpl||!p) return;
+  const filled = tpl.body.replace(/\{nombre\}/g,p.nombre||'estimado/a').replace(/\{empresa\}/g,p.empresa||'su empresa');
+  document.getElementById('email-asunto').value   = tpl.asunto;
+  document.getElementById('email-body').innerText = filled;
+}
+
+function copyEmail() {
+  const full = `Asunto: ${document.getElementById('email-asunto').value}\n\n${document.getElementById('email-body').innerText}`;
+  navigator.clipboard.writeText(full).then(()=>showToast('📋 Copiado al portapapeles','success')).catch(()=>showToast('⚠️ Selecciona el texto manualmente','error'));
+}
+
+async function markEmailSent() {
+  const p = currentProspForEmail;
+  if (!p) return;
+  const updated = { ...p, estado:'Email enviado', fecha: new Date().toISOString().split('T')[0] };
+  try {
+    const res  = await fetch(scriptUrl,{ method:'POST', body:JSON.stringify({ action:'updateProspecto', prospecto:updated }) });
+    const data = await res.json();
+    if (data.ok) { showToast('✅ Marcado como enviado','success'); closeEmailModal(); closeProspFicha(); await loadProspectos(); }
+    else showToast('❌ Error al actualizar','error');
+  } catch(e) { showToast('❌ Error de conexión','error'); }
+}
+
+function closeEmailModal() { document.getElementById('email-modal-overlay').classList.remove('open'); }
+function closeEmailModalOutside(e) { if (e.target===document.getElementById('email-modal-overlay')) closeEmailModal(); }
 
 // ─────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────
 initSetup();
 loadInversores();
+loadProspectos();
 </script>
 </body>
 </html>
