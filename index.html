@@ -1165,6 +1165,10 @@
         <label>Dirección / Ubicación *</label>
         <input type="text" id="capt-direccion" placeholder="ej. C/ Aribau 267-269, Barcelona">
       </div>
+      <div class="form-group full">
+        <label>URL Google Maps <span style="color:var(--muted);font-weight:400">(opcional — para fijar el pin exacto)</span></label>
+        <input type="text" id="capt-maps-url" placeholder="Pega aquí el enlace de Google Maps...">
+      </div>
       <div class="form-group">
         <label>Nombre contacto</label>
         <input type="text" id="capt-contacto" placeholder="Nombre del propietario">
@@ -1254,6 +1258,7 @@
         <select id="capt-modalidad">
           <option value="Venta">Venta</option>
           <option value="Alquiler">Alquiler</option>
+          <option value="Venta & Alquiler">Venta & Alquiler</option>
         </select>
       </div>
       <div class="form-group capt-campo-local" style="display:none">
@@ -1828,6 +1833,23 @@ const ESTADO_CLASS = {
   'Visita agendada':'estado-Visita_agendada','Visita realizada':'estado-Visita_realizada',
   'Negociación':'estado-Negociación','Cerrado':'estado-Cerrado','Descartado':'estado-Descartado'
 };
+
+// ─────────────────────────────────────────────
+// PRICE FORMAT — "50000" o "50.000€" → "50.000€"
+// ─────────────────────────────────────────────
+function formatPrice(raw) {
+  if (!raw || raw === '—' || raw === '') return raw;
+  // Extrae todos los dígitos del string
+  const digits = raw.replace(/[^\d]/g, '');
+  if (!digits) return raw; // si no hay números, devuelve tal cual (ej. "consultar")
+  const num = parseInt(digits, 10);
+  // Formato con puntos de miles
+  const formatted = num.toLocaleString('es-ES');
+  // Si el original ya tenía €, usarlo; si tenía /mes, mantenerlo
+  const hasMes = raw.toLowerCase().includes('/mes') || raw.toLowerCase().includes('mes');
+  const suffix  = hasMes ? '/mes' : '€';
+  return `${formatted}${suffix}`;
+}
 
 // ─────────────────────────────────────────────
 // DATE UTILS — maneja múltiples formatos del Sheet
@@ -3679,6 +3701,7 @@ async function saveCaptActivo() {
     propietario:      document.getElementById('capt-propietario').value,
     estado:           document.getElementById('capt-estado').value,
     agente:           document.getElementById('capt-agente').value,
+    maps_url:         document.getElementById('capt-maps-url').value.trim(),
     visitado:         document.getElementById('capt-visitado').value,
     fecha_visita:     document.getElementById('capt-fecha-visita').value,
     agencia:          document.getElementById('capt-agencia').value,
@@ -3853,16 +3876,21 @@ function renderCaptacion() {
     if (a.tipo==='local')     precio = a.precio_local;
     if (a.tipo==='traspaso')  precio = a.precio_traspaso;
     if (a.tipo==='vivienda')  precio = a.precio_viv;
+    precio = formatPrice(precio);
 
     let datos = '';
     if (a.tipo==='local')    datos = `${a.superficie?`<span class="capt-dato">📐 <strong>${a.superficie}</strong></span>`:''}${a.modalidad?`<span class="capt-dato">🔑 <strong>${a.modalidad}</strong></span>`:''}${a.humos?`<span class="capt-dato">💨 Humos: <strong>${a.humos}</strong></span>`:''}`;
-    if (a.tipo==='traspaso') datos = `${a.licencia?`<span class="capt-dato">📋 <strong>${a.licencia.split('–')[0].trim()}</strong></span>`:''}${a.aforo?`<span class="capt-dato">👥 Aforo: <strong>${a.aforo}</strong></span>`:''}${a.renta?`<span class="capt-dato">💶 <strong>${a.renta}</strong>/mes</span>`:''}`;
+    if (a.tipo==='traspaso') datos = `${a.licencia?`<span class="capt-dato">📋 <strong>${a.licencia.split('–')[0].trim()}</strong></span>`:''}${a.aforo?`<span class="capt-dato">👥 Aforo: <strong>${a.aforo}</strong></span>`:''}${a.renta?`<span class="capt-dato">💶 <strong>${formatPrice(a.renta)}</strong></span>`:''}`;
     if (a.tipo==='vivienda') datos = `${a.superficie_viv?`<span class="capt-dato">📐 <strong>${a.superficie_viv}</strong></span>`:''}${a.habitaciones?`<span class="capt-dato">🛏 <strong>${a.habitaciones} hab</strong></span>`:''}${a.modalidad_viv?`<span class="capt-dato">🔑 <strong>${a.modalidad_viv}</strong></span>`:''}`;
 
     return `<div class="capt-card tipo-${a.tipo}" onclick="openCaptFicha('${a.id}')">
       <div class="capt-card-top">
         <div style="min-width:0;flex:1">
-          <div class="capt-card-dir">${a.direccion}</div>
+          <div class="capt-card-dir">
+            <a href="${a.maps_url || `https://maps.google.com/?q=${encodeURIComponent(a.direccion)}`}" target="_blank" style="color:inherit;text-decoration:none" onclick="event.stopPropagation()">
+              📍 ${a.direccion}
+            </a>
+          </div>
           <div class="capt-card-sub">${a.contacto||''}${a.contacto&&a.telefono?' · ':''}${a.telefono||''}</div>
         </div>
         <span class="badge-estado-capt ${estadoCls}">${a.estado}</span>
@@ -3894,7 +3922,13 @@ function openCaptFicha(id) {
   const avatarCls = a.agente==='Fernando'?'avatar-f':'avatar-g';
   const initials  = a.agente==='Fernando'?'FB':'GR';
 
-  document.getElementById('capt-ficha-dir').textContent = a.direccion;
+  document.getElementById('capt-ficha-dir').innerHTML =
+    `<a href="${a.maps_url || `https://maps.google.com/?q=${encodeURIComponent(a.direccion)}`}"
+        target="_blank"
+        style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:8px">
+      📍 ${a.direccion}
+      <span style="font-size:0.7rem;background:#4f7cff22;color:var(--accent);border:1px solid #4f7cff44;padding:2px 8px;border-radius:10px;font-weight:600;white-space:nowrap">Ver en Maps ↗</span>
+    </a>`;
   document.getElementById('capt-ficha-badges').innerHTML =
     `<span class="badge-tipo-capt ${tipoCls}">${tipoLabel}</span>
      <span class="badge-estado-capt ${estadoCls}">${a.estado}</span>
@@ -3933,7 +3967,7 @@ function openCaptFicha(id) {
         ${f('Última actividad', a.ultima_actividad)}
         ${f('Estado actual', a.estado_local)}
         ${f('Salida de humos', a.humos)}
-        ${f('Precio', a.precio_local)}
+        ${f('Precio', formatPrice(a.precio_local))}
       </div>`;
   }
 
@@ -3945,8 +3979,8 @@ function openCaptFicha(id) {
         ${f('¿Terraza?', a.terraza)}
         ${f('Número de mesas', a.mesas)}
         ${f('Duración contrato', a.duracion_contrato)}
-        ${f('Renta mensual', a.renta)}
-        ${f('Precio traspaso', a.precio_traspaso)}
+        ${f('Renta mensual', formatPrice(a.renta))}
+        ${f('Precio traspaso', formatPrice(a.precio_traspaso))}
       </div>`;
   }
 
@@ -3958,7 +3992,7 @@ function openCaptFicha(id) {
         ${f('Habitaciones', a.habitaciones)}
         ${f('Planta', a.planta_viv)}
         ${f('Estado inmueble', a.estado_viv)}
-        ${f('Precio expectativa', a.precio_viv)}
+        ${f('Precio expectativa', formatPrice(a.precio_viv))}
       </div>`;
   }
 
@@ -4012,6 +4046,7 @@ function openCaptModal(id=null) {
   // Rellenar campos comunes
   const set = (id, val) => { const el=document.getElementById(id); if(el) el.value=val||''; };
   set('capt-direccion', a?.direccion);
+  set('capt-maps-url',  a?.maps_url);
   set('capt-contacto',  a?.contacto);
   set('capt-telefono',  a?.telefono);
   set('capt-email',     a?.email);
