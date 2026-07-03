@@ -687,7 +687,47 @@
     .nav-tab { flex-shrink:0; font-size:0.7rem; padding:8px 10px; }
   }
 
-  /* ── CAPTACIÓN DE ACTIVOS ── */
+  /* ── MATCHING AUTOMÁTICO — notificaciones ── */
+  .match-badge-nav {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #ef4444; color: white; font-size: 0.6rem; font-weight: 800;
+    min-width: 16px; height: 16px; border-radius: 8px; padding: 0 4px;
+    margin-left: 4px; vertical-align: middle; animation: pulse-red 2s infinite;
+  }
+  @keyframes pulse-red { 0%,100%{opacity:1} 50%{opacity:0.6} }
+
+  .auto-match-banner {
+    background: linear-gradient(135deg, #1a2340, #1e2a1a);
+    border: 1px solid #c9a84c55;
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .auto-match-banner:hover { border-color: #c9a84c; }
+  .auto-match-banner-title {
+    font-size: 0.82rem; font-weight: 700; color: #c9a84c; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .auto-match-banner-sub { font-size: 0.75rem; color: var(--muted2); }
+
+  .match-score-bar {
+    height: 4px; background: var(--border); border-radius: 2px; margin-top: 8px; overflow: hidden;
+  }
+  .match-score-fill {
+    height: 4px; border-radius: 2px;
+    background: linear-gradient(90deg, #c9a84c, #22c55e);
+    transition: width 0.5s ease;
+  }
+
+  .match-score-badge {
+    font-size: 0.75rem; font-weight: 800; padding: 2px 10px;
+    border-radius: 20px; flex-shrink: 0;
+  }
+  .score-high   { background: #22c55e18; color: #22c55e; border: 1px solid #22c55e44; }
+  .score-medium { background: #f59e0b18; color: #f59e0b; border: 1px solid #f59e0b44; }
+  .score-low    { background: #64748b18; color: #64748b; border: 1px solid #64748b33; }
   .capt-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:12px; margin-bottom:24px; }
   .capt-kpi { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; }
   .capt-kpi::before { content:''; display:block; height:3px; border-radius:2px; margin-bottom:10px; background:linear-gradient(90deg,#14b8a6,#22c55e); }
@@ -719,6 +759,7 @@
   .btc-local    { background:#14b8a618; color:#14b8a6; border:1px solid #14b8a633; }
   .btc-traspaso { background:#f59e0b18; color:#f59e0b; border:1px solid #f59e0b33; }
   .btc-vivienda { background:#a855f718; color:#a855f7; border:1px solid #a855f733; }
+  .btc-suelo    { background:#22c55e18; color:#22c55e; border:1px solid #22c55e33; }
   .badge-modalidad { padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; background:var(--surface2); color:var(--muted2); border:1px solid var(--border); }
 
   .badge-idealista { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; background:#ff650018; color:#ff6500; border:1px solid #ff650033; }
@@ -803,7 +844,6 @@
 <div class="page active" id="page-leads">
 
 <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:20px">
-  <button class="btn-outline" onclick="openManageProducts()">⚙ Activos</button>
   <button class="btn" onclick="openModal()">+ Nuevo lead</button>
 </div>
 
@@ -1096,6 +1136,7 @@
     <div class="capt-tipo-tab" id="capt-tab-local" onclick="setCaptTipo('local')">🏬 Locales <span class="count" id="capt-cnt-local">0</span></div>
     <div class="capt-tipo-tab" id="capt-tab-traspaso" onclick="setCaptTipo('traspaso')">🏪 Traspasos <span class="count" id="capt-cnt-traspaso">0</span></div>
     <div class="capt-tipo-tab" id="capt-tab-vivienda" onclick="setCaptTipo('vivienda')">🏡 Viviendas <span class="count" id="capt-cnt-vivienda">0</span></div>
+    <div class="capt-tipo-tab" id="capt-tab-suelo" onclick="setCaptTipo('suelo')">🌍 Suelos <span class="count" id="capt-cnt-suelo">0</span></div>
   </div>
 
   <!-- Filtros adicionales -->
@@ -1156,6 +1197,7 @@
         <div class="tipo-opt" onclick="selectCaptTipo('local',this)"><span class="tipo-icon">🏬</span>Local comercial</div>
         <div class="tipo-opt" onclick="selectCaptTipo('traspaso',this)"><span class="tipo-icon">🏪</span>Traspaso</div>
         <div class="tipo-opt" onclick="selectCaptTipo('vivienda',this)"><span class="tipo-icon">🏡</span>Vivienda</div>
+        <div class="tipo-opt" onclick="selectCaptTipo('suelo',this)"><span class="tipo-icon">🌍</span>Suelo</div>
       </div>
     </div>
 
@@ -1168,6 +1210,33 @@
       <div class="form-group full">
         <label>URL Google Maps <span style="color:var(--muted);font-weight:400">(opcional — para fijar el pin exacto)</span></label>
         <input type="text" id="capt-maps-url" placeholder="Pega aquí el enlace de Google Maps...">
+      </div>
+
+      <!-- CAMPOS PARA MATCHING -->
+      <div class="form-group full" style="border-top:1px solid #c9a84c33;padding-top:14px;margin-top:4px">
+        <div style="font-size:0.72rem;color:#c9a84c;font-weight:700;margin-bottom:12px">🎯 DATOS PARA MATCHING CON INVERSORES</div>
+      </div>
+      <div class="form-group full">
+        <label>Zona geográfica del activo *</label>
+        <select id="capt-zona">
+          <option value="">— Selecciona —</option>
+          <option value="bcn">🏙 Barcelona ciudad</option>
+          <option value="corona_metro">🔁 Corona metropolitana</option>
+          <option value="maresme">🌊 Maresme</option>
+          <option value="valles">🌿 Vallès</option>
+          <option value="baix">🏞 Baix Llobregat</option>
+          <option value="penedes">🍇 Penedès / Garraf</option>
+          <option value="rest_cat">🗺 Resto Cataluña</option>
+          <option value="nacional">🇪🇸 Nacional</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Precio orientativo total</label>
+        <input type="text" id="capt-precio-matching" placeholder="ej. 350.000€" inputmode="decimal">
+      </div>
+      <div class="form-group">
+        <label>Rentabilidad estimada (%)</label>
+        <input type="text" id="capt-rentabilidad-matching" placeholder="ej. 5,5%" inputmode="decimal">
       </div>
       <div class="form-group">
         <label>Nombre contacto</label>
@@ -1376,6 +1445,85 @@
       <div class="form-group capt-campo-vivienda" style="display:none">
         <label>Precio expectativa</label>
         <input type="text" id="capt-precio-viv" placeholder="ej. 280.000€" inputmode="decimal">
+      </div>
+
+      <!-- ══ CAMPOS SUELO ══ -->
+      <div class="form-group full capt-campo-suelo" style="border-top:1px solid #22c55e33;padding-top:14px;margin-top:4px;display:none">
+        <div style="font-size:0.72rem;color:#22c55e;font-weight:700;margin-bottom:12px">🌍 DATOS DEL SUELO</div>
+      </div>
+      <div class="form-group capt-campo-suelo" style="display:none">
+        <label>Tipo de suelo</label>
+        <select id="capt-tipo-suelo">
+          <option value="">— Selecciona —</option>
+          <option value="Residencial (viviendas)">Residencial (viviendas)</option>
+          <option value="Industrial / logístico">Industrial / logístico</option>
+          <option value="Comercial / terciario">Comercial / terciario</option>
+          <option value="Mixto">Mixto</option>
+          <option value="Rústico / agrícola">Rústico / agrícola</option>
+          <option value="No urbanizable">No urbanizable</option>
+        </select>
+      </div>
+      <div class="form-group capt-campo-suelo" style="display:none">
+        <label>Superficie total (m²)</label>
+        <input type="text" id="capt-sup-suelo" placeholder="ej. 3.600 m²" inputmode="decimal">
+      </div>
+      <div class="form-group capt-campo-suelo" style="display:none">
+        <label>Edificabilidad (m² techo)</label>
+        <input type="text" id="capt-edificabilidad" placeholder="ej. 5.040 m² techo" inputmode="decimal">
+      </div>
+      <div class="form-group capt-campo-suelo" style="display:none">
+        <label>Nº viviendas permitidas</label>
+        <input type="text" id="capt-num-viviendas" placeholder="ej. 28 viviendas" inputmode="numeric">
+      </div>
+      <div class="form-group capt-campo-suelo" style="display:none">
+        <label>Calificación urbanística</label>
+        <input type="text" id="capt-calificacion" placeholder="ej. SUC 11/2, SUR residencial...">
+      </div>
+      <div class="form-group capt-campo-suelo" style="display:none">
+        <label>¿Proyecto o licencia en trámite?</label>
+        <select id="capt-licencia-tramite">
+          <option value="No">No</option>
+          <option value="Sí, proyecto básico">Sí, proyecto básico</option>
+          <option value="Sí, licencia solicitada">Sí, licencia solicitada</option>
+          <option value="Sí, licencia concedida">Sí, licencia concedida</option>
+        </select>
+      </div>
+      <div class="form-group capt-campo-suelo" style="display:none">
+        <label>¿En gestión / reparcelación?</label>
+        <select id="capt-reparcelacion">
+          <option value="No">No</option>
+          <option value="Sí, en trámite">Sí, en trámite</option>
+          <option value="Sí, aprobada">Sí, aprobada</option>
+        </select>
+      </div>
+      <div class="form-group capt-campo-suelo" style="display:none">
+        <label>Servicios urbanísticos</label>
+        <select id="capt-servicios">
+          <option value="Sin servicios">Sin servicios</option>
+          <option value="Parciales">Parciales (alguno disponible)</option>
+          <option value="Completos">Completos (agua, luz, alcantarillado)</option>
+        </select>
+      </div>
+      <div class="form-group capt-campo-suelo" style="display:none">
+        <label>Cargas / hipotecas</label>
+        <select id="capt-cargas">
+          <option value="Sin cargas">Sin cargas</option>
+          <option value="Con hipoteca">Con hipoteca</option>
+          <option value="Con cargas">Con otras cargas</option>
+          <option value="Pendiente verificar">Pendiente verificar</option>
+        </select>
+      </div>
+      <div class="form-group capt-campo-suelo" style="display:none">
+        <label>Precio total</label>
+        <input type="text" id="capt-precio-suelo-total" placeholder="ej. 1.800.000€" inputmode="decimal">
+      </div>
+      <div class="form-group capt-campo-suelo" style="display:none">
+        <label>Precio €/m² suelo</label>
+        <input type="text" id="capt-precio-m2-suelo" placeholder="ej. 500€/m²" inputmode="decimal">
+      </div>
+      <div class="form-group capt-campo-suelo" style="display:none">
+        <label>Precio €/m² techo</label>
+        <input type="text" id="capt-precio-m2-techo" placeholder="ej. 357€/m² techo" inputmode="decimal">
       </div>
 
       <!-- NOTAS COMUNES -->
@@ -2996,6 +3144,7 @@ async function loadInversores() {
       notas:        inv.notas        || '',
     }));
     renderInversores();
+    injectMatchBanners();
   } catch(e) {
     clearTimeout(timeoutId);
   }
@@ -3645,6 +3794,271 @@ function closeEmailModalOutside(e) { if (e.target===document.getElementById('ema
 // ─────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// MOTOR DE MATCHING AUTOMÁTICO
+// Cruza activos captados con mandato vs inversores
+// ═══════════════════════════════════════════════════════════════════
+
+// Mapa tipo captación → tipo inversor
+const TIPO_CAPT_TO_INV = {
+  local:    'local',
+  traspaso: 'traspaso',
+  vivienda: 'piso',
+  suelo:    'solar',
+};
+
+// Rango de capital del inversor en euros (para comparar con precio)
+const CAPITAL_RANGES = {
+  'Hasta 300k':  { min: 0,       max: 300000 },
+  '300k – 1M':   { min: 300000,  max: 1000000 },
+  '+1M':         { min: 1000000, max: 5000000 },
+  '+5M':         { min: 5000000, max: Infinity },
+};
+
+// Extraer número de un string de precio ("350.000€", "350000", "1.8M€"...)
+function extractPrice(str) {
+  if (!str) return null;
+  const s = str.replace(/\./g,'').replace(',','.').replace(/[€$]/g,'').trim();
+  const n = parseFloat(s);
+  return isNaN(n) ? null : n;
+}
+
+// Extraer % de rentabilidad de un string ("5,5%", "5.5", "6%"...)
+function extractPct(str) {
+  if (!str) return null;
+  const n = parseFloat(str.replace(',','.').replace('%','').trim());
+  return isNaN(n) ? null : n;
+}
+
+// ── CALCULAR SCORE de match entre un activo captado y un inversor ──
+// Devuelve { score: 0-100, criterios: [] }
+function calcMatchScore(activo, inv) {
+  let score = 0;
+  const criterios = [];
+  const tipoInvNeeded = TIPO_CAPT_TO_INV[activo.tipo] || activo.tipo;
+
+  // 1. TIPO DE ACTIVO — 30 puntos
+  const tiposInv = parseTipos(inv.tipos_activo);
+  if (tiposInv.length === 0 || tiposInv.includes(tipoInvNeeded)) {
+    score += 30;
+    criterios.push({ label: 'Tipo de activo', match: true, detail: tipoInvNeeded });
+  } else {
+    criterios.push({ label: 'Tipo de activo', match: false, detail: `Busca ${tiposInv.join(', ')}` });
+  }
+
+  // 2. ZONA — 25 puntos
+  const zonasInv = parseZonas(inv.zonas_geo);
+  if (zonasInv.length === 0 || (activo.zona && zonasInv.includes(activo.zona))) {
+    score += 25;
+    const zonaObj = ZONAS.find(z => z.id === activo.zona);
+    criterios.push({ label: 'Zona', match: true, detail: zonaObj?.label || activo.zona || 'cualquier zona' });
+  } else {
+    criterios.push({ label: 'Zona', match: false, detail: `Busca ${zonasInv.map(z=>ZONAS.find(x=>x.id===z)?.label||z).join(', ')}` });
+  }
+
+  // 3. CAPITAL vs PRECIO — 25 puntos
+  const precio = extractPrice(activo.precio_matching || activo.precio_local || activo.precio_traspaso || activo.precio_viv || activo.precio_suelo_total);
+  const rango  = CAPITAL_RANGES[inv.capital];
+  if (precio && rango) {
+    if (precio >= rango.min && precio <= rango.max) {
+      score += 25;
+      criterios.push({ label: 'Capital', match: true, detail: `${inv.capital} encaja con ${formatPrice(String(precio))}` });
+    } else if (precio <= rango.max * 1.3) {
+      // Dentro del 30% por encima del rango — match parcial
+      score += 10;
+      criterios.push({ label: 'Capital', match: 'partial', detail: `${inv.capital} — precio algo superior` });
+    } else {
+      criterios.push({ label: 'Capital', match: false, detail: `${inv.capital} vs ${formatPrice(String(precio))}` });
+    }
+  } else {
+    // Sin precio o sin capital definido — match neutro
+    score += 12;
+    criterios.push({ label: 'Capital', match: 'neutral', detail: 'Sin precio definido' });
+  }
+
+  // 4. RENTABILIDAD — 20 puntos
+  const rentActivo = extractPct(activo.rentabilidad_est);
+  const rentInv    = extractPct(inv.rentabilidad);
+  if (rentActivo && rentInv) {
+    if (rentActivo >= rentInv) {
+      score += 20;
+      criterios.push({ label: 'Rentabilidad', match: true, detail: `${rentActivo}% ≥ mínimo ${rentInv}%` });
+    } else if (rentActivo >= rentInv * 0.85) {
+      score += 8;
+      criterios.push({ label: 'Rentabilidad', match: 'partial', detail: `${rentActivo}% (mínimo ${rentInv}%)` });
+    } else {
+      criterios.push({ label: 'Rentabilidad', match: false, detail: `${rentActivo}% < mínimo ${rentInv}%` });
+    }
+  } else {
+    score += 10;
+    criterios.push({ label: 'Rentabilidad', match: 'neutral', detail: 'Sin datos' });
+  }
+
+  return { score: Math.min(score, 100), criterios };
+}
+
+// ── OBTENER MEJORES MATCHES PARA UN ACTIVO ──
+function getMatchesForActivo(activo) {
+  return inversores
+    .map(inv => ({ inv, ...calcMatchScore(activo, inv) }))
+    .filter(m => m.score >= 40) // solo matches relevantes
+    .sort((a, b) => b.score - a.score);
+}
+
+// ── OBTENER TODOS LOS MATCHES PENDIENTES (activos con mandato) ──
+function getAllPendingMatches() {
+  const mandatos = activos.filter(a => a.estado === 'Mandato firmado');
+  const result = [];
+  mandatos.forEach(a => {
+    const matches = getMatchesForActivo(a);
+    if (matches.length > 0) result.push({ activo: a, matches });
+  });
+  return result;
+}
+
+// ── RENDER NOTIFICACIÓN EN NAV MATCHING ──
+function updateMatchingBadge() {
+  const allMatches = getAllPendingMatches();
+  const totalMatches = allMatches.reduce((sum, m) => sum + m.matches.filter(x => x.score >= 70).length, 0);
+  const tab = document.getElementById('tab-matching');
+  if (!tab) return;
+  // Remove existing badge
+  const existing = tab.querySelector('.match-badge-nav');
+  if (existing) existing.remove();
+  if (totalMatches > 0) {
+    tab.innerHTML = `🎯 Matching <span class="match-badge-nav">${totalMatches}</span>`;
+  } else {
+    tab.textContent = '🎯 Matching';
+  }
+}
+
+// ── RENDER BANNERS DE MATCH EN CAPTACIÓN ──
+function renderMatchBannersForActivo(activo) {
+  const matches = getMatchesForActivo(activo);
+  if (matches.length === 0) return '';
+  const high = matches.filter(m => m.score >= 70).length;
+  const med  = matches.filter(m => m.score >= 40 && m.score < 70).length;
+  const color = high > 0 ? '#22c55e' : '#f59e0b';
+  const icon  = high > 0 ? '🔥' : '⚡';
+  const label = high > 0
+    ? `${high} inversor${high>1?'es':''} con alta coincidencia${med>0?` + ${med} parcial${med>1?'es':''}`:''}!`
+    : `${med} inversor${med>1?'es':''} con coincidencia parcial`;
+  return `<div class="auto-match-banner" onclick="switchTab('matching');setTimeout(()=>showMatchesForActivo('${activo.id}'),200)">
+    <div class="auto-match-banner-title">${icon} ${label}
+      <span style="font-size:0.68rem;background:${color}22;color:${color};border:1px solid ${color}44;padding:1px 8px;border-radius:10px;font-weight:700">Ver matches →</span>
+    </div>
+    <div class="auto-match-banner-sub">Top match: <strong>${matches[0].inv.nombre}</strong> · Score ${matches[0].score}%</div>
+    <div class="match-score-bar"><div class="match-score-fill" style="width:${matches[0].score}%"></div></div>
+  </div>`;
+}
+
+// ── PANEL MATCHING: mostrar matches de un activo concreto ──
+let matchingFocusActivoId = null;
+
+function showMatchesForActivo(activoId) {
+  matchingFocusActivoId = activoId;
+  renderMatchingPage();
+  // Scroll al área de resultados
+  setTimeout(() => {
+    const el = document.getElementById('match-results-area');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+// ── TRIGGER: cuando se guarda un activo con mandato ──
+async function triggerAutoMatch(activo) {
+  // Pequeña espera para que inversores estén cargados
+  await loadInversores();
+  const matches = getMatchesForActivo(activo);
+  if (matches.length === 0) return;
+
+  const high = matches.filter(m => m.score >= 70).length;
+  const total = matches.length;
+  const msg = high > 0
+    ? `🔥 ¡${high} inversor${high>1?'es':''} encajan con "${activo.direccion}"! Ve a Matching para verlos.`
+    : `⚡ ${total} inversor${total>1?'es':''} tienen coincidencia parcial con "${activo.direccion}".`;
+
+  showToast(msg, 'success');
+  updateMatchingBadge();
+}
+
+// Actualizar el renderMatchingPage para mostrar matches de activo si hay foco
+const _origRenderMatchingPage = renderMatchingPage;
+function renderMatchingPage() {
+  _origRenderMatchingPage();
+
+  // Si hay un activo en foco, mostrar sus matches automáticamente
+  if (matchingFocusActivoId) {
+    const activo = activos.find(a => a.id === matchingFocusActivoId);
+    if (activo) {
+      const matches = getMatchesForActivo(activo);
+      const zonaObj = activo.zona ? ZONAS.find(z=>z.id===activo.zona) : null;
+      const tipoObj = TIPOS_ACTIVO.find(t => t.id === TIPO_CAPT_TO_INV[activo.tipo]);
+      const area = document.getElementById('match-results-area');
+      if (!area) return;
+
+      if (matches.length === 0) {
+        area.innerHTML = `<div class="match-empty">Ningún inversor encaja con este activo todavía.</div>`;
+        return;
+      }
+
+      area.innerHTML = `
+        <div style="background:var(--surface);border:1px solid #c9a84c33;border-radius:12px;padding:16px;margin-bottom:20px">
+          <div style="font-size:0.82rem;font-weight:700;color:#c9a84c;margin-bottom:8px">🏠 Activo analizado</div>
+          <div style="font-size:0.92rem;font-weight:700">📍 ${activo.direccion}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+            ${tipoObj?`<span class="match-tag">${tipoObj.icon} ${tipoObj.label}</span>`:''}
+            ${zonaObj?`<span class="match-tag zona">${zonaObj.icon} ${zonaObj.label}</span>`:''}
+            ${activo.precio_matching?`<span class="match-tag" style="background:#c9a84c18;color:#c9a84c;border-color:#c9a84c33">💰 ${formatPrice(activo.precio_matching)}</span>`:''}
+            ${activo.rentabilidad_est?`<span class="match-tag" style="background:#22c55e18;color:#22c55e;border-color:#22c55e33">📈 ${activo.rentabilidad_est}%</span>`:''}
+          </div>
+          <button class="btn-outline" onclick="matchingFocusActivoId=null;renderMatchingPage()" style="margin-top:12px;font-size:0.75rem">✕ Volver al matching general</button>
+        </div>
+
+        <div class="match-results-title">
+          Inversores que encajan <span class="match-count">${matches.length}</span>
+        </div>
+
+        <div class="match-grid">
+          ${matches.map(({ inv, score, criterios }) => {
+            const perfil    = getPerfil(inv.perfil);
+            const prioCls   = PRIORIDAD_CLS[inv.prioridad]||'bp-media';
+            const scoreCls  = score >= 70 ? 'score-high' : score >= 50 ? 'score-medium' : 'score-low';
+            const cBuenos   = criterios.filter(c => c.match === true);
+            const cMalos    = criterios.filter(c => c.match === false);
+            return `<div class="match-card" onclick="switchTab('inversores');setTimeout(()=>openInvFicha('${inv.id}'),200)" style="border-left:3px solid ${score>=70?'#22c55e':score>=50?'#f59e0b':'#64748b'}">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px">
+                <div>
+                  <div class="match-card-name">${inv.nombre}</div>
+                  <div class="match-card-sub">${inv.empresa||perfil.label} · 💰 ${inv.capital}</div>
+                </div>
+                <span class="match-score-badge ${scoreCls}">${score}%</span>
+              </div>
+              <div class="match-score-bar" style="margin-bottom:10px"><div class="match-score-fill" style="width:${score}%"></div></div>
+              <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:10px">
+                ${cBuenos.map(c=>`<div style="font-size:0.7rem;color:#22c55e">✅ ${c.label}: ${c.detail}</div>`).join('')}
+                ${cMalos.map(c=>`<div style="font-size:0.7rem;color:#f87171">❌ ${c.label}: ${c.detail}</div>`).join('')}
+              </div>
+              <div class="match-card-bottom">
+                <span class="badge-prioridad ${prioCls}">${inv.prioridad}</span>
+                <span style="color:#c9a84c">Ver ficha →</span>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>`;
+    }
+    matchingFocusActivoId = null;
+  }
+}
+
+// ── ACTUALIZAR CARD DE CAPTACIÓN con banner de matches ──
+function injectMatchBanners() {
+  if (!activos.length || !inversores.length) return;
+  updateMatchingBadge();
+  const page = document.getElementById('page-captacion');
+  if (page && page.classList.contains('active')) renderCaptacion();
+}
+
 initSetup();
 loadInversores();
 loadProspectos();
@@ -3679,6 +4093,7 @@ async function loadActivos() {
     const data = await res.json();
     activos = (data.activos || []).map(a => ({ ...a }));
     renderCaptacion();
+    injectMatchBanners();
   } catch(e) { clearTimeout(timeoutId); }
 }
 
@@ -3702,6 +4117,9 @@ async function saveCaptActivo() {
     estado:           document.getElementById('capt-estado').value,
     agente:           document.getElementById('capt-agente').value,
     maps_url:         document.getElementById('capt-maps-url').value.trim(),
+    zona:             document.getElementById('capt-zona').value,
+    precio_matching:  document.getElementById('capt-precio-matching').value.trim(),
+    rentabilidad_est: document.getElementById('capt-rentabilidad-matching').value.trim(),
     visitado:         document.getElementById('capt-visitado').value,
     fecha_visita:     document.getElementById('capt-fecha-visita').value,
     agencia:          document.getElementById('capt-agencia').value,
@@ -3730,6 +4148,19 @@ async function saveCaptActivo() {
     planta_viv:       document.getElementById('capt-planta-viv').value.trim(),
     estado_viv:       document.getElementById('capt-estado-viv').value,
     precio_viv:       document.getElementById('capt-precio-viv').value.trim(),
+    // Suelo
+    tipo_suelo:           document.getElementById('capt-tipo-suelo').value,
+    sup_suelo:            document.getElementById('capt-sup-suelo').value.trim(),
+    edificabilidad:       document.getElementById('capt-edificabilidad').value.trim(),
+    num_viviendas:        document.getElementById('capt-num-viviendas').value.trim(),
+    calificacion:         document.getElementById('capt-calificacion').value.trim(),
+    licencia_tramite:     document.getElementById('capt-licencia-tramite').value,
+    reparcelacion:        document.getElementById('capt-reparcelacion').value,
+    servicios:            document.getElementById('capt-servicios').value,
+    cargas:               document.getElementById('capt-cargas').value,
+    precio_suelo_total:   document.getElementById('capt-precio-suelo-total').value.trim(),
+    precio_m2_suelo:      document.getElementById('capt-precio-m2-suelo').value.trim(),
+    precio_m2_techo:      document.getElementById('capt-precio-m2-techo').value.trim(),
   };
 
   isSavingCapt = true;
@@ -3746,11 +4177,11 @@ async function saveCaptActivo() {
       closeCaptModal();
       await loadActivos();
 
-      // ── Auto-promoción a Activos en mandato ──────────────────────
-      // Si el estado es "Mandato firmado", añadir automáticamente como
-      // activo en mandato (disponible en leads) si no existe ya.
+      // ── Auto-promoción a Activos en mandato ──
       if (a.estado === 'Mandato firmado') {
         await autoPromoverAMandato(a, !!editCaptId);
+        // ── Matching automático ──
+        await triggerAutoMatch(a);
       }
     }
     else showToast('❌ '+(data.error||''),'error');
@@ -3794,8 +4225,8 @@ async function autoPromoverAMandato(a, esEdicion) {
   }
 
   // Construir el icono y tipo según el tipo de captación
-  const iconMap = { local:'🏬', traspaso:'🏪', vivienda:'🏡' };
-  const tipoMap = { local:'local', traspaso:'traspaso', vivienda:'piso' };
+  const iconMap = { local:'🏬', traspaso:'🏪', vivienda:'🏡', suelo:'🌍' };
+  const tipoMap = { local:'local', traspaso:'traspaso', vivienda:'piso', suelo:'solar' };
 
   const newProd = {
     id:      'prod_' + Date.now(),
@@ -3837,6 +4268,7 @@ function renderCaptacion() {
   document.getElementById('capt-cnt-local').textContent    = activos.filter(a=>a.tipo==='local').length;
   document.getElementById('capt-cnt-traspaso').textContent = activos.filter(a=>a.tipo==='traspaso').length;
   document.getElementById('capt-cnt-vivienda').textContent = activos.filter(a=>a.tipo==='vivienda').length;
+  document.getElementById('capt-cnt-suelo').textContent    = activos.filter(a=>a.tipo==='suelo').length;
 
   // KPIs
   document.getElementById('capt-kpi-total').textContent    = activos.length;
@@ -3863,7 +4295,7 @@ function renderCaptacion() {
   }
 
   grid.innerHTML = filtered.map(a => {
-    const tipoLabel = {local:'🏬 Local', traspaso:'🏪 Traspaso', vivienda:'🏡 Vivienda'}[a.tipo]||a.tipo;
+    const tipoLabel = {local:'🏬 Local', traspaso:'🏪 Traspaso', vivienda:'🏡 Vivienda', suelo:'🌍 Suelo'}[a.tipo]||a.tipo;
     const tipoCls   = `btc-${a.tipo}`;
     const estadoCls = ESTADO_CAPT_CLS[a.estado]||'';
     const avatarCls = a.agente==='Fernando'?'avatar-f':'avatar-g';
@@ -3873,15 +4305,20 @@ function renderCaptacion() {
       : `<span class="badge-idealista">❌ Sin publicar</span>`;
 
     let precio = '';
-    if (a.tipo==='local')     precio = a.precio_local;
-    if (a.tipo==='traspaso')  precio = a.precio_traspaso;
-    if (a.tipo==='vivienda')  precio = a.precio_viv;
+    if (a.tipo==='local')    precio = a.precio_local;
+    if (a.tipo==='traspaso') precio = a.precio_traspaso;
+    if (a.tipo==='vivienda') precio = a.precio_viv;
+    if (a.tipo==='suelo')    precio = a.precio_suelo_total;
     precio = formatPrice(precio);
 
     let datos = '';
     if (a.tipo==='local')    datos = `${a.superficie?`<span class="capt-dato">📐 <strong>${a.superficie}</strong></span>`:''}${a.modalidad?`<span class="capt-dato">🔑 <strong>${a.modalidad}</strong></span>`:''}${a.humos?`<span class="capt-dato">💨 Humos: <strong>${a.humos}</strong></span>`:''}`;
     if (a.tipo==='traspaso') datos = `${a.licencia?`<span class="capt-dato">📋 <strong>${a.licencia.split('–')[0].trim()}</strong></span>`:''}${a.aforo?`<span class="capt-dato">👥 Aforo: <strong>${a.aforo}</strong></span>`:''}${a.renta?`<span class="capt-dato">💶 <strong>${formatPrice(a.renta)}</strong></span>`:''}`;
     if (a.tipo==='vivienda') datos = `${a.superficie_viv?`<span class="capt-dato">📐 <strong>${a.superficie_viv}</strong></span>`:''}${a.habitaciones?`<span class="capt-dato">🛏 <strong>${a.habitaciones} hab</strong></span>`:''}${a.modalidad_viv?`<span class="capt-dato">🔑 <strong>${a.modalidad_viv}</strong></span>`:''}`;
+    if (a.tipo==='suelo')    datos = `${a.tipo_suelo?`<span class="capt-dato">🏷 <strong>${a.tipo_suelo}</strong></span>`:''}${a.sup_suelo?`<span class="capt-dato">📐 <strong>${a.sup_suelo}</strong></span>`:''}${a.calificacion?`<span class="capt-dato">📋 <strong>${a.calificacion}</strong></span>`:''}${a.num_viviendas?`<span class="capt-dato">🏠 <strong>${a.num_viviendas} viv</strong></span>`:''}`;
+
+    const matchBanner = (a.estado === 'Mandato firmado' && inversores.length)
+      ? renderMatchBannersForActivo(a) : '';
 
     return `<div class="capt-card tipo-${a.tipo}" onclick="openCaptFicha('${a.id}')">
       <div class="capt-card-top">
@@ -3903,6 +4340,7 @@ function renderCaptacion() {
       </div>
       <div class="capt-card-datos">${datos}</div>
       ${precio?`<div style="font-size:0.85rem;font-weight:700;color:#14b8a6;margin-bottom:10px">💰 ${precio}</div>`:''}
+      ${matchBanner}
       <div class="capt-card-bottom">
         <span class="agente-chip"><span class="avatar ${avatarCls}" style="width:20px;height:20px;font-size:0.55rem">${initials}</span>${a.agente}</span>
         <span style="color:#14b8a6">Ver ficha →</span>
@@ -3916,7 +4354,7 @@ function openCaptFicha(id) {
   const a = activos.find(x=>x.id===id);
   if (!a) return;
   fichaCaptId = id;
-  const tipoLabel = {local:'🏬 Local comercial', traspaso:'🏪 Traspaso de negocio', vivienda:'🏡 Vivienda'}[a.tipo]||a.tipo;
+  const tipoLabel = {local:'🏬 Local comercial', traspaso:'🏪 Traspaso de negocio', vivienda:'🏡 Vivienda', suelo:'🌍 Suelo'}[a.tipo]||a.tipo;
   const tipoCls   = `btc-${a.tipo}`;
   const estadoCls = ESTADO_CAPT_CLS[a.estado]||'';
   const avatarCls = a.agente==='Fernando'?'avatar-f':'avatar-g';
@@ -3996,6 +4434,27 @@ function openCaptFicha(id) {
       </div>`;
   }
 
+  if (a.tipo==='suelo') {
+    body += `<div class="capt-section-divider">Datos del suelo</div>
+      <div class="capt-info-grid">
+        ${f('Tipo de suelo', a.tipo_suelo, true)}
+        ${f('Superficie total', a.sup_suelo)}
+        ${f('Edificabilidad', a.edificabilidad)}
+        ${f('Nº viviendas permitidas', a.num_viviendas)}
+        ${f('Calificación urbanística', a.calificacion, true)}
+        ${f('Proyecto / licencia en trámite', a.licencia_tramite)}
+        ${f('Gestión / reparcelación', a.reparcelacion)}
+        ${f('Servicios urbanísticos', a.servicios)}
+        ${f('Cargas / hipotecas', a.cargas)}
+      </div>
+      <div class="capt-section-divider">Precio</div>
+      <div class="capt-info-grid">
+        ${f('Precio total', formatPrice(a.precio_suelo_total))}
+        ${f('Precio €/m² suelo', formatPrice(a.precio_m2_suelo))}
+        ${f('Precio €/m² techo', formatPrice(a.precio_m2_techo))}
+      </div>`;
+  }
+
   if (a.notas) {
     body += `<div class="capt-section-divider">Notas internas</div>
       <div class="capt-info-grid"><div class="capt-info-field full"><div class="capt-info-value">${a.notas}</div></div></div>`;
@@ -4019,8 +4478,7 @@ function selectCaptTipo(tipo, el) {
   selectedCaptTipo = tipo;
   document.querySelectorAll('.tipo-opt').forEach(t=>t.classList.remove('selected'));
   el.classList.add('selected');
-  // Mostrar/ocultar campos por tipo
-  ['local','traspaso','vivienda'].forEach(t => {
+  ['local','traspaso','vivienda','suelo'].forEach(t => {
     document.querySelectorAll('.capt-campo-'+t).forEach(el => el.style.display = t===tipo ? '' : 'none');
   });
 }
@@ -4034,19 +4492,22 @@ function openCaptModal(id=null) {
   // Reset tipo selector
   document.querySelectorAll('.tipo-opt').forEach(t=>t.classList.remove('selected'));
   if (a?.tipo) {
-    const idx = {local:0,traspaso:1,vivienda:2}[a.tipo];
+    const idx = {local:0,traspaso:1,vivienda:2,suelo:3}[a.tipo];
     document.querySelectorAll('.tipo-opt')[idx]?.classList.add('selected');
-    ['local','traspaso','vivienda'].forEach(t => {
+    ['local','traspaso','vivienda','suelo'].forEach(t => {
       document.querySelectorAll('.capt-campo-'+t).forEach(el => el.style.display = t===a.tipo?'':a.tipo?'none':'none');
     });
   } else {
-    ['local','traspaso','vivienda'].forEach(t => document.querySelectorAll('.capt-campo-'+t).forEach(el=>el.style.display='none'));
+    ['local','traspaso','vivienda','suelo'].forEach(t => document.querySelectorAll('.capt-campo-'+t).forEach(el=>el.style.display='none'));
   }
 
   // Rellenar campos comunes
   const set = (id, val) => { const el=document.getElementById(id); if(el) el.value=val||''; };
   set('capt-direccion', a?.direccion);
   set('capt-maps-url',  a?.maps_url);
+  set('capt-zona',      a?.zona||'');
+  set('capt-precio-matching',  a?.precio_matching);
+  set('capt-rentabilidad-matching', a?.rentabilidad_est);
   set('capt-contacto',  a?.contacto);
   set('capt-telefono',  a?.telefono);
   set('capt-email',     a?.email);
@@ -4085,6 +4546,19 @@ function openCaptModal(id=null) {
   set('capt-planta-viv', a?.planta_viv);
   set('capt-estado-viv', a?.estado_viv||'Buen estado');
   set('capt-precio-viv', a?.precio_viv);
+  // Suelo
+  set('capt-tipo-suelo',          a?.tipo_suelo);
+  set('capt-sup-suelo',           a?.sup_suelo);
+  set('capt-edificabilidad',      a?.edificabilidad);
+  set('capt-num-viviendas',       a?.num_viviendas);
+  set('capt-calificacion',        a?.calificacion);
+  set('capt-licencia-tramite',    a?.licencia_tramite||'No');
+  set('capt-reparcelacion',       a?.reparcelacion||'No');
+  set('capt-servicios',           a?.servicios||'Sin servicios');
+  set('capt-cargas',              a?.cargas||'Sin cargas');
+  set('capt-precio-suelo-total',  a?.precio_suelo_total);
+  set('capt-precio-m2-suelo',     a?.precio_m2_suelo);
+  set('capt-precio-m2-techo',     a?.precio_m2_techo);
 
   // Toggle idealista urls
   document.getElementById('capt-idealista-urls-wrap').style.display =
