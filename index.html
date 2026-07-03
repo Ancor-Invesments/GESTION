@@ -2825,7 +2825,17 @@ function toggleZona(id, el) {
 // MATCHING — Render chips y selects
 // ─────────────────────────────────────────────
 function renderMatchingPage() {
-  // Chips tipo activo
+  // ── Si hay foco en un activo captado → mostrar sus matches ──
+  if (matchingFocusActivoId) {
+    const activo = activos.find(a => a.id === matchingFocusActivoId);
+    if (activo) {
+      _renderFocusMatches(activo);
+      return;
+    }
+    matchingFocusActivoId = null;
+  }
+
+  // ── Vista general ──
   const tChips = document.getElementById('match-tipo-chips');
   if (tChips) {
     tChips.innerHTML = `<div class="match-chip active" id="mchip-tipo-all" onclick="setMatchTipo(null)">Todos</div>` +
@@ -2834,7 +2844,6 @@ function renderMatchingPage() {
       ).join('');
   }
 
-  // Chips zona
   const zChips = document.getElementById('match-zona-chips');
   if (zChips) {
     zChips.innerHTML = `<div class="match-chip active" id="mchip-zona-all" onclick="setMatchZona(null)">Todas</div>` +
@@ -2843,17 +2852,24 @@ function renderMatchingPage() {
       ).join('');
   }
 
-  // Select de activos (de la app)
+  // Selector activos: primero activos en mandato de captación, luego products, luego tipos genéricos
   const aSel = document.getElementById('match-activo-sel');
   if (aSel) {
+    const mandatos = activos.filter(a => a.estado === 'Mandato firmado');
     aSel.innerHTML = '<option value="">— Selecciona un activo —</option>' +
-      products.map(p => `<option value="${p.id}">${p.icon} ${p.name}</option>`).join('') +
+      (mandatos.length ? '<optgroup label="🏠 Activos con mandato">' +
+        mandatos.map(a => {
+          const icon = {local:'🏬',traspaso:'🏪',vivienda:'🏡',suelo:'🌍'}[a.tipo]||'📦';
+          return `<option value="capt:${a.id}">${icon} ${a.direccion}</option>`;
+        }).join('') + '</optgroup>' : '') +
+      (products.length ? '<optgroup label="📋 Activos en leads">' +
+        products.map(p => `<option value="${p.id}">${p.icon} ${p.name}</option>`).join('') +
+        '</optgroup>' : '') +
       '<optgroup label="── Por tipo de activo ──">' +
       TIPOS_ACTIVO.map(t => `<option value="tipo:${t.id}">${t.icon} ${t.label}</option>`).join('') +
       '</optgroup>';
   }
 
-  // Select de inversores
   const iSel = document.getElementById('match-inv-sel');
   if (iSel) {
     iSel.innerHTML = '<option value="">— Selecciona un inversor —</option>' +
@@ -2885,6 +2901,72 @@ function setMatchZona(id) {
 function resetMatchResults() {
   document.getElementById('match-results-area').innerHTML =
     '<div class="match-empty">Selecciona un activo o un inversor para ver los matches.</div>';
+}
+
+// ── Render matches para un activo captado concreto ──
+function _renderFocusMatches(activo) {
+  const matches = getMatchesForActivo(activo);
+  const zonaObj = activo.zona ? ZONAS.find(z=>z.id===activo.zona) : null;
+  const tipoInvId = TIPO_CAPT_TO_INV[activo.tipo];
+  const tipoObj = TIPOS_ACTIVO.find(t => t.id === tipoInvId);
+  const area = document.getElementById('match-results-area');
+
+  // Renderizar chips y selects normales primero
+  const tChips = document.getElementById('match-tipo-chips');
+  if (tChips) tChips.innerHTML = '';
+  const zChips = document.getElementById('match-zona-chips');
+  if (zChips) zChips.innerHTML = '';
+
+  if (!area) return;
+
+  const header = `
+    <div style="background:var(--surface);border:1px solid #c9a84c33;border-radius:12px;padding:16px;margin-bottom:20px">
+      <div style="font-size:0.82rem;font-weight:700;color:#c9a84c;margin-bottom:8px">🏠 Activo analizado</div>
+      <div style="font-size:0.92rem;font-weight:700">📍 ${activo.direccion}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+        ${tipoObj?`<span class="match-tag">${tipoObj.icon} ${tipoObj.label}</span>`:''}
+        ${zonaObj?`<span class="match-tag zona">${zonaObj.icon} ${zonaObj.label}</span>`:''}
+        ${activo.precio_matching?`<span class="match-tag" style="background:#c9a84c18;color:#c9a84c;border-color:#c9a84c33">💰 ${formatPrice(activo.precio_matching)}</span>`:''}
+        ${activo.rentabilidad_est?`<span class="match-tag" style="background:#22c55e18;color:#22c55e;border-color:#22c55e33">📈 ${activo.rentabilidad_est}%</span>`:''}
+      </div>
+      <button class="btn-outline" onclick="matchingFocusActivoId=null;renderMatchingPage()" style="margin-top:12px;font-size:0.75rem">✕ Volver al matching general</button>
+    </div>`;
+
+  if (matches.length === 0) {
+    area.innerHTML = header + `<div class="match-empty">Ningún inversor encaja con este activo todavía.</div>`;
+    return;
+  }
+
+  area.innerHTML = header +
+    `<div class="match-results-title">Inversores que encajan <span class="match-count">${matches.length}</span></div>
+    <div class="match-grid">
+      ${matches.map(({ inv, score, criterios }) => {
+        const perfil   = getPerfil(inv.perfil);
+        const prioCls  = PRIORIDAD_CLS[inv.prioridad]||'bp-media';
+        const scoreCls = score>=70?'score-high':score>=50?'score-medium':'score-low';
+        const cBuenos  = criterios.filter(c=>c.match===true);
+        const cMalos   = criterios.filter(c=>c.match===false);
+        const borderColor = score>=70?'#22c55e':score>=50?'#f59e0b':'#64748b';
+        return `<div class="match-card" onclick="switchTab('inversores');setTimeout(()=>openInvFicha('${inv.id}'),200)" style="border-left:3px solid ${borderColor}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px">
+            <div>
+              <div class="match-card-name">${inv.nombre}</div>
+              <div class="match-card-sub">${inv.empresa||perfil.label} · 💰 ${inv.capital}</div>
+            </div>
+            <span class="match-score-badge ${scoreCls}">${score}%</span>
+          </div>
+          <div class="match-score-bar" style="margin-bottom:10px"><div class="match-score-fill" style="width:${score}%"></div></div>
+          <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:10px">
+            ${cBuenos.map(c=>`<div style="font-size:0.7rem;color:#22c55e">✅ ${c.label}: ${c.detail}</div>`).join('')}
+            ${cMalos.map(c=>`<div style="font-size:0.7rem;color:#f87171">❌ ${c.label}: ${c.detail}</div>`).join('')}
+          </div>
+          <div class="match-card-bottom">
+            <span class="badge-prioridad ${prioCls}">${inv.prioridad}</span>
+            <span style="color:#c9a84c">Ver ficha →</span>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
 }
 
 // ─────────────────────────────────────────────
@@ -2926,6 +3008,14 @@ function matchDesdeActivo() {
   const val = document.getElementById('match-activo-sel').value;
   if (!val) { resetMatchResults(); return; }
   document.getElementById('match-inv-sel').value = '';
+
+  // Activo captado con mandato (scoring completo)
+  if (val.startsWith('capt:')) {
+    const captId = val.replace('capt:', '');
+    const activo = activos.find(a => a.id === captId);
+    if (activo) { _renderFocusMatches(activo); }
+    return;
+  }
 
   let matched, titulo;
 
@@ -3983,73 +4073,7 @@ async function triggerAutoMatch(activo) {
 }
 
 // Actualizar el renderMatchingPage para mostrar matches de activo si hay foco
-const _origRenderMatchingPage = renderMatchingPage;
-function renderMatchingPage() {
-  _origRenderMatchingPage();
-
-  // Si hay un activo en foco, mostrar sus matches automáticamente
-  if (matchingFocusActivoId) {
-    const activo = activos.find(a => a.id === matchingFocusActivoId);
-    if (activo) {
-      const matches = getMatchesForActivo(activo);
-      const zonaObj = activo.zona ? ZONAS.find(z=>z.id===activo.zona) : null;
-      const tipoObj = TIPOS_ACTIVO.find(t => t.id === TIPO_CAPT_TO_INV[activo.tipo]);
-      const area = document.getElementById('match-results-area');
-      if (!area) return;
-
-      if (matches.length === 0) {
-        area.innerHTML = `<div class="match-empty">Ningún inversor encaja con este activo todavía.</div>`;
-        return;
-      }
-
-      area.innerHTML = `
-        <div style="background:var(--surface);border:1px solid #c9a84c33;border-radius:12px;padding:16px;margin-bottom:20px">
-          <div style="font-size:0.82rem;font-weight:700;color:#c9a84c;margin-bottom:8px">🏠 Activo analizado</div>
-          <div style="font-size:0.92rem;font-weight:700">📍 ${activo.direccion}</div>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
-            ${tipoObj?`<span class="match-tag">${tipoObj.icon} ${tipoObj.label}</span>`:''}
-            ${zonaObj?`<span class="match-tag zona">${zonaObj.icon} ${zonaObj.label}</span>`:''}
-            ${activo.precio_matching?`<span class="match-tag" style="background:#c9a84c18;color:#c9a84c;border-color:#c9a84c33">💰 ${formatPrice(activo.precio_matching)}</span>`:''}
-            ${activo.rentabilidad_est?`<span class="match-tag" style="background:#22c55e18;color:#22c55e;border-color:#22c55e33">📈 ${activo.rentabilidad_est}%</span>`:''}
-          </div>
-          <button class="btn-outline" onclick="matchingFocusActivoId=null;renderMatchingPage()" style="margin-top:12px;font-size:0.75rem">✕ Volver al matching general</button>
-        </div>
-
-        <div class="match-results-title">
-          Inversores que encajan <span class="match-count">${matches.length}</span>
-        </div>
-
-        <div class="match-grid">
-          ${matches.map(({ inv, score, criterios }) => {
-            const perfil    = getPerfil(inv.perfil);
-            const prioCls   = PRIORIDAD_CLS[inv.prioridad]||'bp-media';
-            const scoreCls  = score >= 70 ? 'score-high' : score >= 50 ? 'score-medium' : 'score-low';
-            const cBuenos   = criterios.filter(c => c.match === true);
-            const cMalos    = criterios.filter(c => c.match === false);
-            return `<div class="match-card" onclick="switchTab('inversores');setTimeout(()=>openInvFicha('${inv.id}'),200)" style="border-left:3px solid ${score>=70?'#22c55e':score>=50?'#f59e0b':'#64748b'}">
-              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px">
-                <div>
-                  <div class="match-card-name">${inv.nombre}</div>
-                  <div class="match-card-sub">${inv.empresa||perfil.label} · 💰 ${inv.capital}</div>
-                </div>
-                <span class="match-score-badge ${scoreCls}">${score}%</span>
-              </div>
-              <div class="match-score-bar" style="margin-bottom:10px"><div class="match-score-fill" style="width:${score}%"></div></div>
-              <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:10px">
-                ${cBuenos.map(c=>`<div style="font-size:0.7rem;color:#22c55e">✅ ${c.label}: ${c.detail}</div>`).join('')}
-                ${cMalos.map(c=>`<div style="font-size:0.7rem;color:#f87171">❌ ${c.label}: ${c.detail}</div>`).join('')}
-              </div>
-              <div class="match-card-bottom">
-                <span class="badge-prioridad ${prioCls}">${inv.prioridad}</span>
-                <span style="color:#c9a84c">Ver ficha →</span>
-              </div>
-            </div>`;
-          }).join('')}
-        </div>`;
-    }
-    matchingFocusActivoId = null;
-  }
-}
+// (integrado directamente en la función principal — ver arriba)
 
 // ── ACTUALIZAR CARD DE CAPTACIÓN con banner de matches ──
 function injectMatchBanners() {
@@ -4487,91 +4511,143 @@ function openCaptModal(id=null) {
   editCaptId = id;
   const a = id ? activos.find(x=>x.id===id) : null;
   selectedCaptTipo = a?.tipo || '';
+
   document.getElementById('capt-modal-title').textContent = a ? '✏️ Editar activo' : '🏠 Nuevo activo captado';
 
-  // Reset tipo selector
-  document.querySelectorAll('.tipo-opt').forEach(t=>t.classList.remove('selected'));
-  if (a?.tipo) {
-    const idx = {local:0,traspaso:1,vivienda:2,suelo:3}[a.tipo];
-    document.querySelectorAll('.tipo-opt')[idx]?.classList.add('selected');
-    ['local','traspaso','vivienda','suelo'].forEach(t => {
-      document.querySelectorAll('.capt-campo-'+t).forEach(el => el.style.display = t===a.tipo?'':a.tipo?'none':'none');
-    });
-  } else {
-    ['local','traspaso','vivienda','suelo'].forEach(t => document.querySelectorAll('.capt-campo-'+t).forEach(el=>el.style.display='none'));
+  // ── Limpiar TODOS los campos primero ──
+  const clearFields = [
+    'capt-direccion','capt-maps-url','capt-zona','capt-precio-matching',
+    'capt-rentabilidad-matching','capt-contacto','capt-telefono','capt-email',
+    'capt-idealista-urls','capt-agencia-tiempo','capt-notas',
+    'capt-superficie','capt-ultima-actividad','capt-precio-local',
+    'capt-aforo','capt-mesas','capt-duracion-contrato','capt-renta','capt-precio-traspaso',
+    'capt-superficie-viv','capt-habitaciones','capt-planta-viv','capt-precio-viv',
+    'capt-sup-suelo','capt-edificabilidad','capt-num-viviendas','capt-calificacion',
+    'capt-precio-suelo-total','capt-precio-m2-suelo','capt-precio-m2-techo',
+  ];
+  clearFields.forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+
+  // Resetear selects a sus valores por defecto
+  const setDefault = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
+  setDefault('capt-idealista',       'no');
+  setDefault('capt-propietario',     'Propietario');
+  setDefault('capt-estado',          'Nuevo lead');
+  setDefault('capt-agente',          'Fernando');
+  setDefault('capt-visitado',        'No');
+  setDefault('capt-agencia',         'No');
+  setDefault('capt-modalidad',       'Venta');
+  setDefault('capt-planta-baja',     'Sí');
+  setDefault('capt-estado-local',    'Vacío');
+  setDefault('capt-humos',           'No');
+  setDefault('capt-terraza',         'No');
+  setDefault('capt-modalidad-viv',   'Venta');
+  setDefault('capt-estado-viv',      'Buen estado');
+  setDefault('capt-licencia-tramite','No');
+  setDefault('capt-reparcelacion',   'No');
+  setDefault('capt-servicios',       'Sin servicios');
+  setDefault('capt-cargas',          'Sin cargas');
+
+  // Resetear fecha visita
+  const fv = document.getElementById('capt-fecha-visita');
+  if(fv) fv.value = '';
+
+  // Ocultar todos los campos condicionales
+  ['local','traspaso','vivienda','suelo'].forEach(t =>
+    document.querySelectorAll('.capt-campo-'+t).forEach(el => el.style.display = 'none')
+  );
+  // Ocultar toggles
+  document.getElementById('capt-idealista-urls-wrap').style.display = 'none';
+  document.getElementById('capt-agencia-tiempo-wrap').style.display = 'none';
+
+  // Resetear tipo selector visual
+  document.querySelectorAll('.tipo-opt').forEach(t => t.classList.remove('selected'));
+
+  // ── Si es edición, rellenar con datos del activo ──
+  if (a) {
+    const set = (id, val) => { const el = document.getElementById(id); if(el && val !== undefined && val !== null) el.value = val; };
+
+    // Campos comunes
+    set('capt-direccion',           a.direccion);
+    set('capt-maps-url',            a.maps_url);
+    set('capt-zona',                a.zona);
+    set('capt-precio-matching',     a.precio_matching);
+    set('capt-rentabilidad-matching', a.rentabilidad_est);
+    set('capt-contacto',            a.contacto);
+    set('capt-telefono',            a.telefono);
+    set('capt-email',               a.email);
+    set('capt-idealista',           a.idealista || 'no');
+    set('capt-idealista-urls',      a.idealista_urls);
+    set('capt-propietario',         a.propietario || 'Propietario');
+    set('capt-estado',              a.estado || 'Nuevo lead');
+    set('capt-agente',              a.agente || 'Fernando');
+    set('capt-visitado',            a.visitado || 'No');
+    if (a.fecha_visita) setTimeout(() => { if(fv) fv.value = toInputDate(a.fecha_visita); }, 50);
+    set('capt-agencia',             a.agencia || 'No');
+    set('capt-agencia-tiempo',      a.agencia_tiempo);
+    set('capt-notas',               a.notas);
+
+    // Campos local
+    set('capt-modalidad',           a.modalidad || 'Venta');
+    set('capt-superficie',          a.superficie);
+    set('capt-planta-baja',         a.planta_baja || 'Sí');
+    set('capt-ultima-actividad',    a.ultima_actividad);
+    set('capt-estado-local',        a.estado_local || 'Vacío');
+    set('capt-humos',               a.humos || 'No');
+    set('capt-precio-local',        a.precio_local);
+
+    // Campos traspaso
+    set('capt-licencia',            a.licencia);
+    set('capt-aforo',               a.aforo);
+    set('capt-terraza',             a.terraza || 'No');
+    set('capt-mesas',               a.mesas);
+    set('capt-duracion-contrato',   a.duracion_contrato);
+    set('capt-renta',               a.renta);
+    set('capt-precio-traspaso',     a.precio_traspaso);
+
+    // Campos vivienda
+    set('capt-modalidad-viv',       a.modalidad_viv || 'Venta');
+    set('capt-superficie-viv',      a.superficie_viv);
+    set('capt-habitaciones',        a.habitaciones);
+    set('capt-planta-viv',          a.planta_viv);
+    set('capt-estado-viv',          a.estado_viv || 'Buen estado');
+    set('capt-precio-viv',          a.precio_viv);
+
+    // Campos suelo
+    set('capt-tipo-suelo',          a.tipo_suelo);
+    set('capt-sup-suelo',           a.sup_suelo);
+    set('capt-edificabilidad',      a.edificabilidad);
+    set('capt-num-viviendas',       a.num_viviendas);
+    set('capt-calificacion',        a.calificacion);
+    set('capt-licencia-tramite',    a.licencia_tramite || 'No');
+    set('capt-reparcelacion',       a.reparcelacion || 'No');
+    set('capt-servicios',           a.servicios || 'Sin servicios');
+    set('capt-cargas',              a.cargas || 'Sin cargas');
+    set('capt-precio-suelo-total',  a.precio_suelo_total);
+    set('capt-precio-m2-suelo',     a.precio_m2_suelo);
+    set('capt-precio-m2-techo',     a.precio_m2_techo);
+
+    // Mostrar tipo seleccionado
+    if (a.tipo) {
+      const idx = {local:0, traspaso:1, vivienda:2, suelo:3}[a.tipo];
+      document.querySelectorAll('.tipo-opt')[idx]?.classList.add('selected');
+      document.querySelectorAll('.capt-campo-'+a.tipo).forEach(el => el.style.display = '');
+    }
+
+    // Toggles condicionales
+    if (a.idealista === 'si' || a.idealista === 'multiple')
+      document.getElementById('capt-idealista-urls-wrap').style.display = '';
+    if (a.agencia === 'Sí')
+      document.getElementById('capt-agencia-tiempo-wrap').style.display = '';
   }
 
-  // Rellenar campos comunes
-  const set = (id, val) => { const el=document.getElementById(id); if(el) el.value=val||''; };
-  set('capt-direccion', a?.direccion);
-  set('capt-maps-url',  a?.maps_url);
-  set('capt-zona',      a?.zona||'');
-  set('capt-precio-matching',  a?.precio_matching);
-  set('capt-rentabilidad-matching', a?.rentabilidad_est);
-  set('capt-contacto',  a?.contacto);
-  set('capt-telefono',  a?.telefono);
-  set('capt-email',     a?.email);
-  set('capt-idealista', a?.idealista||'no');
-  set('capt-idealista-urls', a?.idealista_urls);
-  set('capt-propietario', a?.propietario||'Propietario');
-  set('capt-estado',    a?.estado||'Nuevo lead');
-  set('capt-agente',    a?.agente||'Fernando');
-  set('capt-visitado',      a?.visitado||'No');
-  const fv = document.getElementById('capt-fecha-visita');
-  fv.value = '';
-  if (a?.fecha_visita) setTimeout(()=>{ fv.value=toInputDate(a.fecha_visita); },50);
-  set('capt-agencia',   a?.agencia||'No');
-  set('capt-agencia-tiempo', a?.agencia_tiempo);
-  set('capt-notas',     a?.notas);
-  // Local
-  set('capt-modalidad', a?.modalidad||'Venta');
-  set('capt-superficie', a?.superficie);
-  set('capt-planta-baja', a?.planta_baja||'Sí');
-  set('capt-ultima-actividad', a?.ultima_actividad);
-  set('capt-estado-local', a?.estado_local||'Vacío');
-  set('capt-humos',     a?.humos||'No');
-  set('capt-precio-local', a?.precio_local);
-  // Traspaso
-  set('capt-licencia',  a?.licencia);
-  set('capt-aforo',     a?.aforo);
-  set('capt-terraza',   a?.terraza||'No');
-  set('capt-mesas',     a?.mesas);
-  set('capt-duracion-contrato', a?.duracion_contrato);
-  set('capt-renta',     a?.renta);
-  set('capt-precio-traspaso', a?.precio_traspaso);
-  // Vivienda
-  set('capt-modalidad-viv', a?.modalidad_viv||'Venta');
-  set('capt-superficie-viv', a?.superficie_viv);
-  set('capt-habitaciones', a?.habitaciones);
-  set('capt-planta-viv', a?.planta_viv);
-  set('capt-estado-viv', a?.estado_viv||'Buen estado');
-  set('capt-precio-viv', a?.precio_viv);
-  // Suelo
-  set('capt-tipo-suelo',          a?.tipo_suelo);
-  set('capt-sup-suelo',           a?.sup_suelo);
-  set('capt-edificabilidad',      a?.edificabilidad);
-  set('capt-num-viviendas',       a?.num_viviendas);
-  set('capt-calificacion',        a?.calificacion);
-  set('capt-licencia-tramite',    a?.licencia_tramite||'No');
-  set('capt-reparcelacion',       a?.reparcelacion||'No');
-  set('capt-servicios',           a?.servicios||'Sin servicios');
-  set('capt-cargas',              a?.cargas||'Sin cargas');
-  set('capt-precio-suelo-total',  a?.precio_suelo_total);
-  set('capt-precio-m2-suelo',     a?.precio_m2_suelo);
-  set('capt-precio-m2-techo',     a?.precio_m2_techo);
-
-  // Toggle idealista urls
-  document.getElementById('capt-idealista-urls-wrap').style.display =
-    (a?.idealista==='si'||a?.idealista==='multiple') ? '' : 'none';
+  // ── Eventos toggle ──
   document.getElementById('capt-idealista').onchange = function() {
     document.getElementById('capt-idealista-urls-wrap').style.display =
       (this.value==='si'||this.value==='multiple') ? '' : 'none';
   };
-
-  // Toggle agencia tiempo
-  document.getElementById('capt-agencia-tiempo-wrap').style.display = a?.agencia==='Sí' ? '' : 'none';
   document.getElementById('capt-agencia').onchange = function() {
-    document.getElementById('capt-agencia-tiempo-wrap').style.display = this.value==='Sí' ? '' : 'none';
+    document.getElementById('capt-agencia-tiempo-wrap').style.display =
+      this.value==='Sí' ? '' : 'none';
   };
 
   document.getElementById('capt-btn-delete').style.display = a ? 'inline-flex' : 'none';
