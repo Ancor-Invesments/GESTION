@@ -686,6 +686,78 @@
     .nav-tabs { overflow-x:auto; width:100%; }
     .nav-tab { flex-shrink:0; font-size:0.7rem; padding:8px 10px; }
   }
+
+  /* ── CAPTACIÓN DE ACTIVOS ── */
+  .capt-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:12px; margin-bottom:24px; }
+  .capt-kpi { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; }
+  .capt-kpi::before { content:''; display:block; height:3px; border-radius:2px; margin-bottom:10px; background:linear-gradient(90deg,#14b8a6,#22c55e); }
+  .capt-kpi-label { font-size:0.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px; }
+  .capt-kpi-value { font-size:1.5rem; font-weight:700; color:#14b8a6; letter-spacing:-0.03em; }
+  .capt-kpi-sub { font-size:0.68rem; color:var(--muted2); margin-top:2px; }
+
+  .capt-tipo-tabs { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+  .capt-tipo-tab { display:flex; align-items:center; gap:7px; padding:9px 18px; border-radius:10px; border:1px solid var(--border); background:var(--surface); cursor:pointer; font-size:0.8rem; font-weight:500; color:var(--muted2); transition:all 0.15s; user-select:none; }
+  .capt-tipo-tab:hover { border-color:#14b8a6; color:var(--text); }
+  .capt-tipo-tab.active { border-color:#14b8a6; background:#14b8a618; color:var(--text); font-weight:700; }
+  .capt-tipo-tab .count { background:var(--surface2); color:var(--muted); padding:1px 8px; border-radius:10px; font-size:0.7rem; }
+  .capt-tipo-tab.active .count { background:#14b8a622; color:#14b8a6; }
+
+  .capt-filters { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; align-items:center; }
+  .capt-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; }
+
+  .capt-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; cursor:pointer; transition:border-color 0.15s; }
+  .capt-card:hover { border-color:#14b8a644; }
+  .capt-card.tipo-local    { border-left:3px solid #14b8a6; }
+  .capt-card.tipo-traspaso { border-left:3px solid #f59e0b; }
+  .capt-card.tipo-vivienda { border-left:3px solid #a855f7; }
+
+  .capt-card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; gap:8px; }
+  .capt-card-dir { font-weight:700; font-size:0.92rem; }
+  .capt-card-sub { font-size:0.73rem; color:var(--muted2); margin-top:2px; }
+
+  .badge-tipo-capt { padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; }
+  .btc-local    { background:#14b8a618; color:#14b8a6; border:1px solid #14b8a633; }
+  .btc-traspaso { background:#f59e0b18; color:#f59e0b; border:1px solid #f59e0b33; }
+  .btc-vivienda { background:#a855f718; color:#a855f7; border:1px solid #a855f733; }
+  .badge-modalidad { padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; background:var(--surface2); color:var(--muted2); border:1px solid var(--border); }
+
+  .badge-idealista { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; background:#ff650018; color:#ff6500; border:1px solid #ff650033; }
+  .badge-idealista.si { background:#22c55e18; color:#22c55e; border-color:#22c55e33; }
+  .badge-idealista.multiple { background:#f59e0b18; color:#f59e0b; border-color:#f59e0b33; }
+
+  .badge-estado-capt { padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; }
+  .bec-nuevo       { background:#1e2a3a; color:#60a5fa; }
+  .bec-analisis    { background:#2a2a1e; color:#fbbf24; }
+  .bec-mandato     { background:#1a2d2a; color:#34d399; }
+  .bec-publicado   { background:#1e3a1e; color:#4ade80; }
+  .bec-negociacion { background:#2a1e2a; color:#c084fc; }
+  .bec-cerrado     { background:#1e2a1e; color:#22c55e; }
+  .bec-descartado  { background:#2a1e1e; color:#f87171; }
+
+  .capt-card-datos { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; font-size:0.75rem; color:var(--muted2); }
+  .capt-dato strong { color:var(--text); }
+  .capt-card-bottom { display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid var(--border); font-size:0.72rem; color:var(--muted); }
+
+  .capt-section-divider { font-size:0.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; font-weight:600; margin:18px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+  .capt-info-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .capt-info-field { background:var(--surface2); border-radius:8px; padding:10px 12px; }
+  .capt-info-field.full { grid-column:1/-1; }
+  .capt-info-label { font-size:0.65rem; color:var(--muted2); margin-bottom:3px; text-transform:uppercase; letter-spacing:0.04em; }
+  .capt-info-value { font-size:0.82rem; font-weight:500; color:var(--text); white-space:pre-wrap; word-break:break-word; }
+  .capt-info-value.muted { color:var(--muted); font-style:italic; }
+
+  .tipo-selector-capt { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+  .tipo-opt { padding:12px; border-radius:10px; border:1px solid var(--border); background:var(--surface2); cursor:pointer; text-align:center; font-size:0.8rem; font-weight:600; color:var(--muted2); transition:all 0.15s; }
+  .tipo-opt:hover { border-color:#14b8a6; }
+  .tipo-opt.selected { border-color:#14b8a6; background:#14b8a618; color:#14b8a6; }
+  .tipo-opt .tipo-icon { font-size:1.3rem; display:block; margin-bottom:4px; }
+
+  @media (max-width:700px) {
+    .capt-grid { grid-template-columns:1fr; }
+    .tipo-selector-capt { grid-template-columns:1fr; }
+    .capt-info-grid { grid-template-columns:1fr; }
+    .capt-info-field.full { grid-column:1; }
+  }
 </style>
 </head>
 <body>
@@ -722,6 +794,7 @@
   <button class="nav-tab inv" id="tab-inversores" onclick="switchTab('inversores')">💼 Inversores</button>
   <button class="nav-tab inv" id="tab-matching" onclick="switchTab('matching')">🎯 Matching</button>
   <button class="nav-tab inv" id="tab-prospeccion" onclick="switchTab('prospeccion')">📡 Prospección</button>
+  <button class="nav-tab inv" id="tab-captacion" onclick="switchTab('captacion')">🏠 Captación</button>
 </div>
 
 <!-- ══════════════════════════════════════ -->
@@ -1001,6 +1074,319 @@
 </div>
 
 </div><!-- /page-prospeccion -->
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- PAGE: CAPTACIÓN DE ACTIVOS                    -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="page" id="page-captacion">
+
+  <!-- KPIs -->
+  <div class="capt-kpis">
+    <div class="capt-kpi"><div class="capt-kpi-label">Total activos</div><div class="capt-kpi-value" id="capt-kpi-total">0</div><div class="capt-kpi-sub">captados</div></div>
+    <div class="capt-kpi"><div class="capt-kpi-label">Locales</div><div class="capt-kpi-value" id="capt-kpi-local">0</div><div class="capt-kpi-sub">venta / alquiler</div></div>
+    <div class="capt-kpi"><div class="capt-kpi-label">Traspasos</div><div class="capt-kpi-value" id="capt-kpi-traspaso">0</div><div class="capt-kpi-sub">negocios en activo</div></div>
+    <div class="capt-kpi"><div class="capt-kpi-label">Viviendas</div><div class="capt-kpi-value" id="capt-kpi-vivienda">0</div><div class="capt-kpi-sub">residencial</div></div>
+    <div class="capt-kpi"><div class="capt-kpi-label">En Idealista</div><div class="capt-kpi-value" id="capt-kpi-idealista">0</div><div class="capt-kpi-sub">publicados</div></div>
+    <div class="capt-kpi"><div class="capt-kpi-label">Con mandato</div><div class="capt-kpi-value" id="capt-kpi-mandato">0</div><div class="capt-kpi-sub">firmados</div></div>
+  </div>
+
+  <!-- Filtros tipo -->
+  <div class="capt-tipo-tabs">
+    <div class="capt-tipo-tab active" id="capt-tab-todos" onclick="setCaptTipo('')">🏠 Todos <span class="count" id="capt-cnt-todos">0</span></div>
+    <div class="capt-tipo-tab" id="capt-tab-local" onclick="setCaptTipo('local')">🏬 Locales <span class="count" id="capt-cnt-local">0</span></div>
+    <div class="capt-tipo-tab" id="capt-tab-traspaso" onclick="setCaptTipo('traspaso')">🏪 Traspasos <span class="count" id="capt-cnt-traspaso">0</span></div>
+    <div class="capt-tipo-tab" id="capt-tab-vivienda" onclick="setCaptTipo('vivienda')">🏡 Viviendas <span class="count" id="capt-cnt-vivienda">0</span></div>
+  </div>
+
+  <!-- Filtros adicionales -->
+  <div class="capt-filters">
+    <select id="capt-filter-estado" onchange="renderCaptacion()">
+      <option value="">Todos los estados</option>
+      <option value="Nuevo lead">Nuevo lead</option>
+      <option value="En análisis">En análisis</option>
+      <option value="Mandato firmado">Mandato firmado</option>
+      <option value="Publicado">Publicado</option>
+      <option value="En negociación">En negociación</option>
+      <option value="Cerrado">Cerrado</option>
+      <option value="Descartado">Descartado</option>
+    </select>
+    <select id="capt-filter-agente" onchange="renderCaptacion()">
+      <option value="">Ambos agentes</option>
+      <option value="Fernando">Fernando</option>
+      <option value="Greta">Greta</option>
+    </select>
+    <input type="text" id="capt-filter-search" placeholder="Buscar dirección..." oninput="renderCaptacion()" style="width:190px">
+    <button class="btn" onclick="openCaptModal()" style="margin-left:auto;background:linear-gradient(135deg,#14b8a6,#22c55e);border:none">+ Nuevo activo</button>
+  </div>
+
+  <!-- Grid -->
+  <div class="capt-grid" id="capt-grid">
+    <div class="match-empty" style="grid-column:1/-1">Cargando activos…</div>
+  </div>
+
+</div><!-- /page-captacion -->
+
+<!-- ══ FICHA ACTIVO CAPTADO ══ -->
+<div class="ficha-overlay" id="capt-ficha-overlay" onclick="closeCaptFichaOutside(event)">
+  <div class="ficha" id="capt-ficha-panel">
+    <div class="ficha-handle"></div>
+    <div class="ficha-header">
+      <div style="min-width:0;flex:1">
+        <div class="ficha-nombre" id="capt-ficha-dir">—</div>
+        <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap" id="capt-ficha-badges"></div>
+      </div>
+      <div class="ficha-actions">
+        <button class="btn-outline" onclick="closeCaptFicha()">✕</button>
+        <button class="btn" onclick="editFromCaptFicha()" style="background:linear-gradient(135deg,#14b8a6,#22c55e);border:none">✏ Editar</button>
+      </div>
+    </div>
+    <div class="ficha-body" id="capt-ficha-body"></div>
+  </div>
+</div>
+
+<!-- ══ MODAL CAPTACIÓN ══ -->
+<div class="modal-overlay" id="capt-modal-overlay" onclick="closeCaptModalOutside(event)">
+  <div class="modal" style="max-width:640px">
+    <h2 id="capt-modal-title">🏠 Nuevo activo captado</h2>
+
+    <!-- Selector tipo -->
+    <div class="form-group full" style="margin-bottom:18px">
+      <label>Tipo de activo *</label>
+      <div class="tipo-selector-capt" id="capt-tipo-selector">
+        <div class="tipo-opt" onclick="selectCaptTipo('local',this)"><span class="tipo-icon">🏬</span>Local comercial</div>
+        <div class="tipo-opt" onclick="selectCaptTipo('traspaso',this)"><span class="tipo-icon">🏪</span>Traspaso</div>
+        <div class="tipo-opt" onclick="selectCaptTipo('vivienda',this)"><span class="tipo-icon">🏡</span>Vivienda</div>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <!-- CAMPOS COMUNES -->
+      <div class="form-group full">
+        <label>Dirección / Ubicación *</label>
+        <input type="text" id="capt-direccion" placeholder="ej. C/ Aribau 267-269, Barcelona">
+      </div>
+      <div class="form-group">
+        <label>Nombre contacto</label>
+        <input type="text" id="capt-contacto" placeholder="Nombre del propietario">
+      </div>
+      <div class="form-group">
+        <label>Teléfono contacto</label>
+        <input type="tel" id="capt-telefono" placeholder="612 345 678" inputmode="tel">
+      </div>
+      <div class="form-group full">
+        <label>Email contacto</label>
+        <input type="email" id="capt-email" placeholder="propietario@email.com">
+      </div>
+
+      <!-- Idealista -->
+      <div class="form-group full" style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
+        <label>¿Publicado en Idealista?</label>
+        <select id="capt-idealista">
+          <option value="no">No publicado</option>
+          <option value="si">Sí, una vez</option>
+          <option value="multiple">Sí, múltiples veces</option>
+        </select>
+      </div>
+      <div class="form-group full" id="capt-idealista-urls-wrap" style="display:none">
+        <label>URLs de Idealista</label>
+        <textarea id="capt-idealista-urls" placeholder="Pega aquí los enlaces de Idealista (uno por línea)" style="min-height:60px"></textarea>
+      </div>
+
+      <!-- Propietario / Intermediario -->
+      <div class="form-group">
+        <label>¿Propietario o intermediario?</label>
+        <select id="capt-propietario">
+          <option value="Propietario">Propietario</option>
+          <option value="Intermediario">Intermediario</option>
+          <option value="No confirmado">No confirmado</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Estado</label>
+        <select id="capt-estado">
+          <option value="Nuevo lead">Nuevo lead</option>
+          <option value="En análisis">En análisis</option>
+          <option value="Mandato firmado">Mandato firmado</option>
+          <option value="Publicado">Publicado</option>
+          <option value="En negociación">En negociación</option>
+          <option value="Cerrado">Cerrado</option>
+          <option value="Descartado">Descartado</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>¿Hemos visitado el activo?</label>
+        <select id="capt-visitado">
+          <option value="No">No visitado</option>
+          <option value="Sí">Sí, visitado</option>
+          <option value="Pendiente">Visita pendiente</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Fecha de visita</label>
+        <input type="date" id="capt-fecha-visita">
+      </div>
+      <div class="form-group">
+        <label>Agente</label>
+        <select id="capt-agente">
+          <option value="Fernando">Fernando</option>
+          <option value="Greta">Greta</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>¿Trabaja con otra agencia?</label>
+        <select id="capt-agencia">
+          <option value="No">No</option>
+          <option value="Sí">Sí</option>
+          <option value="No confirmado">No confirmado</option>
+        </select>
+      </div>
+      <div class="form-group full" id="capt-agencia-tiempo-wrap" style="display:none">
+        <label>¿Cuánto tiempo con la agencia?</label>
+        <input type="text" id="capt-agencia-tiempo" placeholder="ej. 6 meses, 1 año...">
+      </div>
+
+      <!-- ══ CAMPOS LOCAL ══ -->
+      <div class="form-group full capt-campo-local" style="border-top:1px solid #14b8a633;padding-top:14px;margin-top:4px;display:none">
+        <div style="font-size:0.72rem;color:#14b8a6;font-weight:700;margin-bottom:12px">🏬 DATOS DEL LOCAL</div>
+      </div>
+      <div class="form-group capt-campo-local" style="display:none">
+        <label>Modalidad *</label>
+        <select id="capt-modalidad">
+          <option value="Venta">Venta</option>
+          <option value="Alquiler">Alquiler</option>
+        </select>
+      </div>
+      <div class="form-group capt-campo-local" style="display:none">
+        <label>Superficie (m²)</label>
+        <input type="text" id="capt-superficie" placeholder="ej. 120 m²" inputmode="decimal">
+      </div>
+      <div class="form-group capt-campo-local" style="display:none">
+        <label>¿Planta baja?</label>
+        <select id="capt-planta-baja">
+          <option value="Sí">Sí</option>
+          <option value="No">No</option>
+          <option value="Mixto">Mixto (PB + entresuelo)</option>
+        </select>
+      </div>
+      <div class="form-group capt-campo-local" style="display:none">
+        <label>Última actividad</label>
+        <input type="text" id="capt-ultima-actividad" placeholder="ej. Farmacia, Banco, Moda...">
+      </div>
+      <div class="form-group capt-campo-local" style="display:none">
+        <label>Estado actual</label>
+        <select id="capt-estado-local">
+          <option value="Vacío">Vacío</option>
+          <option value="Arrendado">Arrendado</option>
+          <option value="En uso">En uso (propietario)</option>
+        </select>
+      </div>
+      <div class="form-group capt-campo-local" style="display:none">
+        <label>¿Salida de humos?</label>
+        <select id="capt-humos">
+          <option value="Sí">Sí</option>
+          <option value="No">No</option>
+          <option value="Posibilidad">No, pero hay posibilidad</option>
+        </select>
+      </div>
+      <div class="form-group capt-campo-local" style="display:none">
+        <label>Precio de venta / alquiler</label>
+        <input type="text" id="capt-precio-local" placeholder="ej. 350.000€ / 2.500€/mes">
+      </div>
+
+      <!-- ══ CAMPOS TRASPASO ══ -->
+      <div class="form-group full capt-campo-traspaso" style="border-top:1px solid #f59e0b33;padding-top:14px;margin-top:4px;display:none">
+        <div style="font-size:0.72rem;color:#f59e0b;font-weight:700;margin-bottom:12px">🏪 DATOS DEL TRASPASO</div>
+      </div>
+      <div class="form-group capt-campo-traspaso" style="display:none">
+        <label>Licencia de actividad</label>
+        <select id="capt-licencia">
+          <option value="">— Selecciona —</option>
+          <option value="C1 – Cafetería">C1 – Cafetería</option>
+          <option value="C2 – Restauración mixta menor">C2 – Restauración mixta menor (tapas/bocadillos, sin cocina con gas ni salida de humos)</option>
+          <option value="C3 – Restaurante">C3 – Restaurante con salida de humos</option>
+          <option value="C3 Mixta">C3 Mixta</option>
+          <option value="Otra">Otra</option>
+        </select>
+      </div>
+      <div class="form-group capt-campo-traspaso" style="display:none">
+        <label>Aforo</label>
+        <input type="text" id="capt-aforo" placeholder="ej. 40 personas" inputmode="numeric">
+      </div>
+      <div class="form-group capt-campo-traspaso" style="display:none">
+        <label>¿Tiene terraza?</label>
+        <select id="capt-terraza">
+          <option value="No">No</option>
+          <option value="Sí">Sí</option>
+        </select>
+      </div>
+      <div class="form-group capt-campo-traspaso" style="display:none">
+        <label>Número de mesas</label>
+        <input type="text" id="capt-mesas" placeholder="ej. 10 interior + 6 terraza" inputmode="numeric">
+      </div>
+      <div class="form-group capt-campo-traspaso" style="display:none">
+        <label>Duración contrato</label>
+        <input type="text" id="capt-duracion-contrato" placeholder="ej. 5 años, hasta 2028...">
+      </div>
+      <div class="form-group capt-campo-traspaso" style="display:none">
+        <label>Renta mensual</label>
+        <input type="text" id="capt-renta" placeholder="ej. 1.800€/mes" inputmode="decimal">
+      </div>
+      <div class="form-group capt-campo-traspaso" style="display:none">
+        <label>Precio de traspaso</label>
+        <input type="text" id="capt-precio-traspaso" placeholder="ej. 85.000€" inputmode="decimal">
+      </div>
+
+      <!-- ══ CAMPOS VIVIENDA ══ -->
+      <div class="form-group full capt-campo-vivienda" style="border-top:1px solid #a855f733;padding-top:14px;margin-top:4px;display:none">
+        <div style="font-size:0.72rem;color:#a855f7;font-weight:700;margin-bottom:12px">🏡 DATOS DE LA VIVIENDA</div>
+      </div>
+      <div class="form-group capt-campo-vivienda" style="display:none">
+        <label>Modalidad *</label>
+        <select id="capt-modalidad-viv">
+          <option value="Venta">Venta</option>
+          <option value="Alquiler">Alquiler</option>
+        </select>
+      </div>
+      <div class="form-group capt-campo-vivienda" style="display:none">
+        <label>Superficie (m²)</label>
+        <input type="text" id="capt-superficie-viv" placeholder="ej. 85 m²" inputmode="decimal">
+      </div>
+      <div class="form-group capt-campo-vivienda" style="display:none">
+        <label>Habitaciones</label>
+        <input type="text" id="capt-habitaciones" placeholder="ej. 3" inputmode="numeric">
+      </div>
+      <div class="form-group capt-campo-vivienda" style="display:none">
+        <label>Planta</label>
+        <input type="text" id="capt-planta-viv" placeholder="ej. 3º 2ª">
+      </div>
+      <div class="form-group capt-campo-vivienda" style="display:none">
+        <label>Estado del inmueble</label>
+        <select id="capt-estado-viv">
+          <option value="A reformar">A reformar</option>
+          <option value="Buen estado">Buen estado</option>
+          <option value="Reformado">Reformado</option>
+          <option value="Nuevo">Nuevo / Primera ocupación</option>
+        </select>
+      </div>
+      <div class="form-group capt-campo-vivienda" style="display:none">
+        <label>Precio expectativa</label>
+        <input type="text" id="capt-precio-viv" placeholder="ej. 280.000€" inputmode="decimal">
+      </div>
+
+      <!-- NOTAS COMUNES -->
+      <div class="form-group full" style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
+        <label>Notas internas</label>
+        <textarea id="capt-notas" placeholder="Observaciones, contexto de la captación, próximos pasos..." style="min-height:70px"></textarea>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-outline" id="capt-btn-delete" onclick="deleteCaptActivo()" style="display:none;color:var(--red);border-color:var(--red)">🗑 Eliminar</button>
+      <button class="btn-outline" onclick="closeCaptModal()">Cancelar</button>
+      <button class="btn" id="capt-btn-save" onclick="saveCaptActivo()" style="background:linear-gradient(135deg,#14b8a6,#22c55e);border:none">Guardar activo</button>
+    </div>
+  </div>
+</div>
 
 <!-- FICHA PROSPECTO -->
 <div class="ficha-overlay" id="prosp-ficha-overlay" onclick="closeProspFichaOutside(event)">
@@ -1561,12 +1947,13 @@ async function loadLeads() {
     // ── Procesar activos ──
     if (dataProducts.ok && dataProducts.products && dataProducts.products.length > 0) {
       products = dataProducts.products.map((p, i) => ({
-        id:     p.id    || 'prod_' + i,
-        name:   p.name  || 'Sin nombre',
-        icon:   p.icon  || '📦',
-        tipo:   p.tipo  || '',
-        zona:   p.zona  || '',
-        precio: p.precio|| '',
+        id:      p.id      || 'prod_' + i,
+        name:    p.name    || 'Sin nombre',
+        icon:    p.icon    || '📦',
+        tipo:    p.tipo    || '',
+        zona:    p.zona    || '',
+        precio:  p.precio  || '',
+        capt_id: p.capt_id || '',
         ...(PRODUCT_COLORS[i % PRODUCT_COLORS.length]),
       }));
     } else if (products.length === 0) {
@@ -2530,6 +2917,7 @@ function switchTab(tab) {
   if (tab === 'inversores')  renderInversores();
   if (tab === 'matching')    renderMatchingPage();
   if (tab === 'prospeccion') renderProspeccion();
+  if (tab === 'captacion')   renderCaptacion();
 }
 
 // ─────────────────────────────────────────────
@@ -2886,7 +3274,7 @@ function closeInvModalOutside(e) { if (e.target === document.getElementById('inv
 const _origInitSetup = initSetup;
 
 // Auto-refresh incluye inversores y prospectos
-setInterval(() => { if (scriptUrl) { loadLeads(); loadInversores(); loadProspectos(); } }, 60000);
+setInterval(() => { if (scriptUrl) { loadLeads(); loadInversores(); loadProspectos(); loadActivos(); } }, 60000);
 
 // ─────────────────────────────────────────────
 // TOAST
@@ -3238,6 +3626,451 @@ function closeEmailModalOutside(e) { if (e.target===document.getElementById('ema
 initSetup();
 loadInversores();
 loadProspectos();
+loadActivos();
+// ═══════════════════════════════════════════════════════════════════
+
+let activos       = [];
+let editCaptId    = null;
+let fichaCaptId   = null;
+let isSavingCapt  = false;
+let captTipoActive= '';
+let selectedCaptTipo = '';
+
+const ESTADO_CAPT_CLS = {
+  'Nuevo lead':    'bec-nuevo',
+  'En análisis':   'bec-analisis',
+  'Mandato firmado':'bec-mandato',
+  'Publicado':     'bec-publicado',
+  'En negociación':'bec-negociacion',
+  'Cerrado':       'bec-cerrado',
+  'Descartado':    'bec-descartado',
+};
+
+// ── LOAD ──────────────────────────────────────
+async function loadActivos() {
+  if (!scriptUrl) return;
+  const controller = new AbortController();
+  const timeoutId  = setTimeout(() => controller.abort(), 12000);
+  try {
+    const res  = await fetch(scriptUrl + '?action=getActivos', { method:'GET', signal: controller.signal });
+    clearTimeout(timeoutId);
+    const data = await res.json();
+    activos = (data.activos || []).map(a => ({ ...a }));
+    renderCaptacion();
+  } catch(e) { clearTimeout(timeoutId); }
+}
+
+// ── SAVE ──────────────────────────────────────
+async function saveCaptActivo() {
+  if (isSavingCapt) return;
+  const dir = document.getElementById('capt-direccion').value.trim();
+  if (!dir)             { showToast('⚠️ La dirección es obligatoria','error'); return; }
+  if (!selectedCaptTipo){ showToast('⚠️ Selecciona el tipo de activo','error'); return; }
+
+  const a = {
+    id:               editCaptId || ('capt_' + Date.now()),
+    tipo:             selectedCaptTipo,
+    direccion:        dir,
+    contacto:         document.getElementById('capt-contacto').value.trim(),
+    telefono:         document.getElementById('capt-telefono').value.trim(),
+    email:            document.getElementById('capt-email').value.trim(),
+    idealista:        document.getElementById('capt-idealista').value,
+    idealista_urls:   document.getElementById('capt-idealista-urls').value.trim(),
+    propietario:      document.getElementById('capt-propietario').value,
+    estado:           document.getElementById('capt-estado').value,
+    agente:           document.getElementById('capt-agente').value,
+    visitado:         document.getElementById('capt-visitado').value,
+    fecha_visita:     document.getElementById('capt-fecha-visita').value,
+    agencia:          document.getElementById('capt-agencia').value,
+    agencia_tiempo:   document.getElementById('capt-agencia-tiempo').value.trim(),
+    notas:            document.getElementById('capt-notas').value.trim(),
+    // Local
+    modalidad:        document.getElementById('capt-modalidad').value,
+    superficie:       document.getElementById('capt-superficie').value.trim(),
+    planta_baja:      document.getElementById('capt-planta-baja').value,
+    ultima_actividad: document.getElementById('capt-ultima-actividad').value.trim(),
+    estado_local:     document.getElementById('capt-estado-local').value,
+    humos:            document.getElementById('capt-humos').value,
+    precio_local:     document.getElementById('capt-precio-local').value.trim(),
+    // Traspaso
+    licencia:         document.getElementById('capt-licencia').value,
+    aforo:            document.getElementById('capt-aforo').value.trim(),
+    terraza:          document.getElementById('capt-terraza').value,
+    mesas:            document.getElementById('capt-mesas').value.trim(),
+    duracion_contrato:document.getElementById('capt-duracion-contrato').value.trim(),
+    renta:            document.getElementById('capt-renta').value.trim(),
+    precio_traspaso:  document.getElementById('capt-precio-traspaso').value.trim(),
+    // Vivienda
+    modalidad_viv:    document.getElementById('capt-modalidad-viv').value,
+    superficie_viv:   document.getElementById('capt-superficie-viv').value.trim(),
+    habitaciones:     document.getElementById('capt-habitaciones').value.trim(),
+    planta_viv:       document.getElementById('capt-planta-viv').value.trim(),
+    estado_viv:       document.getElementById('capt-estado-viv').value,
+    precio_viv:       document.getElementById('capt-precio-viv').value.trim(),
+  };
+
+  isSavingCapt = true;
+  const btn = document.getElementById('capt-btn-save');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  const controller = new AbortController();
+  const timeoutId  = setTimeout(() => controller.abort(), 12000);
+  try {
+    const res  = await fetch(scriptUrl, { method:'POST', body: JSON.stringify({ action: editCaptId ? 'updateActivo' : 'addActivo', activo: a }), signal: controller.signal });
+    clearTimeout(timeoutId);
+    const data = await res.json();
+    if (data.ok) {
+      showToast(editCaptId?'✅ Activo actualizado':'✅ Activo añadido','success');
+      closeCaptModal();
+      await loadActivos();
+
+      // ── Auto-promoción a Activos en mandato ──────────────────────
+      // Si el estado es "Mandato firmado", añadir automáticamente como
+      // activo en mandato (disponible en leads) si no existe ya.
+      if (a.estado === 'Mandato firmado') {
+        await autoPromoverAMandato(a, !!editCaptId);
+      }
+    }
+    else showToast('❌ '+(data.error||''),'error');
+  } catch(e) { clearTimeout(timeoutId); showToast(e.name==='AbortError'?'⏱ Tiempo agotado':'❌ Error de conexión','error'); }
+  finally { isSavingCapt=false; btn.disabled=false; btn.textContent='Guardar activo'; }
+}
+
+async function deleteCaptActivo() {
+  if (!editCaptId || !confirm('¿Eliminar este activo?')) return;
+  try {
+    const res  = await fetch(scriptUrl, { method:'POST', body: JSON.stringify({ action:'deleteActivo', activo:{ id: editCaptId } }) });
+    const data = await res.json();
+    if (data.ok) { showToast('🗑 Eliminado','success'); closeCaptModal(); await loadActivos(); }
+    else showToast('❌ '+(data.error||''),'error');
+  } catch(e) { showToast('❌ Error','error'); }
+}
+
+// ── AUTO-PROMOCIÓN A ACTIVOS EN MANDATO ──────────────────────────
+// Cuando un activo captado pasa a "Mandato firmado", se añade
+// automáticamente a la lista de activos disponibles en Leads.
+async function autoPromoverAMandato(a, esEdicion) {
+  // Comprobar si ya existe un activo con el mismo id de captación
+  const yaExiste = products.some(p => p.capt_id === a.id);
+
+  if (yaExiste) {
+    // Si es una edición y ya existe, actualizar nombre/tipo/zona
+    const prod = products.find(p => p.capt_id === a.id);
+    if (prod) {
+      const tipoMap = { local:'local', traspaso:'traspaso', vivienda:'piso' };
+      const zonaMap = {}; // zona libre en captación, no mapeamos automáticamente
+      const updated = {
+        ...prod,
+        name: a.direccion,
+        icon: { local:'🏬', traspaso:'🏪', vivienda:'🏡' }[a.tipo] || '📦',
+        tipo: tipoMap[a.tipo] || '',
+      };
+      // Actualizar en Sheet
+      await fetch(scriptUrl, { method:'POST', body: JSON.stringify({ action:'addProduct', product: updated }) });
+    }
+    return; // ya existe, no duplicar
+  }
+
+  // Construir el icono y tipo según el tipo de captación
+  const iconMap = { local:'🏬', traspaso:'🏪', vivienda:'🏡' };
+  const tipoMap = { local:'local', traspaso:'traspaso', vivienda:'piso' };
+
+  const newProd = {
+    id:      'prod_' + Date.now(),
+    capt_id: a.id,
+    name:    a.direccion,
+    icon:    iconMap[a.tipo] || '📦',
+    tipo:    tipoMap[a.tipo] || '',
+    zona:    '',
+    precio:  a.precio_local || a.precio_traspaso || a.precio_viv || '',
+  };
+
+  try {
+    const res  = await fetch(scriptUrl, { method:'POST', body: JSON.stringify({ action:'addProduct', product: newProd }) });
+    const data = await res.json();
+    if (data.ok) {
+      await loadLeads(); // refresca la lista de productos
+      showToast(`🎉 "${a.direccion}" añadido automáticamente a Activos en mandato`, 'success');
+    }
+  } catch(e) {
+    showToast('⚠️ Mandato guardado pero no se pudo añadir a Leads automáticamente. Hazlo manualmente desde ⚙ Activos.', 'error');
+  }
+}
+
+// ── RENDER ─────────────────────────────────────
+function setCaptTipo(tipo) {
+  captTipoActive = tipo;
+  document.querySelectorAll('.capt-tipo-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('capt-tab-'+(tipo||'todos')).classList.add('active');
+  renderCaptacion();
+}
+
+function renderCaptacion() {
+  const estado = document.getElementById('capt-filter-estado')?.value||'';
+  const agente = document.getElementById('capt-filter-agente')?.value||'';
+  const search = (document.getElementById('capt-filter-search')?.value||'').toLowerCase();
+
+  // Conteos
+  document.getElementById('capt-cnt-todos').textContent    = activos.length;
+  document.getElementById('capt-cnt-local').textContent    = activos.filter(a=>a.tipo==='local').length;
+  document.getElementById('capt-cnt-traspaso').textContent = activos.filter(a=>a.tipo==='traspaso').length;
+  document.getElementById('capt-cnt-vivienda').textContent = activos.filter(a=>a.tipo==='vivienda').length;
+
+  // KPIs
+  document.getElementById('capt-kpi-total').textContent    = activos.length;
+  document.getElementById('capt-kpi-local').textContent    = activos.filter(a=>a.tipo==='local').length;
+  document.getElementById('capt-kpi-traspaso').textContent = activos.filter(a=>a.tipo==='traspaso').length;
+  document.getElementById('capt-kpi-vivienda').textContent = activos.filter(a=>a.tipo==='vivienda').length;
+  document.getElementById('capt-kpi-idealista').textContent= activos.filter(a=>a.idealista==='si'||a.idealista==='multiple').length;
+  document.getElementById('capt-kpi-mandato').textContent  = activos.filter(a=>a.estado==='Mandato firmado').length;
+
+  const filtered = activos.filter(a => {
+    if (captTipoActive && a.tipo !== captTipoActive) return false;
+    if (estado && a.estado !== estado) return false;
+    if (agente && a.agente !== agente) return false;
+    if (search && !a.direccion.toLowerCase().includes(search) && !(a.contacto||'').toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  const grid = document.getElementById('capt-grid');
+  if (!grid) return;
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="match-empty" style="grid-column:1/-1">${activos.length===0?'🏠 Sin activos captados todavía.<br>Pulsa «+ Nuevo activo» para empezar.':'Sin resultados para los filtros.'}</div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(a => {
+    const tipoLabel = {local:'🏬 Local', traspaso:'🏪 Traspaso', vivienda:'🏡 Vivienda'}[a.tipo]||a.tipo;
+    const tipoCls   = `btc-${a.tipo}`;
+    const estadoCls = ESTADO_CAPT_CLS[a.estado]||'';
+    const avatarCls = a.agente==='Fernando'?'avatar-f':'avatar-g';
+    const initials  = a.agente==='Fernando'?'FB':'GR';
+    const idealistaBadge = a.idealista==='si' ? `<span class="badge-idealista si">✅ Idealista</span>`
+      : a.idealista==='multiple' ? `<span class="badge-idealista multiple">⚠️ Idealista ×2+</span>`
+      : `<span class="badge-idealista">❌ Sin publicar</span>`;
+
+    let precio = '';
+    if (a.tipo==='local')     precio = a.precio_local;
+    if (a.tipo==='traspaso')  precio = a.precio_traspaso;
+    if (a.tipo==='vivienda')  precio = a.precio_viv;
+
+    let datos = '';
+    if (a.tipo==='local')    datos = `${a.superficie?`<span class="capt-dato">📐 <strong>${a.superficie}</strong></span>`:''}${a.modalidad?`<span class="capt-dato">🔑 <strong>${a.modalidad}</strong></span>`:''}${a.humos?`<span class="capt-dato">💨 Humos: <strong>${a.humos}</strong></span>`:''}`;
+    if (a.tipo==='traspaso') datos = `${a.licencia?`<span class="capt-dato">📋 <strong>${a.licencia.split('–')[0].trim()}</strong></span>`:''}${a.aforo?`<span class="capt-dato">👥 Aforo: <strong>${a.aforo}</strong></span>`:''}${a.renta?`<span class="capt-dato">💶 <strong>${a.renta}</strong>/mes</span>`:''}`;
+    if (a.tipo==='vivienda') datos = `${a.superficie_viv?`<span class="capt-dato">📐 <strong>${a.superficie_viv}</strong></span>`:''}${a.habitaciones?`<span class="capt-dato">🛏 <strong>${a.habitaciones} hab</strong></span>`:''}${a.modalidad_viv?`<span class="capt-dato">🔑 <strong>${a.modalidad_viv}</strong></span>`:''}`;
+
+    return `<div class="capt-card tipo-${a.tipo}" onclick="openCaptFicha('${a.id}')">
+      <div class="capt-card-top">
+        <div style="min-width:0;flex:1">
+          <div class="capt-card-dir">${a.direccion}</div>
+          <div class="capt-card-sub">${a.contacto||''}${a.contacto&&a.telefono?' · ':''}${a.telefono||''}</div>
+        </div>
+        <span class="badge-estado-capt ${estadoCls}">${a.estado}</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <span class="badge-tipo-capt ${tipoCls}">${tipoLabel}</span>
+        ${a.propietario?`<span class="badge-modalidad">${a.propietario}</span>`:''}
+        ${a.visitado==='Sí'?`<span class="badge" style="background:#22c55e18;color:#22c55e;border:1px solid #22c55e33;font-size:0.68rem">✅ Visitado</span>`:a.visitado==='Pendiente'?`<span class="badge" style="background:#f59e0b18;color:#f59e0b;border:1px solid #f59e0b33;font-size:0.68rem">📅 Visita pendiente</span>`:`<span class="badge" style="background:var(--surface2);color:var(--muted);border:1px solid var(--border);font-size:0.68rem">👁 Sin visitar</span>`}
+        ${idealistaBadge}
+      </div>
+      <div class="capt-card-datos">${datos}</div>
+      ${precio?`<div style="font-size:0.85rem;font-weight:700;color:#14b8a6;margin-bottom:10px">💰 ${precio}</div>`:''}
+      <div class="capt-card-bottom">
+        <span class="agente-chip"><span class="avatar ${avatarCls}" style="width:20px;height:20px;font-size:0.55rem">${initials}</span>${a.agente}</span>
+        <span style="color:#14b8a6">Ver ficha →</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── FICHA ──────────────────────────────────────
+function openCaptFicha(id) {
+  const a = activos.find(x=>x.id===id);
+  if (!a) return;
+  fichaCaptId = id;
+  const tipoLabel = {local:'🏬 Local comercial', traspaso:'🏪 Traspaso de negocio', vivienda:'🏡 Vivienda'}[a.tipo]||a.tipo;
+  const tipoCls   = `btc-${a.tipo}`;
+  const estadoCls = ESTADO_CAPT_CLS[a.estado]||'';
+  const avatarCls = a.agente==='Fernando'?'avatar-f':'avatar-g';
+  const initials  = a.agente==='Fernando'?'FB':'GR';
+
+  document.getElementById('capt-ficha-dir').textContent = a.direccion;
+  document.getElementById('capt-ficha-badges').innerHTML =
+    `<span class="badge-tipo-capt ${tipoCls}">${tipoLabel}</span>
+     <span class="badge-estado-capt ${estadoCls}">${a.estado}</span>
+     ${a.idealista==='si'?'<span class="badge-idealista si">✅ Idealista</span>':a.idealista==='multiple'?'<span class="badge-idealista multiple">⚠️ Idealista ×2+</span>':'<span class="badge-idealista">❌ Sin publicar</span>'}`;
+
+  const f = (label, val, full=false) => val && val!=='—' ? `<div class="capt-info-field ${full?'full':''}"><div class="capt-info-label">${label}</div><div class="capt-info-value">${val}</div></div>` : '';
+
+  let body = `<div class="capt-section-divider">Contacto</div>
+    <div class="capt-info-grid">
+      ${a.contacto?`<div class="capt-info-field"><div class="capt-info-label">Nombre</div><div class="capt-info-value">${a.contacto}</div></div>`:''}
+      ${a.telefono?`<div class="capt-info-field"><div class="capt-info-label">Teléfono</div><div class="capt-info-value"><a href="tel:${a.telefono}" style="color:var(--accent);text-decoration:none">${a.telefono}</a></div></div>`:''}
+      ${a.email?`<div class="capt-info-field full"><div class="capt-info-label">Email</div><div class="capt-info-value"><a href="mailto:${a.email}" style="color:var(--accent);text-decoration:none">${a.email}</a></div></div>`:''}
+      ${f('Propietario / Intermediario', a.propietario)}
+      ${f('¿Trabaja con agencia?', a.agencia==='Sí' ? `Sí ${a.agencia_tiempo?'· '+a.agencia_tiempo:''}` : a.agencia)}
+    </div>
+    <div class="capt-section-divider">Visita</div>
+    <div class="capt-info-grid">
+      <div class="capt-info-field"><div class="capt-info-label">Estado visita</div><div class="capt-info-value">${a.visitado==='Sí'?'✅ Visitado':a.visitado==='Pendiente'?'📅 Visita pendiente':'👁 Sin visitar'}</div></div>
+      ${a.fecha_visita?`<div class="capt-info-field"><div class="capt-info-label">Fecha visita</div><div class="capt-info-value">${formatDateLong(a.fecha_visita)||a.fecha_visita}</div></div>`:''}
+    </div>`;
+
+  if (a.idealista_urls) {
+    const urls = a.idealista_urls.split('\n').filter(u=>u.trim());
+    body += `<div class="capt-section-divider">Idealista</div>
+      <div class="capt-info-grid">
+        <div class="capt-info-field full"><div class="capt-info-label">URLs publicadas</div><div class="capt-info-value">${urls.map(u=>`<a href="${u.trim()}" target="_blank" style="color:#ff6500;text-decoration:none;display:block">${u.trim()}</a>`).join('')}</div></div>
+      </div>`;
+  }
+
+  if (a.tipo==='local') {
+    body += `<div class="capt-section-divider">Datos del local</div>
+      <div class="capt-info-grid">
+        ${f('Modalidad', a.modalidad)}
+        ${f('Superficie', a.superficie)}
+        ${f('¿Planta baja?', a.planta_baja)}
+        ${f('Última actividad', a.ultima_actividad)}
+        ${f('Estado actual', a.estado_local)}
+        ${f('Salida de humos', a.humos)}
+        ${f('Precio', a.precio_local)}
+      </div>`;
+  }
+
+  if (a.tipo==='traspaso') {
+    body += `<div class="capt-section-divider">Datos del traspaso</div>
+      <div class="capt-info-grid">
+        ${f('Licencia', a.licencia, true)}
+        ${f('Aforo', a.aforo)}
+        ${f('¿Terraza?', a.terraza)}
+        ${f('Número de mesas', a.mesas)}
+        ${f('Duración contrato', a.duracion_contrato)}
+        ${f('Renta mensual', a.renta)}
+        ${f('Precio traspaso', a.precio_traspaso)}
+      </div>`;
+  }
+
+  if (a.tipo==='vivienda') {
+    body += `<div class="capt-section-divider">Datos de la vivienda</div>
+      <div class="capt-info-grid">
+        ${f('Modalidad', a.modalidad_viv)}
+        ${f('Superficie', a.superficie_viv)}
+        ${f('Habitaciones', a.habitaciones)}
+        ${f('Planta', a.planta_viv)}
+        ${f('Estado inmueble', a.estado_viv)}
+        ${f('Precio expectativa', a.precio_viv)}
+      </div>`;
+  }
+
+  if (a.notas) {
+    body += `<div class="capt-section-divider">Notas internas</div>
+      <div class="capt-info-grid"><div class="capt-info-field full"><div class="capt-info-value">${a.notas}</div></div></div>`;
+  }
+
+  body += `<div class="capt-section-divider">Gestión</div>
+    <div class="capt-info-grid">
+      <div class="capt-info-field"><div class="capt-info-label">Agente</div><div class="capt-info-value"><span class="agente-chip"><span class="avatar ${avatarCls}" style="width:20px;height:20px;font-size:0.55rem">${initials}</span>${a.agente}</span></div></div>
+    </div>`;
+
+  document.getElementById('capt-ficha-body').innerHTML = body;
+  document.getElementById('capt-ficha-overlay').classList.add('open');
+}
+
+function closeCaptFicha() { document.getElementById('capt-ficha-overlay').classList.remove('open'); fichaCaptId=null; }
+function closeCaptFichaOutside(e) { if (e.target===document.getElementById('capt-ficha-overlay')) closeCaptFicha(); }
+function editFromCaptFicha() { const id=fichaCaptId; closeCaptFicha(); setTimeout(()=>openCaptModal(id),100); }
+
+// ── MODAL ──────────────────────────────────────
+function selectCaptTipo(tipo, el) {
+  selectedCaptTipo = tipo;
+  document.querySelectorAll('.tipo-opt').forEach(t=>t.classList.remove('selected'));
+  el.classList.add('selected');
+  // Mostrar/ocultar campos por tipo
+  ['local','traspaso','vivienda'].forEach(t => {
+    document.querySelectorAll('.capt-campo-'+t).forEach(el => el.style.display = t===tipo ? '' : 'none');
+  });
+}
+
+function openCaptModal(id=null) {
+  editCaptId = id;
+  const a = id ? activos.find(x=>x.id===id) : null;
+  selectedCaptTipo = a?.tipo || '';
+  document.getElementById('capt-modal-title').textContent = a ? '✏️ Editar activo' : '🏠 Nuevo activo captado';
+
+  // Reset tipo selector
+  document.querySelectorAll('.tipo-opt').forEach(t=>t.classList.remove('selected'));
+  if (a?.tipo) {
+    const idx = {local:0,traspaso:1,vivienda:2}[a.tipo];
+    document.querySelectorAll('.tipo-opt')[idx]?.classList.add('selected');
+    ['local','traspaso','vivienda'].forEach(t => {
+      document.querySelectorAll('.capt-campo-'+t).forEach(el => el.style.display = t===a.tipo?'':a.tipo?'none':'none');
+    });
+  } else {
+    ['local','traspaso','vivienda'].forEach(t => document.querySelectorAll('.capt-campo-'+t).forEach(el=>el.style.display='none'));
+  }
+
+  // Rellenar campos comunes
+  const set = (id, val) => { const el=document.getElementById(id); if(el) el.value=val||''; };
+  set('capt-direccion', a?.direccion);
+  set('capt-contacto',  a?.contacto);
+  set('capt-telefono',  a?.telefono);
+  set('capt-email',     a?.email);
+  set('capt-idealista', a?.idealista||'no');
+  set('capt-idealista-urls', a?.idealista_urls);
+  set('capt-propietario', a?.propietario||'Propietario');
+  set('capt-estado',    a?.estado||'Nuevo lead');
+  set('capt-agente',    a?.agente||'Fernando');
+  set('capt-visitado',      a?.visitado||'No');
+  const fv = document.getElementById('capt-fecha-visita');
+  fv.value = '';
+  if (a?.fecha_visita) setTimeout(()=>{ fv.value=toInputDate(a.fecha_visita); },50);
+  set('capt-agencia',   a?.agencia||'No');
+  set('capt-agencia-tiempo', a?.agencia_tiempo);
+  set('capt-notas',     a?.notas);
+  // Local
+  set('capt-modalidad', a?.modalidad||'Venta');
+  set('capt-superficie', a?.superficie);
+  set('capt-planta-baja', a?.planta_baja||'Sí');
+  set('capt-ultima-actividad', a?.ultima_actividad);
+  set('capt-estado-local', a?.estado_local||'Vacío');
+  set('capt-humos',     a?.humos||'No');
+  set('capt-precio-local', a?.precio_local);
+  // Traspaso
+  set('capt-licencia',  a?.licencia);
+  set('capt-aforo',     a?.aforo);
+  set('capt-terraza',   a?.terraza||'No');
+  set('capt-mesas',     a?.mesas);
+  set('capt-duracion-contrato', a?.duracion_contrato);
+  set('capt-renta',     a?.renta);
+  set('capt-precio-traspaso', a?.precio_traspaso);
+  // Vivienda
+  set('capt-modalidad-viv', a?.modalidad_viv||'Venta');
+  set('capt-superficie-viv', a?.superficie_viv);
+  set('capt-habitaciones', a?.habitaciones);
+  set('capt-planta-viv', a?.planta_viv);
+  set('capt-estado-viv', a?.estado_viv||'Buen estado');
+  set('capt-precio-viv', a?.precio_viv);
+
+  // Toggle idealista urls
+  document.getElementById('capt-idealista-urls-wrap').style.display =
+    (a?.idealista==='si'||a?.idealista==='multiple') ? '' : 'none';
+  document.getElementById('capt-idealista').onchange = function() {
+    document.getElementById('capt-idealista-urls-wrap').style.display =
+      (this.value==='si'||this.value==='multiple') ? '' : 'none';
+  };
+
+  // Toggle agencia tiempo
+  document.getElementById('capt-agencia-tiempo-wrap').style.display = a?.agencia==='Sí' ? '' : 'none';
+  document.getElementById('capt-agencia').onchange = function() {
+    document.getElementById('capt-agencia-tiempo-wrap').style.display = this.value==='Sí' ? '' : 'none';
+  };
+
+  document.getElementById('capt-btn-delete').style.display = a ? 'inline-flex' : 'none';
+  document.getElementById('capt-modal-overlay').classList.add('open');
+}
+
+function closeCaptModal() { document.getElementById('capt-modal-overlay').classList.remove('open'); editCaptId=null; selectedCaptTipo=''; }
+function closeCaptModalOutside(e) { if (e.target===document.getElementById('capt-modal-overlay')) closeCaptModal(); }
 </script>
 </body>
 </html>
