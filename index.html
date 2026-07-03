@@ -1986,14 +1986,12 @@ const ESTADO_CLASS = {
 // PRICE FORMAT — "50000" o "50.000€" → "50.000€"
 // ─────────────────────────────────────────────
 function formatPrice(raw) {
-  if (!raw || raw === '—' || raw === '') return raw;
-  // Extrae todos los dígitos del string
+  if (!raw || raw === '—' || raw === '' || raw === '0' || raw.trim() === '') return '';
   const digits = raw.replace(/[^\d]/g, '');
-  if (!digits) return raw; // si no hay números, devuelve tal cual (ej. "consultar")
+  if (!digits || digits === '0') return '';
   const num = parseInt(digits, 10);
-  // Formato con puntos de miles
+  if (num === 0) return '';
   const formatted = num.toLocaleString('es-ES');
-  // Si el original ya tenía €, usarlo; si tenía /mes, mantenerlo
   const hasMes = raw.toLowerCase().includes('/mes') || raw.toLowerCase().includes('mes');
   const suffix  = hasMes ? '/mes' : '€';
   return `${formatted}${suffix}`;
@@ -4115,7 +4113,51 @@ async function loadActivos() {
     const res  = await fetch(scriptUrl + '?action=getActivos', { method:'GET', signal: controller.signal });
     clearTimeout(timeoutId);
     const data = await res.json();
-    activos = (data.activos || []).map(a => ({ ...a }));
+    activos = (data.activos || []).map(a => {
+      const tipo = a.tipo || '';
+      // Limpiar campos que no corresponden al tipo — evita datos sucios del Sheet
+      return {
+        ...a,
+        // Campos local: solo si tipo === 'local'
+        modalidad:        tipo==='local'    ? a.modalidad        : '',
+        superficie:       tipo==='local'    ? a.superficie       : '',
+        planta_baja:      tipo==='local'    ? a.planta_baja      : '',
+        ultima_actividad: tipo==='local'    ? a.ultima_actividad : '',
+        estado_local:     tipo==='local'    ? a.estado_local     : '',
+        humos:            tipo==='local'    ? a.humos            : '',
+        precio_local:     tipo==='local'    ? a.precio_local     : '',
+        // Campos traspaso: solo si tipo === 'traspaso'
+        licencia:         tipo==='traspaso' ? a.licencia         : '',
+        aforo:            tipo==='traspaso' ? a.aforo            : '',
+        terraza:          tipo==='traspaso' ? a.terraza          : '',
+        mesas:            tipo==='traspaso' ? a.mesas            : '',
+        duracion_contrato:tipo==='traspaso' ? a.duracion_contrato: '',
+        renta:            tipo==='traspaso' ? a.renta            : '',
+        precio_traspaso:  tipo==='traspaso' ? a.precio_traspaso  : '',
+        // Campos vivienda: solo si tipo === 'vivienda'
+        modalidad_viv:    tipo==='vivienda' ? a.modalidad_viv    : '',
+        superficie_viv:   tipo==='vivienda' ? a.superficie_viv   : '',
+        habitaciones:     tipo==='vivienda' ? a.habitaciones     : '',
+        planta_viv:       tipo==='vivienda' ? a.planta_viv       : '',
+        estado_viv:       tipo==='vivienda' ? a.estado_viv       : '',
+        precio_viv:       tipo==='vivienda' ? a.precio_viv       : '',
+        // Campos suelo: solo si tipo === 'suelo'
+        tipo_suelo:       tipo==='suelo'    ? a.tipo_suelo       : '',
+        sup_suelo:        tipo==='suelo'    ? a.sup_suelo        : '',
+        edificabilidad:   tipo==='suelo'    ? a.edificabilidad   : '',
+        num_viviendas:    tipo==='suelo'    ? a.num_viviendas    : '',
+        calificacion:     tipo==='suelo'    ? a.calificacion     : '',
+        licencia_tramite: tipo==='suelo'    ? a.licencia_tramite : '',
+        reparcelacion:    tipo==='suelo'    ? a.reparcelacion    : '',
+        servicios:        tipo==='suelo'    ? a.servicios        : '',
+        cargas:           tipo==='suelo'    ? a.cargas           : '',
+        precio_suelo_total:tipo==='suelo'   ? a.precio_suelo_total:'',
+        precio_m2_suelo:  tipo==='suelo'    ? a.precio_m2_suelo  : '',
+        precio_m2_techo:  tipo==='suelo'    ? a.precio_m2_techo  : '',
+        // Propietario: solo valores válidos
+        propietario: ['Propietario','Intermediario','No confirmado'].includes(a.propietario) ? a.propietario : '',
+      };
+    });
     renderCaptacion();
     injectMatchBanners();
   } catch(e) { clearTimeout(timeoutId); }
@@ -4379,7 +4421,7 @@ function renderCaptacion() {
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
         <span class="badge-tipo-capt ${tipoCls}">${tipoLabel}</span>
-        ${a.propietario?`<span class="badge-modalidad">${a.propietario}</span>`:''}
+        ${['Propietario','Intermediario','No confirmado'].includes(a.propietario)?`<span class="badge-modalidad">${a.propietario}</span>`:''}
         ${a.visitado==='Sí'?`<span class="badge" style="background:#22c55e18;color:#22c55e;border:1px solid #22c55e33;font-size:0.68rem">✅ Visitado</span>`:a.visitado==='Pendiente'?`<span class="badge" style="background:#f59e0b18;color:#f59e0b;border:1px solid #f59e0b33;font-size:0.68rem">📅 Visita pendiente</span>`:`<span class="badge" style="background:var(--surface2);color:var(--muted);border:1px solid var(--border);font-size:0.68rem">👁 Sin visitar</span>`}
         ${idealistaBadge}
       </div>
