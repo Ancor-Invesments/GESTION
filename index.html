@@ -2911,9 +2911,9 @@ function _renderFocusMatches(activo) {
   const tipoObj = TIPOS_ACTIVO.find(t => t.id === tipoInvId);
   const area = document.getElementById('match-results-area');
 
-  // Renderizar chips y selects normales primero
+  // Renderizar chips normales también (para que volver funcione)
   const tChips = document.getElementById('match-tipo-chips');
-  if (tChips) tChips.innerHTML = '';
+  if (tChips) tChips.innerHTML = `<div class="match-chip" id="mchip-tipo-all" onclick="matchingFocusActivoId=null;renderMatchingPage()">← Volver</div>`;
   const zChips = document.getElementById('match-zona-chips');
   if (zChips) zChips.innerHTML = '';
 
@@ -3890,6 +3890,8 @@ function closeEmailModalOutside(e) { if (e.target===document.getElementById('ema
 // ═══════════════════════════════════════════════════════════════════
 
 // Mapa tipo captación → tipo inversor
+let matchingFocusActivoId = null;
+
 const TIPO_CAPT_TO_INV = {
   local:    'local',
   traspaso: 'traspaso',
@@ -4043,8 +4045,6 @@ function renderMatchBannersForActivo(activo) {
 }
 
 // ── PANEL MATCHING: mostrar matches de un activo concreto ──
-let matchingFocusActivoId = null;
-
 function showMatchesForActivo(activoId) {
   matchingFocusActivoId = activoId;
   renderMatchingPage();
@@ -4128,63 +4128,68 @@ async function saveCaptActivo() {
   if (!dir)             { showToast('⚠️ La dirección es obligatoria','error'); return; }
   if (!selectedCaptTipo){ showToast('⚠️ Selecciona el tipo de activo','error'); return; }
 
+  // Helper: leer campo solo si pertenece al tipo activo, si no devuelve ''
+  const g = (id) => { const el = document.getElementById(id); return el ? el.value.trim ? el.value.trim() : el.value : ''; };
+  const gs = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
+  const tipo = selectedCaptTipo;
+
   const a = {
     id:               editCaptId || ('capt_' + Date.now()),
-    tipo:             selectedCaptTipo,
+    tipo,
     direccion:        dir,
-    contacto:         document.getElementById('capt-contacto').value.trim(),
-    telefono:         document.getElementById('capt-telefono').value.trim(),
-    email:            document.getElementById('capt-email').value.trim(),
-    idealista:        document.getElementById('capt-idealista').value,
-    idealista_urls:   document.getElementById('capt-idealista-urls').value.trim(),
-    propietario:      document.getElementById('capt-propietario').value,
-    estado:           document.getElementById('capt-estado').value,
-    agente:           document.getElementById('capt-agente').value,
-    maps_url:         document.getElementById('capt-maps-url').value.trim(),
-    zona:             document.getElementById('capt-zona').value,
-    precio_matching:  document.getElementById('capt-precio-matching').value.trim(),
-    rentabilidad_est: document.getElementById('capt-rentabilidad-matching').value.trim(),
-    visitado:         document.getElementById('capt-visitado').value,
-    fecha_visita:     document.getElementById('capt-fecha-visita').value,
-    agencia:          document.getElementById('capt-agencia').value,
-    agencia_tiempo:   document.getElementById('capt-agencia-tiempo').value.trim(),
-    notas:            document.getElementById('capt-notas').value.trim(),
-    // Local
-    modalidad:        document.getElementById('capt-modalidad').value,
-    superficie:       document.getElementById('capt-superficie').value.trim(),
-    planta_baja:      document.getElementById('capt-planta-baja').value,
-    ultima_actividad: document.getElementById('capt-ultima-actividad').value.trim(),
-    estado_local:     document.getElementById('capt-estado-local').value,
-    humos:            document.getElementById('capt-humos').value,
-    precio_local:     document.getElementById('capt-precio-local').value.trim(),
-    // Traspaso
-    licencia:         document.getElementById('capt-licencia').value,
-    aforo:            document.getElementById('capt-aforo').value.trim(),
-    terraza:          document.getElementById('capt-terraza').value,
-    mesas:            document.getElementById('capt-mesas').value.trim(),
-    duracion_contrato:document.getElementById('capt-duracion-contrato').value.trim(),
-    renta:            document.getElementById('capt-renta').value.trim(),
-    precio_traspaso:  document.getElementById('capt-precio-traspaso').value.trim(),
-    // Vivienda
-    modalidad_viv:    document.getElementById('capt-modalidad-viv').value,
-    superficie_viv:   document.getElementById('capt-superficie-viv').value.trim(),
-    habitaciones:     document.getElementById('capt-habitaciones').value.trim(),
-    planta_viv:       document.getElementById('capt-planta-viv').value.trim(),
-    estado_viv:       document.getElementById('capt-estado-viv').value,
-    precio_viv:       document.getElementById('capt-precio-viv').value.trim(),
-    // Suelo
-    tipo_suelo:           document.getElementById('capt-tipo-suelo').value,
-    sup_suelo:            document.getElementById('capt-sup-suelo').value.trim(),
-    edificabilidad:       document.getElementById('capt-edificabilidad').value.trim(),
-    num_viviendas:        document.getElementById('capt-num-viviendas').value.trim(),
-    calificacion:         document.getElementById('capt-calificacion').value.trim(),
-    licencia_tramite:     document.getElementById('capt-licencia-tramite').value,
-    reparcelacion:        document.getElementById('capt-reparcelacion').value,
-    servicios:            document.getElementById('capt-servicios').value,
-    cargas:               document.getElementById('capt-cargas').value,
-    precio_suelo_total:   document.getElementById('capt-precio-suelo-total').value.trim(),
-    precio_m2_suelo:      document.getElementById('capt-precio-m2-suelo').value.trim(),
-    precio_m2_techo:      document.getElementById('capt-precio-m2-techo').value.trim(),
+    contacto:         g('capt-contacto'),
+    telefono:         g('capt-telefono'),
+    email:            g('capt-email'),
+    idealista:        gs('capt-idealista'),
+    idealista_urls:   g('capt-idealista-urls'),
+    propietario:      gs('capt-propietario'),
+    estado:           gs('capt-estado'),
+    agente:           gs('capt-agente'),
+    maps_url:         g('capt-maps-url'),
+    zona:             gs('capt-zona'),
+    precio_matching:  g('capt-precio-matching'),
+    rentabilidad_est: g('capt-rentabilidad-matching'),
+    visitado:         gs('capt-visitado'),
+    fecha_visita:     gs('capt-fecha-visita'),
+    agencia:          gs('capt-agencia'),
+    agencia_tiempo:   g('capt-agencia-tiempo'),
+    notas:            g('capt-notas'),
+    // Campos Local — solo si tipo === 'local'
+    modalidad:        tipo==='local'    ? gs('capt-modalidad')       : '',
+    superficie:       tipo==='local'    ? g('capt-superficie')       : '',
+    planta_baja:      tipo==='local'    ? gs('capt-planta-baja')     : '',
+    ultima_actividad: tipo==='local'    ? g('capt-ultima-actividad') : '',
+    estado_local:     tipo==='local'    ? gs('capt-estado-local')    : '',
+    humos:            tipo==='local'    ? gs('capt-humos')           : '',
+    precio_local:     tipo==='local'    ? g('capt-precio-local')     : '',
+    // Campos Traspaso — solo si tipo === 'traspaso'
+    licencia:         tipo==='traspaso' ? gs('capt-licencia')         : '',
+    aforo:            tipo==='traspaso' ? g('capt-aforo')             : '',
+    terraza:          tipo==='traspaso' ? gs('capt-terraza')          : '',
+    mesas:            tipo==='traspaso' ? g('capt-mesas')             : '',
+    duracion_contrato:tipo==='traspaso' ? g('capt-duracion-contrato') : '',
+    renta:            tipo==='traspaso' ? g('capt-renta')             : '',
+    precio_traspaso:  tipo==='traspaso' ? g('capt-precio-traspaso')   : '',
+    // Campos Vivienda — solo si tipo === 'vivienda'
+    modalidad_viv:    tipo==='vivienda' ? gs('capt-modalidad-viv')   : '',
+    superficie_viv:   tipo==='vivienda' ? g('capt-superficie-viv')   : '',
+    habitaciones:     tipo==='vivienda' ? g('capt-habitaciones')     : '',
+    planta_viv:       tipo==='vivienda' ? g('capt-planta-viv')       : '',
+    estado_viv:       tipo==='vivienda' ? gs('capt-estado-viv')      : '',
+    precio_viv:       tipo==='vivienda' ? g('capt-precio-viv')       : '',
+    // Campos Suelo — solo si tipo === 'suelo'
+    tipo_suelo:           tipo==='suelo' ? gs('capt-tipo-suelo')           : '',
+    sup_suelo:            tipo==='suelo' ? g('capt-sup-suelo')             : '',
+    edificabilidad:       tipo==='suelo' ? g('capt-edificabilidad')        : '',
+    num_viviendas:        tipo==='suelo' ? g('capt-num-viviendas')         : '',
+    calificacion:         tipo==='suelo' ? g('capt-calificacion')          : '',
+    licencia_tramite:     tipo==='suelo' ? gs('capt-licencia-tramite')     : '',
+    reparcelacion:        tipo==='suelo' ? gs('capt-reparcelacion')        : '',
+    servicios:            tipo==='suelo' ? gs('capt-servicios')            : '',
+    cargas:               tipo==='suelo' ? gs('capt-cargas')               : '',
+    precio_suelo_total:   tipo==='suelo' ? g('capt-precio-suelo-total')    : '',
+    precio_m2_suelo:      tipo==='suelo' ? g('capt-precio-m2-suelo')       : '',
+    precio_m2_techo:      tipo==='suelo' ? g('capt-precio-m2-techo')       : '',
   };
 
   isSavingCapt = true;
@@ -4227,28 +4232,42 @@ async function deleteCaptActivo() {
 // Cuando un activo captado pasa a "Mandato firmado", se añade
 // automáticamente a la lista de activos disponibles en Leads.
 async function autoPromoverAMandato(a, esEdicion) {
-  // Comprobar si ya existe un activo con el mismo id de captación
-  const yaExiste = products.some(p => p.capt_id === a.id);
+  // Recargar products frescos del Sheet antes de comprobar duplicados
+  await loadLeads();
+
+  // Comprobar si ya existe por capt_id O por dirección (evita duplicados)
+  const yaExiste = products.find(p =>
+    p.capt_id === a.id ||
+    p.name?.toLowerCase().trim() === a.direccion?.toLowerCase().trim()
+  );
 
   if (yaExiste) {
-    // Si es una edición y ya existe, actualizar nombre/tipo/zona
-    const prod = products.find(p => p.capt_id === a.id);
-    if (prod) {
-      const tipoMap = { local:'local', traspaso:'traspaso', vivienda:'piso' };
-      const zonaMap = {}; // zona libre en captación, no mapeamos automáticamente
-      const updated = {
-        ...prod,
-        name: a.direccion,
-        icon: { local:'🏬', traspaso:'🏪', vivienda:'🏡' }[a.tipo] || '📦',
-        tipo: tipoMap[a.tipo] || '',
-      };
-      // Actualizar en Sheet
-      await fetch(scriptUrl, { method:'POST', body: JSON.stringify({ action:'addProduct', product: updated }) });
+    // Actualizar datos si es edición
+    const tipoMap = { local:'local', traspaso:'traspaso', vivienda:'piso', suelo:'solar' };
+    const iconMap = { local:'🏬', traspaso:'🏪', vivienda:'🏡', suelo:'🌍' };
+    const updated = {
+      ...yaExiste,
+      name:    a.direccion,
+      icon:    iconMap[a.tipo] || yaExiste.icon || '📦',
+      tipo:    tipoMap[a.tipo] || yaExiste.tipo || '',
+      zona:    a.zona          || yaExiste.zona || '',
+      precio:  a.precio_matching || a.precio_local || a.precio_traspaso || a.precio_viv || a.precio_suelo_total || '',
+      capt_id: a.id,
+    };
+    try {
+      const res  = await fetch(scriptUrl, { method:'POST', body: JSON.stringify({ action:'addProduct', product: updated }) });
+      const data = await res.json();
+      if (data.ok) {
+        await loadLeads();
+        showToast(`✅ Activo "${a.direccion}" actualizado en Leads`, 'success');
+      }
+    } catch(e) {
+      showToast('⚠️ No se pudo actualizar el activo en Leads', 'error');
     }
-    return; // ya existe, no duplicar
+    return;
   }
 
-  // Construir el icono y tipo según el tipo de captación
+  // Crear nuevo producto en la hoja Activos
   const iconMap = { local:'🏬', traspaso:'🏪', vivienda:'🏡', suelo:'🌍' };
   const tipoMap = { local:'local', traspaso:'traspaso', vivienda:'piso', suelo:'solar' };
 
@@ -4258,19 +4277,21 @@ async function autoPromoverAMandato(a, esEdicion) {
     name:    a.direccion,
     icon:    iconMap[a.tipo] || '📦',
     tipo:    tipoMap[a.tipo] || '',
-    zona:    '',
-    precio:  a.precio_local || a.precio_traspaso || a.precio_viv || '',
+    zona:    a.zona || '',
+    precio:  a.precio_matching || a.precio_local || a.precio_traspaso || a.precio_viv || a.precio_suelo_total || '',
   };
 
   try {
     const res  = await fetch(scriptUrl, { method:'POST', body: JSON.stringify({ action:'addProduct', product: newProd }) });
     const data = await res.json();
     if (data.ok) {
-      await loadLeads(); // refresca la lista de productos
-      showToast(`🎉 "${a.direccion}" añadido automáticamente a Activos en mandato`, 'success');
+      await loadLeads();
+      showToast(`🎉 "${a.direccion}" añadido a Leads automáticamente`, 'success');
+    } else {
+      showToast('❌ Error al añadir a Leads: ' + (data.error||''), 'error');
     }
   } catch(e) {
-    showToast('⚠️ Mandato guardado pero no se pudo añadir a Leads automáticamente. Hazlo manualmente desde ⚙ Activos.', 'error');
+    showToast('⚠️ Mandato guardado. Añade el activo manualmente en ⚙ Activos si no aparece en Leads.', 'error');
   }
 }
 
