@@ -4244,6 +4244,7 @@ const MESES     = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Ago
 // ── Recoger todos los eventos (leads + captación) ──
 function getCalEvents() {
   const events = [];
+  _calEvStore = {};
 
   leads.forEach(l => {
     if (!l.fecha) return;
@@ -4251,22 +4252,24 @@ function getCalEvents() {
     if (!d) return;
     const cancelada = l.estado === 'Visita cancelada';
     const prod = products.find(p=>p.id===l.producto)||{name:l.producto||'—',icon:'📦'};
-    events.push({
-      date:    d,
-      hora:    l.hora || '',
-      tipo:    cancelada ? 'cancelada' : 'lead',
-      titulo:  l.nombre,
-      sub:     `${l.estado} · ${prod.name}`,
-      agente:  l.agente,
-      // Datos para popup
+    const evId = 'ev_lead_' + l.id;
+    const ev = {
+      date:     d,
+      hora:     l.hora || '',
+      tipo:     cancelada ? 'cancelada' : 'lead',
+      titulo:   l.nombre,
+      sub:      `${l.hora?l.hora+' · ':''}${l.estado} · ${prod.name}`,
+      agente:   l.agente,
       telefono: l.telefono,
       email:    l.email,
       estado:   l.estado,
       activo:   prod.name,
       maps_url: '',
       direccion:'',
-      accion:  () => { closeCalPopup(); setTimeout(()=>openFicha(l.id),100); },
-    });
+      accion:   () => openFicha(l.id),
+    };
+    _calEvStore[evId] = ev;
+    events.push({ ...ev, evId });
   });
 
   activos.forEach(a => {
@@ -4274,22 +4277,24 @@ function getCalEvents() {
     const d = parseDate(a.fecha_visita);
     if (!d) return;
     const cancelada = a.visitado === 'Visita cancelada';
-    events.push({
-      date:    d,
-      hora:    a.hora_visita || '',
-      tipo:    cancelada ? 'cancelada' : 'capt',
-      titulo:  a.direccion,
-      sub:     `${a.hora_visita ? a.hora_visita+' · ' : ''}Visita activo · ${a.agente||''}`,
-      agente:  a.agente,
-      // Datos para popup
-      telefono:  a.telefono,
-      email:     a.email,
-      estado:    a.visitado,
-      activo:    {local:'🏬 Local',traspaso:'🏪 Traspaso',vivienda:'🏡 Vivienda',suelo:'🌍 Suelo'}[a.tipo]||a.tipo,
-      maps_url:  a.maps_url || '',
-      direccion: a.direccion,
-      accion:   () => { closeCalPopup(); setTimeout(()=>openCaptFicha(a.id),100); },
-    });
+    const evId = 'ev_capt_' + a.id;
+    const ev = {
+      date:     d,
+      hora:     a.hora_visita || '',
+      tipo:     cancelada ? 'cancelada' : 'capt',
+      titulo:   a.direccion,
+      sub:      `${a.hora_visita?a.hora_visita+' · ':''}Visita activo · ${a.agente||''}`,
+      agente:   a.agente,
+      telefono: a.telefono,
+      email:    a.email,
+      estado:   a.visitado,
+      activo:   {local:'🏬 Local',traspaso:'🏪 Traspaso',vivienda:'🏡 Vivienda',suelo:'🌍 Suelo'}[a.tipo]||a.tipo,
+      maps_url: a.maps_url || '',
+      direccion:a.direccion,
+      accion:   () => openCaptFicha(a.id),
+    };
+    _calEvStore[evId] = ev;
+    events.push({ ...ev, evId });
   });
 
   return events.sort((a,b) => {
@@ -4302,9 +4307,11 @@ function getCalEvents() {
   });
 }
 
-// ── POPUP EVENTO ──────────────────────────────
-function openCalPopup(evIdx, allEvents) {
-  const ev = allEvents[evIdx];
+let _calEventsCache = [];
+let _calEvStore = {}; // store eventos por id único
+
+function openCalPopup(evId) {
+  const ev = _calEvStore[evId];
   if (!ev) return;
 
   const color = ev.tipo==='capt'?'#14b8a6':ev.tipo==='cancelada'?'#fb923c':'#4f7cff';
@@ -4315,12 +4322,10 @@ function openCalPopup(evIdx, allEvents) {
   document.getElementById('cal-popup-tipo').textContent = tipoLabel;
   document.getElementById('cal-popup-nombre').textContent = ev.titulo;
 
-  // Fecha + hora
   const fechaEl = document.getElementById('cal-popup-fecha');
   fechaEl.innerHTML = `📅 ${fechaStr}` +
     (ev.hora ? ` <span class="cal-popup-hora-badge">🕐 ${ev.hora}</span>` : '');
 
-  // Info
   const info = [];
   if (ev.direccion) info.push(`<div class="cal-popup-row"><span class="cal-popup-row-icon">📍</span><span class="cal-popup-row-text">${ev.direccion}</span></div>`);
   if (ev.activo)    info.push(`<div class="cal-popup-row"><span class="cal-popup-row-icon">🏢</span><span class="cal-popup-row-text">${ev.activo}</span></div>`);
@@ -4329,16 +4334,20 @@ function openCalPopup(evIdx, allEvents) {
   if (ev.agente)    info.push(`<div class="cal-popup-row"><span class="cal-popup-row-icon">👤</span><span class="cal-popup-row-text muted">${ev.agente}</span></div>`);
   document.getElementById('cal-popup-info').innerHTML = info.join('');
 
-  // Botones
   const mapsUrl = ev.maps_url || (ev.direccion ? `https://maps.google.com/?q=${encodeURIComponent(ev.direccion)}` : '');
   let actions = '';
-  if (mapsUrl) {
-    actions += `<a href="${mapsUrl}" target="_blank" class="cal-popup-btn-maps">🗺 Abrir en Maps</a>`;
-  }
-  actions += `<button class="cal-popup-btn-ficha" onclick="(${ev.accion.toString()})()">📋 Ver ficha</button>`;
+  if (mapsUrl) actions += `<a href="${mapsUrl}" target="_blank" class="cal-popup-btn-maps">🗺 Abrir en Maps</a>`;
+  // Botón Ver ficha — guardamos la función como string seguro
+  actions += `<button class="cal-popup-btn-ficha" onclick="closeCalPopupAndOpen('${evId}')">📋 Ver ficha</button>`;
   document.getElementById('cal-popup-actions').innerHTML = actions;
 
   document.getElementById('cal-popup-overlay').classList.add('open');
+}
+
+function closeCalPopupAndOpen(evId) {
+  document.getElementById('cal-popup-overlay').classList.remove('open');
+  const ev = _calEvStore[evId];
+  if (ev && ev.accion) setTimeout(() => ev.accion(), 150);
 }
 
 function closeCalPopup(e) {
@@ -4346,10 +4355,6 @@ function closeCalPopup(e) {
     document.getElementById('cal-popup-overlay').classList.remove('open');
   }
 }
-
-let _calEventsCache = [];
-
-// ── Formatear fecha corta ──
 function calDateKey(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
@@ -4426,11 +4431,9 @@ function renderCalSemana() {
     const evs = byDay[k] || [];
     const isToday = isSameDay(d, today);
     html += `<div class="cal-week-cell ${isToday?'today-col':''}" style="padding:4px">
-      ${evs.length === 0 ? '' : evs.map((ev,i) => {
-        const allEvs = byDay[k];
-        const globalIdx = events.indexOf(ev);
-        return `<span class="cal-event ev-${ev.tipo}" onclick="openCalPopup(${globalIdx},_calEventsCache)">${ev.hora?`<strong>${ev.hora}</strong> `:ev.tipo==='capt'?'🏠 ':'👤 '}${ev.titulo}</span>`;
-      }).join('')}
+      ${evs.length === 0 ? '' : evs.map(ev =>
+        `<span class="cal-event ev-${ev.tipo}" onclick="openCalPopup('${ev.evId}')">${ev.hora?`<strong>${ev.hora}</strong> `:ev.tipo==='capt'?'🏠 ':'👤 '}${ev.titulo}</span>`
+      ).join('')}
     </div>`;
   });
 
@@ -4489,10 +4492,9 @@ function renderCalMes() {
     const isToday = isSameDay(d, today);
     html += `<div class="cal-month-day ${isToday?'today':''}">
       <span class="cal-day-num ${isToday?'today-num':''}">${i}</span>
-      ${evs.slice(0,3).map(ev => {
-        const globalIdx = events.indexOf(ev);
-        return `<span class="cal-event ev-${ev.tipo}" onclick="openCalPopup(${globalIdx},_calEventsCache)">${ev.hora?`<strong>${ev.hora}</strong> `:''}${ev.titulo}</span>`;
-      }).join('')}
+      ${evs.slice(0,3).map(ev =>
+        `<span class="cal-event ev-${ev.tipo}" onclick="openCalPopup('${ev.evId}')">${ev.hora?`<strong>${ev.hora}</strong> `:''}${ev.titulo}</span>`
+      ).join('')}
       ${evs.length > 3 ? `<span style="font-size:0.62rem;color:var(--muted)">+${evs.length-3} más</span>` : ''}
     </div>`;
   }
@@ -4520,12 +4522,11 @@ function renderCalUpcoming() {
     return;
   }
 
-  list.innerHTML = events.slice(0,10).map((ev, i) => {
+  list.innerHTML = events.slice(0,10).map(ev => {
     const dateStr = ev.date.toLocaleDateString('es-ES',{weekday:'long',day:'2-digit',month:'long'});
     const color   = ev.tipo==='capt'?'#14b8a6':ev.tipo==='cancelada'?'#fb923c':'#818cf8';
     const icon    = ev.tipo==='capt'?'🏠':ev.tipo==='cancelada'?'❌':'👤';
-    const globalIdx = _calEventsCache.indexOf(ev);
-    return `<div class="cal-event-item" onclick="openCalPopup(${globalIdx},_calEventsCache)">
+    return `<div class="cal-event-item" onclick="openCalPopup('${ev.evId}')">
       <div class="cal-event-item-date" style="color:${color}">${icon} ${dateStr}${ev.hora ? ` · <strong>🕐 ${ev.hora}</strong>` : ''}</div>
       <div class="cal-event-item-name">${ev.titulo}</div>
       <div class="cal-event-item-sub">${ev.sub}</div>
