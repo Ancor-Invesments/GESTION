@@ -814,6 +814,26 @@
     .cal-title { font-size:0.82rem; min-width:130px; }
   }
 
+  /* ── GRUPOS Y ANOTACIONES DE LEADS ── */
+  .grupo-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; cursor:pointer; transition:opacity 0.15s; }
+  .grupo-badge:hover { opacity:0.8; }
+  .grupos-selector { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+  .grupo-opt { padding:5px 12px; border-radius:20px; border:1px solid var(--border); background:var(--surface2); cursor:pointer; font-size:0.75rem; font-weight:600; color:var(--muted2); transition:all 0.15s; display:flex; align-items:center; gap:5px; }
+  .grupo-opt:hover { border-color:var(--accent); }
+  .grupo-opt.selected { font-weight:700; }
+  .anotaciones-list { display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+  .anotacion-item { background:var(--surface2); border-radius:10px; padding:12px 14px; border-left:3px solid var(--border); position:relative; }
+  .anotacion-item.propia { border-left-color:var(--accent); }
+  .anotacion-meta { display:flex; justify-content:space-between; align-items:center; font-size:0.68rem; color:var(--muted); margin-bottom:6px; }
+  .anotacion-autor { font-weight:600; color:var(--muted2); }
+  .anotacion-texto { font-size:0.82rem; line-height:1.6; white-space:pre-wrap; }
+  .anotacion-del { background:none; border:none; color:var(--muted); cursor:pointer; font-size:0.75rem; padding:0 4px; opacity:0; transition:opacity 0.15s; }
+  .anotacion-item:hover .anotacion-del { opacity:1; }
+  .nota-rapida-area { display:flex; gap:8px; margin-top:10px; align-items:flex-end; }
+  .nota-rapida-area textarea { flex:1; background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:10px; font-size:0.82rem; font-family:Inter,sans-serif; outline:none; resize:none; min-height:60px; transition:border-color 0.15s; }
+  .nota-rapida-area textarea:focus { border-color:var(--accent); }
+  .nota-rapida-area button { background:var(--accent); color:white; border:none; padding:10px 16px; border-radius:10px; font-size:0.82rem; font-weight:600; cursor:pointer; white-space:nowrap; }
+
   .capt-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:12px; margin-bottom:24px; }
   .capt-kpi { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; }
   .capt-kpi::before { content:''; display:block; height:3px; border-radius:2px; margin-bottom:10px; background:linear-gradient(90deg,#14b8a6,#22c55e); }
@@ -912,6 +932,7 @@
       <span id="sync-text">Sin conectar</span>
     </div>
     <button class="btn-outline" onclick="loadLeads()">↻ Actualizar</button>
+    <button class="btn-outline" id="btn-notif" onclick="activarNotificaciones()" title="Activar notificaciones push" style="display:none">🔔</button>
   </div>
 </div>
 
@@ -971,6 +992,10 @@
     <option value="">Ambos agentes</option>
     <option value="Fernando">Fernando</option>
     <option value="Greta">Greta</option>
+  </select>
+  <select id="filter-grupo" onchange="renderAll()">
+    <option value="">Todos los grupos</option>
+    <option value="__sin_grupo__">Sin grupo</option>
   </select>
   <select id="filter-canal" onchange="renderAll()">
     <option value="">Todos los canales</option>
@@ -2225,7 +2250,307 @@ function saveScriptUrl() {
   loadLeads();
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// GRUPOS Y ANOTACIONES DE LEADS
+// ═══════════════════════════════════════════════════════════════════
+
+const GRUPOS_FIJOS = [
+  { id:'caliente',   label:'🔥 Caliente',   color:'#ef4444', bg:'#ef444418', border:'#ef444433' },
+  { id:'tibio',      label:'🌡 Tibio',       color:'#f59e0b', bg:'#f59e0b18', border:'#f59e0b33' },
+  { id:'frio',       label:'🧊 Frío',        color:'#60a5fa', bg:'#60a5fa18', border:'#60a5fa33' },
+  { id:'vip',        label:'⭐ VIP',         color:'#c9a84c', bg:'#c9a84c18', border:'#c9a84c33' },
+  { id:'seguimiento',label:'📞 Seguimiento', color:'#a855f7', bg:'#a855f718', border:'#a855f733' },
+  { id:'espera',     label:'⏳ En espera',   color:'#64748b', bg:'#64748b18', border:'#64748b33' },
+];
+
+const GRUPOS_CUSTOM_KEY = 'ancor_grupos_custom';
+let gruposCustom = JSON.parse(localStorage.getItem(GRUPOS_CUSTOM_KEY) || '[]');
+
+function saveGruposCustom() { localStorage.setItem(GRUPOS_CUSTOM_KEY, JSON.stringify(gruposCustom)); }
+
+function getAllGrupos() { return [...GRUPOS_FIJOS, ...gruposCustom]; }
+
+function getGrupo(id) {
+  return getAllGrupos().find(g => g.id === id) ||
+    { id, label: id, color:'var(--muted2)', bg:'var(--surface2)', border:'var(--border)' };
+}
+
+// Anotaciones — se guardan en localStorage indexadas por lead ID
+const ANOTACIONES_KEY = 'ancor_anotaciones';
+function getAnotaciones(leadId) {
+  try { return JSON.parse(localStorage.getItem(ANOTACIONES_KEY + '_' + leadId) || '[]'); }
+  catch(e) { return []; }
+}
+function saveAnotaciones(leadId, lista) {
+  localStorage.setItem(ANOTACIONES_KEY + '_' + leadId, JSON.stringify(lista));
+}
+
+// Grupo del lead — guardado en localStorage (y sincronizado al notas del lead)
+const LEAD_GRUPO_KEY = 'ancor_lead_grupo';
+function getLeadGrupo(leadId) {
+  return localStorage.getItem(LEAD_GRUPO_KEY + '_' + leadId) || '';
+}
+function setLeadGrupo(leadId, grupoId) {
+  if (grupoId) localStorage.setItem(LEAD_GRUPO_KEY + '_' + leadId, grupoId);
+  else localStorage.removeItem(LEAD_GRUPO_KEY + '_' + leadId);
+}
+
+// ── Render sección grupos + anotaciones dentro de la ficha ──
+function renderGruposAnotaciones(leadId) {
+  const currentGrupo = getLeadGrupo(leadId);
+  const anotaciones  = getAnotaciones(leadId);
+  const todosGrupos  = getAllGrupos();
+
+  return `
+    <!-- GRUPO -->
+    <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px">
+      <div style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-bottom:10px">Grupo / Clasificación</div>
+      <div class="grupos-selector" id="grupos-sel-${leadId}">
+        ${todosGrupos.map(g => `
+          <div class="grupo-opt ${currentGrupo===g.id?'selected':''}"
+               style="${currentGrupo===g.id?`background:${g.bg};border-color:${g.border};color:${g.color}`:''}"
+               onclick="toggleLeadGrupo('${leadId}','${g.id}')">
+            ${g.label}
+          </div>`).join('')}
+        <div class="grupo-opt" onclick="crearGrupoCustom('${leadId}')" style="border-style:dashed">
+          ＋ Nuevo grupo
+        </div>
+      </div>
+    </div>
+
+    <!-- ANOTACIONES -->
+    <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:16px">
+      <div style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-bottom:10px">
+        Historial de anotaciones
+        ${anotaciones.length>0?`<span style="color:var(--muted);font-weight:400;text-transform:none"> · ${anotaciones.length} nota${anotaciones.length>1?'s':''}</span>`:''}
+      </div>
+      <div class="anotaciones-list" id="anotaciones-list-${leadId}">
+        ${anotaciones.length===0
+          ? '<div style="font-size:0.8rem;color:var(--muted);font-style:italic">Sin anotaciones todavía</div>'
+          : anotaciones.map((a,i) => `
+            <div class="anotacion-item ${a.agente==='Fernando'?'propia':''}">
+              <div class="anotacion-meta">
+                <span class="anotacion-autor">👤 ${a.agente||'Tú'}</span>
+                <span>
+                  ${new Date(a.ts).toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}
+                  <button class="anotacion-del" onclick="borrarAnotacion('${leadId}',${i})" title="Borrar">✕</button>
+                </span>
+              </div>
+              <div class="anotacion-texto">${escapeHtml(a.texto)}</div>
+            </div>`).join('')
+        }
+      </div>
+      <!-- Nota rápida -->
+      <div class="nota-rapida-area">
+        <textarea id="nota-input-${leadId}" placeholder="Escribe una anotación... ej: Llamado, muy interesado. Llama mañana a las 10h." onkeydown="if(event.ctrlKey&&event.key==='Enter')guardarAnotacion('${leadId}')"></textarea>
+        <button onclick="guardarAnotacion('${leadId}')">Guardar<br><span style="font-size:0.65rem;opacity:0.7">Ctrl+↵</span></button>
+      </div>
+    </div>`;
+}
+
+function escapeHtml(str) {
+  return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function toggleLeadGrupo(leadId, grupoId) {
+  const current = getLeadGrupo(leadId);
+  const nuevo   = current === grupoId ? '' : grupoId;
+  setLeadGrupo(leadId, nuevo);
+  // Re-render sección grupos en ficha
+  const sel = document.getElementById('grupos-sel-' + leadId);
+  if (sel) {
+    const allG = getAllGrupos();
+    sel.innerHTML = allG.map(g => `
+      <div class="grupo-opt ${nuevo===g.id?'selected':''}"
+           style="${nuevo===g.id?`background:${g.bg};border-color:${g.border};color:${g.color}`:''}"
+           onclick="toggleLeadGrupo('${leadId}','${g.id}')">
+        ${g.label}
+      </div>`).join('') +
+      `<div class="grupo-opt" onclick="crearGrupoCustom('${leadId}')" style="border-style:dashed">＋ Nuevo grupo</div>`;
+  }
+  // Re-render tabla para mostrar badge
+  renderAll();
+  showToast(nuevo ? `✅ Lead clasificado como "${getGrupo(nuevo).label}"` : '↩ Grupo eliminado', 'success');
+}
+
+function crearGrupoCustom(leadId) {
+  const nombre = prompt('Nombre del nuevo grupo:');
+  if (!nombre || !nombre.trim()) return;
+  const colores = ['#22c55e','#14b8a6','#8b5cf6','#ec4899','#06b6d4','#84cc16'];
+  const color   = colores[gruposCustom.length % colores.length];
+  const id      = 'custom_' + Date.now();
+  gruposCustom.push({ id, label: nombre.trim(), color, bg: color+'18', border: color+'33' });
+  saveGruposCustom();
+  toggleLeadGrupo(leadId, id);
+}
+
+function guardarAnotacion(leadId) {
+  const input  = document.getElementById('nota-input-' + leadId);
+  const texto  = input?.value.trim();
+  if (!texto) { showToast('⚠️ Escribe algo primero', 'error'); return; }
+  const anotaciones = getAnotaciones(leadId);
+  anotaciones.unshift({
+    texto,
+    agente: 'Fernando',
+    ts: Date.now(),
+  });
+  saveAnotaciones(leadId, anotaciones);
+  if (input) input.value = '';
+  // Re-render lista
+  const lista = document.getElementById('anotaciones-list-' + leadId);
+  if (lista) {
+    lista.innerHTML = anotaciones.map((a,i) => `
+      <div class="anotacion-item ${a.agente==='Fernando'?'propia':''}">
+        <div class="anotacion-meta">
+          <span class="anotacion-autor">👤 ${a.agente||'Tú'}</span>
+          <span>
+            ${new Date(a.ts).toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}
+            <button class="anotacion-del" onclick="borrarAnotacion('${leadId}',${i})" title="Borrar">✕</button>
+          </span>
+        </div>
+        <div class="anotacion-texto">${escapeHtml(a.texto)}</div>
+      </div>`).join('');
+  }
+  showToast('📝 Anotación guardada', 'success');
+}
+
+function borrarAnotacion(leadId, idx) {
+  if (!confirm('¿Borrar esta anotación?')) return;
+  const lista = getAnotaciones(leadId);
+  lista.splice(idx, 1);
+  saveAnotaciones(leadId, lista);
+  // Re-render
+  const container = document.getElementById('anotaciones-list-' + leadId);
+  if (container) {
+    container.innerHTML = lista.length === 0
+      ? '<div style="font-size:0.8rem;color:var(--muted);font-style:italic">Sin anotaciones todavía</div>'
+      : lista.map((a,i) => `
+        <div class="anotacion-item ${a.agente==='Fernando'?'propia':''}">
+          <div class="anotacion-meta">
+            <span class="anotacion-autor">👤 ${a.agente||'Tú'}</span>
+            <span>
+              ${new Date(a.ts).toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}
+              <button class="anotacion-del" onclick="borrarAnotacion('${leadId}',${i})">✕</button>
+            </span>
+          </div>
+          <div class="anotacion-texto">${escapeHtml(a.texto)}</div>
+        </div>`).join('');
+  }
+}
+const NOTIF_LAST_KEY = 'ancor_last_lead_check';
+
+async function requestNotificationPermission() {
+  if (!('Notification' in window)) return false;
+  if (Notification.permission === 'granted') return true;
+  if (Notification.permission === 'denied') return false;
+  const perm = await Notification.requestPermission();
+  return perm === 'granted';
+}
+
+function showPushNotification(lead) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const notif = new Notification(`🔥 Nuevo lead: ${lead.nombre}`, {
+    body: `📞 ${lead.telefono || '—'}\n🏢 ${(products.find(p=>p.id===lead.producto)||{name:lead.producto||'Meta'}).name}\n📧 ${lead.email||'—'}`,
+    icon: 'https://ancor-invesments.github.io/GESTION/favicon.ico',
+    badge:'https://ancor-invesments.github.io/GESTION/favicon.ico',
+    tag:  'lead_' + lead.id,
+    requireInteraction: true,
+  });
+  notif.onclick = () => {
+    window.focus();
+    notif.close();
+    switchTab('leads');
+    setTimeout(() => openFicha(lead.id), 300);
+  };
+}
+
+function playNotificationSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [523, 659, 784].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0.3, ctx.currentTime + i*0.15);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i*0.15 + 0.3);
+      osc.start(ctx.currentTime + i*0.15);
+      osc.stop(ctx.currentTime + i*0.15 + 0.3);
+    });
+  } catch(e) {}
+}
+
+function updateLeadsBadgeNav(count) {
+  const tab = document.getElementById('tab-leads');
+  if (!tab) return;
+  const existing = tab.querySelector('.match-badge-nav');
+  if (existing) existing.remove();
+  if (count > 0) {
+    tab.innerHTML = `📋 Leads <span class="match-badge-nav">${count}</span>`;
+  } else {
+    tab.textContent = '📋 Leads';
+  }
+}
+
+// Detectar leads nuevos comparando con la última vez que se cargó
+let _lastLeadIds = new Set();
+
+function checkForNewLeads(newLeads) {
+  if (_lastLeadIds.size === 0) {
+    // Primera carga — solo inicializar la lista
+    newLeads.forEach(l => _lastLeadIds.add(l.id));
+    return;
+  }
+
+  const nuevos = newLeads.filter(l => !_lastLeadIds.has(l.id));
+
+  if (nuevos.length > 0) {
+    // Actualizar lista
+    newLeads.forEach(l => _lastLeadIds.add(l.id));
+
+    // Notificaciones
+    nuevos.forEach(lead => {
+      showPushNotification(lead);
+    });
+    playNotificationSound();
+
+    // Toast en la app
+    const nombres = nuevos.map(l=>l.nombre).join(', ');
+    showToast(`🔥 ${nuevos.length} nuevo${nuevos.length>1?'s':''} lead${nuevos.length>1?'s':''} de Meta: ${nombres}`, 'success');
+
+    // Badge en pestaña Leads
+    updateLeadsBadgeNav(nuevos.length);
+
+    // Limpiar badge tras 10s
+    setTimeout(() => updateLeadsBadgeNav(0), 10000);
+  } else {
+    newLeads.forEach(l => _lastLeadIds.add(l.id));
+  }
+}
+
+async function activarNotificaciones() {
+  const granted = await requestNotificationPermission();
+  const btn = document.getElementById('btn-notif');
+  if (granted) {
+    if (btn) { btn.textContent = '🔔 Activadas'; btn.style.color='var(--green)'; btn.style.borderColor='var(--green)'; btn.disabled=true; }
+    showToast('✅ Notificaciones push activadas', 'success');
+  } else {
+    showToast('⚠️ Actívalas en Ajustes del navegador → Notificaciones', 'error');
+  }
+}
+
 function initSetup() {
+  // Mostrar botón de notificaciones si el navegador las soporta
+  if ('Notification' in window) {
+    const btn = document.getElementById('btn-notif');
+    if (btn) {
+      btn.style.display = '';
+      if (Notification.permission === 'granted') {
+        btn.textContent = '🔔'; btn.style.color='var(--green)'; btn.style.borderColor='var(--green)'; btn.disabled=true;
+      }
+    }
+  }
   if (scriptUrl) {
     document.getElementById('setup-banner').classList.add('hidden');
     loadLeads();
@@ -2301,6 +2626,7 @@ async function loadLeads() {
     }));
 
     setSyncStatus('ok', 'Sincronizado · ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'}));
+    checkForNewLeads(leads);
     renderAll();
 
   } catch(e) {
@@ -2434,18 +2760,34 @@ function getFiltered() {
   const canal    = document.getElementById('filter-canal').value;
   const estado   = document.getElementById('filter-estado').value;
   const search   = document.getElementById('filter-search').value.toLowerCase();
+  const grupo    = document.getElementById('filter-grupo')?.value || '';
+
   return leads.filter(l => {
     if (producto && l.producto !== producto) return false;
     if (agente   && l.agente   !== agente)   return false;
     if (canal    && l.canal    !== canal)     return false;
     if (estado   && l.estado   !== estado)   return false;
     if (search   && !l.nombre.toLowerCase().includes(search)) return false;
+    if (grupo) {
+      const g = getLeadGrupo(l.id);
+      if (grupo === '__sin_grupo__' && g) return false;
+      if (grupo !== '__sin_grupo__' && g !== grupo) return false;
+    }
     return true;
   });
 }
 
+function updateGrupoFilter() {
+  const sel = document.getElementById('filter-grupo');
+  if (!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="">Todos los grupos</option><option value="__sin_grupo__">Sin grupo</option>' +
+    getAllGrupos().map(g => `<option value="${g.id}" ${current===g.id?'selected':''}>${g.label}</option>`).join('');
+}
+
 function renderAll() {
   renderProductFilter();
+  updateGrupoFilter();
   renderBreakdown();
   renderKPIs();
   renderTable();
@@ -2540,8 +2882,10 @@ function renderTable() {
       i.nombre.toLowerCase() === l.nombre.toLowerCase() ||
       (l.telefono && i.telefono === l.telefono)
     );
+    const grupo = getLeadGrupo(l.id);
+    const grupoObj = grupo ? getGrupo(grupo) : null;
     return `<tr onclick="openFicha('${l.id}')" style="cursor:pointer">
-      <td class="name">${l.nombre}${esInversor ? ' <span style="font-size:0.62rem;background:#c9a84c22;color:#c9a84c;border:1px solid #c9a84c44;padding:1px 6px;border-radius:10px;font-weight:700;vertical-align:middle">💼</span>' : ''}</td>
+      <td class="name">${l.nombre}${esInversor ? ' <span style="font-size:0.62rem;background:#c9a84c22;color:#c9a84c;border:1px solid #c9a84c44;padding:1px 6px;border-radius:10px;font-weight:700;vertical-align:middle">💼</span>' : ''}${grupoObj ? ` <span style="font-size:0.62rem;background:${grupoObj.bg};color:${grupoObj.color};border:1px solid ${grupoObj.border};padding:1px 6px;border-radius:10px;font-weight:700;vertical-align:middle">${grupoObj.label}</span>` : ''}</td>
       <td class="phone">${l.telefono||'—'}</td>
       <td style="color:var(--muted2);font-size:0.75rem">${l.email ? `<a href="mailto:${l.email}" style="color:var(--accent);text-decoration:none" onclick="event.stopPropagation()">${l.email}</a>` : '—'}</td>
       <td><span class="badge" style="background:${prod.bg};color:${prod.text};border:1px solid ${prod.border}">${prod.icon} ${prod.name}</span></td>
@@ -2582,10 +2926,14 @@ function renderTable() {
         </div>
       </div>` : '');
 
+    const grupoId  = getLeadGrupo(l.id);
+    const grupoObj = grupoId ? getGrupo(grupoId) : null;
+
     return `<div class="lead-card ${tieneCita?'has-cita':''}" onclick="openFicha('${l.id}')">
       <div class="card-top">
         <div style="min-width:0;flex:1">
           <div class="card-name">${l.nombre}${esInversor ? ' <span style="font-size:0.65rem;background:#c9a84c22;color:#c9a84c;border:1px solid #c9a84c44;padding:1px 6px;border-radius:10px;font-weight:700">💼 INVERSOR</span>' : ''}</div>
+          ${grupoObj ? `<div style="margin-top:3px"><span style="font-size:0.65rem;background:${grupoObj.bg};color:${grupoObj.color};border:1px solid ${grupoObj.border};padding:2px 8px;border-radius:10px;font-weight:700">${grupoObj.label}</span></div>` : ''}
           ${l.telefono ? `<div class="card-phone">📞 ${l.telefono}</div>` : ''}
           ${l.email    ? `<div class="card-email-line">✉ ${l.email}</div>` : ''}
         </div>
@@ -2727,6 +3075,7 @@ function openFicha(id) {
     </div>`;
   }
 
+  body += renderGruposAnotaciones(l.id);
   document.getElementById('ficha-body').innerHTML = body;
   document.getElementById('ficha-overlay').classList.add('open');
 }
