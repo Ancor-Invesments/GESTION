@@ -2752,7 +2752,14 @@ async function deleteLead() {
 // ─────────────────────────────────────────────
 // RENDER
 // ─────────────────────────────────────────────
-function getProduct(id) { return products.find(p => p.id === id) || { name: id, icon:'📦', bg:'#4f7cff18', text:'var(--accent)', border:'#4f7cff33', bar:'var(--accent)' }; }
+function getProduct(id) {
+  if (!id) return { name:'—', icon:'📦', bg:'#4f7cff18', text:'var(--accent)', border:'#4f7cff33', bar:'var(--accent)' };
+  // Buscar por ID exacto primero
+  let p = products.find(p => p.id === id);
+  // Si no, buscar por nombre (leads que llegan del webhook de Meta)
+  if (!p) p = products.find(p => p.name?.toLowerCase() === id?.toLowerCase());
+  return p || { name: id, icon:'📦', bg:'#4f7cff18', text:'var(--accent)', border:'#4f7cff33', bar:'var(--accent)' };
+}
 
 function getFiltered() {
   const producto = document.getElementById('filter-producto').value;
