@@ -2311,6 +2311,7 @@ function renderGruposAnotaciones(leadId) {
                style="${currentGrupo===g.id?`background:${g.bg};border-color:${g.border};color:${g.color}`:''}"
                onclick="toggleLeadGrupo('${leadId}','${g.id}')">
             ${g.label}
+            ${gruposCustom.find(c=>c.id===g.id) ? `<span onclick="event.stopPropagation();eliminarGrupoCustom('${g.id}','${leadId}')" style="margin-left:4px;opacity:0.5;font-size:0.75rem" title="Eliminar grupo">✕</span>` : ''}
           </div>`).join('')}
         <div class="grupo-opt" onclick="crearGrupoCustom('${leadId}')" style="border-style:dashed">
           ＋ Nuevo grupo
@@ -2365,12 +2366,34 @@ function toggleLeadGrupo(leadId, grupoId) {
            style="${nuevo===g.id?`background:${g.bg};border-color:${g.border};color:${g.color}`:''}"
            onclick="toggleLeadGrupo('${leadId}','${g.id}')">
         ${g.label}
+        ${gruposCustom.find(c=>c.id===g.id) ? `<span onclick="event.stopPropagation();eliminarGrupoCustom('${g.id}','${leadId}')" style="margin-left:4px;opacity:0.5;font-size:0.75rem" title="Eliminar grupo">✕</span>` : ''}
       </div>`).join('') +
       `<div class="grupo-opt" onclick="crearGrupoCustom('${leadId}')" style="border-style:dashed">＋ Nuevo grupo</div>`;
   }
   // Re-render tabla para mostrar badge
   renderAll();
   showToast(nuevo ? `✅ Lead clasificado como "${getGrupo(nuevo).label}"` : '↩ Grupo eliminado', 'success');
+}
+
+function eliminarGrupoCustom(grupoId, leadId) {
+  if (!confirm('¿Eliminar este grupo? Los leads que lo tenían asignado quedarán sin grupo.')) return;
+  gruposCustom = gruposCustom.filter(g => g.id !== grupoId);
+  saveGruposCustom();
+  // Si algún lead tenía este grupo, quitárselo
+  // (localStorage — buscamos todas las claves)
+  Object.keys(localStorage).forEach(k => {
+    if (k.startsWith(LEAD_GRUPO_KEY) && localStorage.getItem(k) === grupoId) {
+      localStorage.removeItem(k);
+    }
+  });
+  showToast('🗑 Grupo eliminado', 'success');
+  // Re-render ficha
+  const ficha = document.getElementById('ficha-body');
+  if (ficha && leadId) {
+    const l = leads.find(x => x.id === leadId);
+    if (l) openFicha(leadId);
+  }
+  renderAll();
 }
 
 function crearGrupoCustom(leadId) {
