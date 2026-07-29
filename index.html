@@ -2400,7 +2400,12 @@ function renderGruposAnotaciones(leadId) {
 async function toggleLeadGrupo(leadId, grupoId) {
   const current = getLeadGrupo(leadId);
   const nuevo   = current === grupoId ? '' : grupoId;
-  await setLeadGrupo(leadId, nuevo);
+
+  // 1. Actualizar en memoria inmediatamente para que la UI responda al instante
+  const lead = leads.find(l => l.id === leadId);
+  if (lead) lead.grupo = nuevo;
+
+  // 2. Actualizar selector visualmente
   const sel = document.getElementById('grupos-sel-' + leadId);
   if (sel) {
     sel.innerHTML = getAllGrupos().map(g => `
@@ -2414,6 +2419,15 @@ async function toggleLeadGrupo(leadId, grupoId) {
   }
   renderAll();
   showToast(nuevo ? `✅ "${getGrupo(nuevo).label}"` : '↩ Grupo eliminado', 'success');
+
+  // 3. Sincronizar con Sheet en segundo plano
+  if (scriptUrl) {
+    try {
+      await fetch(scriptUrl, { method:'POST', body: JSON.stringify({ action:'updateLeadGrupo', lead_id: leadId, grupo: nuevo }) });
+    } catch(e) {
+      showToast('⚠️ Sin conexión — grupo guardado localmente', 'error');
+    }
+  }
 }
 
 async function crearGrupoCustom(leadId) {
@@ -2638,14 +2652,14 @@ async function loadLeads() {
       estado:   l.estado   || 'No contactado',
       fecha:    l.fecha    || '',
       hora:     l.hora     || '',
-      // Preservar grupo de memoria si el Sheet aún no lo tiene
-      grupo:    l.grupo    || (leads.find(x=>x.id===(l.id||''))?.grupo) || '',
+      grupo:    l.grupo || (leads.find(x => x.id === (l.id||''))?.grupo) || '',
       notas:    l.notas    || '',
     }));
 
     setSyncStatus('ok', 'Sincronizado · ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'}));
     checkForNewLeads(leads);
     await loadGruposYAnotaciones();
+    // Preservar grupos en memoria que puedan estar más actualizados que el Sheet
     renderAll();
 
   } catch(e) {
