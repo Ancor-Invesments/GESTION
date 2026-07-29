@@ -2290,12 +2290,24 @@ function getLeadGrupo(leadId) {
 }
 
 async function setLeadGrupo(leadId, grupoId) {
-  const lead = leads.find(l => l.id === leadId);
-  if (lead) lead.grupo = grupoId || '';
   if (!scriptUrl) return;
   try {
-    await fetch(scriptUrl, { method:'POST', body: JSON.stringify({ action:'updateLeadGrupo', lead_id: leadId, grupo: grupoId || '' }) });
-  } catch(e) { console.log('Error sync grupo:', e); }
+    // Primero guardar en Sheet
+    const res  = await fetch(scriptUrl, { method:'POST', body: JSON.stringify({ action:'updateLeadGrupo', lead_id: leadId, grupo: grupoId || '' }) });
+    const data = await res.json();
+    if (data.ok) {
+      // Solo actualizar en memoria si el Sheet confirmó
+      const lead = leads.find(l => l.id === leadId);
+      if (lead) lead.grupo = grupoId || '';
+    } else {
+      showToast('⚠️ Error al guardar grupo en el servidor', 'error');
+    }
+  } catch(e) {
+    showToast('⚠️ Sin conexión — grupo guardado solo localmente', 'error');
+    // Guardar en memoria igualmente como fallback
+    const lead = leads.find(l => l.id === leadId);
+    if (lead) lead.grupo = grupoId || '';
+  }
 }
 
 function getAnotaciones(leadId) {
@@ -2626,7 +2638,8 @@ async function loadLeads() {
       estado:   l.estado   || 'No contactado',
       fecha:    l.fecha    || '',
       hora:     l.hora     || '',
-      grupo:    l.grupo    || '',
+      // Preservar grupo de memoria si el Sheet aún no lo tiene
+      grupo:    l.grupo    || (leads.find(x=>x.id===(l.id||''))?.grupo) || '',
       notas:    l.notas    || '',
     }));
 
