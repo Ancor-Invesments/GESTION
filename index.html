@@ -2251,7 +2251,7 @@ function saveScriptUrl() {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// GRUPOS Y ANOTACIONES DE LEADS
+// GRUPOS Y ANOTACIONES — Sincronizados con Google Sheet
 // ═══════════════════════════════════════════════════════════════════
 
 const GRUPOS_FIJOS = [
@@ -2263,46 +2263,101 @@ const GRUPOS_FIJOS = [
   { id:'espera',     label:'⏳ En espera',   color:'#64748b', bg:'#64748b18', border:'#64748b33' },
 ];
 
-const GRUPOS_CUSTOM_KEY = 'ancor_grupos_custom';
-let gruposCustom = JSON.parse(localStorage.getItem(GRUPOS_CUSTOM_KEY) || '[]');
-
-function saveGruposCustom() { localStorage.setItem(GRUPOS_CUSTOM_KEY, JSON.stringify(gruposCustom)); }
+let gruposCustom  = [];
+let anotacionesDB = [];
 
 function getAllGrupos() { return [...GRUPOS_FIJOS, ...gruposCustom]; }
-
 function getGrupo(id) {
   return getAllGrupos().find(g => g.id === id) ||
     { id, label: id, color:'var(--muted2)', bg:'var(--surface2)', border:'var(--border)' };
 }
 
-// Anotaciones — se guardan en localStorage indexadas por lead ID
-const ANOTACIONES_KEY = 'ancor_anotaciones';
-function getAnotaciones(leadId) {
-  try { return JSON.parse(localStorage.getItem(ANOTACIONES_KEY + '_' + leadId) || '[]'); }
-  catch(e) { return []; }
-}
-function saveAnotaciones(leadId, lista) {
-  localStorage.setItem(ANOTACIONES_KEY + '_' + leadId, JSON.stringify(lista));
+async function loadGruposYAnotaciones() {
+  if (!scriptUrl) return;
+  try {
+    const [rG, rA] = await Promise.all([
+      fetch(scriptUrl + '?action=getGruposCustom').then(r=>r.json()),
+      fetch(scriptUrl + '?action=getAnotaciones').then(r=>r.json()),
+    ]);
+    gruposCustom  = rG.grupos       || [];
+    anotacionesDB = rA.anotaciones  || [];
+  } catch(e) { console.log('Error cargando grupos/anotaciones:', e); }
 }
 
-// Grupo del lead — guardado en localStorage (y sincronizado al notas del lead)
-const LEAD_GRUPO_KEY = 'ancor_lead_grupo';
 function getLeadGrupo(leadId) {
-  return localStorage.getItem(LEAD_GRUPO_KEY + '_' + leadId) || '';
-}
-function setLeadGrupo(leadId, grupoId) {
-  if (grupoId) localStorage.setItem(LEAD_GRUPO_KEY + '_' + leadId, grupoId);
-  else localStorage.removeItem(LEAD_GRUPO_KEY + '_' + leadId);
+  const lead = leads.find(l => l.id === leadId);
+  return lead?.grupo || '';
 }
 
-// ── Render sección grupos + anotaciones dentro de la ficha ──
+async function setLeadGrupo(leadId, grupoId) {
+  const lead = leads.find(l => l.id === leadId);
+  if (lead) lead.grupo = grupoId || '';
+  if (!scriptUrl) return;
+  try {
+    await fetch(scriptUrl, { method:'POST', body: JSON.stringify({ action:'updateLeadGrupo', lead_id: leadId, grupo: grupoId || '' }) });
+  } catch(e) { console.log('Error sync grupo:', e); }
+}
+
+function getAnotaciones(leadId) {
+  return anotacionesDB
+    .filter(a => a.lead_id === leadId)
+    .sort((a,b) => Number(b.ts) - Number(a.ts));
+}
+
+async function addAnotacionDB(leadId, texto, agente) {
+  const anotacion = { id:'anot_'+Date.now(), lead_id:leadId, texto, agente:agente||'Fernando', ts:String(Date.now()) };
+  anotacionesDB.unshift(anotacion);
+  if (!scriptUrl) return;
+  try { await fetch(scriptUrl, { method:'POST', body: JSON.stringify({ action:'addAnotacion', anotacion }) }); }
+  catch(e) { console.log('Error sync anotación:', e); }
+  return anotacion;
+}
+
+async function deleteAnotacionDB(anotacionId) {
+  anotacionesDB = anotacionesDB.filter(a => a.id !== anotacionId);
+  if (!scriptUrl) return;
+  try { await fetch(scriptUrl, { method:'POST', body: JSON.stringify({ action:'deleteAnotacion', anotacion:{ id:anotacionId } }) }); }
+  catch(e) { console.log('Error sync delete anotación:', e); }
+}
+
+async function saveGrupoCustomDB(grupo) {
+  gruposCustom.push(grupo);
+  if (!scriptUrl) return;
+  try { await fetch(scriptUrl, { method:'POST', body: JSON.stringify({ action:'saveGrupoCustom', grupo }) }); }
+  catch(e) { console.log('Error sync grupo custom:', e); }
+}
+
+async function deleteGrupoCustomDB(grupoId) {
+  gruposCustom = gruposCustom.filter(g => g.id !== grupoId);
+  if (!scriptUrl) return;
+  try { await fetch(scriptUrl, { method:'POST', body: JSON.stringify({ action:'deleteGrupoCustom', grupo_id:grupoId }) }); }
+  catch(e) { console.log('Error sync delete grupo:', e); }
+}
+
+function escapeHtml(str) {
+  return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderAnotacionesList(leadId, anotaciones) {
+  if (!anotaciones.length) return '<div style="font-size:0.8rem;color:var(--muted);font-style:italic">Sin anotaciones todavía</div>';
+  return anotaciones.map(a => `
+    <div class="anotacion-item ${a.agente==='Fernando'?'propia':''}">
+      <div class="anotacion-meta">
+        <span class="anotacion-autor">👤 ${a.agente||'Tú'}</span>
+        <span>
+          ${new Date(Number(a.ts)).toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}
+          <button class="anotacion-del" onclick="borrarAnotacion('${a.id}','${leadId}')" title="Borrar">✕</button>
+        </span>
+      </div>
+      <div class="anotacion-texto">${escapeHtml(a.texto)}</div>
+    </div>`).join('');
+}
+
 function renderGruposAnotaciones(leadId) {
   const currentGrupo = getLeadGrupo(leadId);
   const anotaciones  = getAnotaciones(leadId);
   const todosGrupos  = getAllGrupos();
-
   return `
-    <!-- GRUPO -->
     <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px">
       <div style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-bottom:10px">Grupo / Clasificación</div>
       <div class="grupos-selector" id="grupos-sel-${leadId}">
@@ -2311,155 +2366,81 @@ function renderGruposAnotaciones(leadId) {
                style="${currentGrupo===g.id?`background:${g.bg};border-color:${g.border};color:${g.color}`:''}"
                onclick="toggleLeadGrupo('${leadId}','${g.id}')">
             ${g.label}
-            ${gruposCustom.find(c=>c.id===g.id) ? `<span onclick="event.stopPropagation();eliminarGrupoCustom('${g.id}','${leadId}')" style="margin-left:4px;opacity:0.5;font-size:0.75rem" title="Eliminar grupo">✕</span>` : ''}
+            ${gruposCustom.find(c=>c.id===g.id)?`<span onclick="event.stopPropagation();eliminarGrupoCustom('${g.id}','${leadId}')" style="margin-left:4px;opacity:0.5;font-size:0.75rem">✕</span>`:''}
           </div>`).join('')}
-        <div class="grupo-opt" onclick="crearGrupoCustom('${leadId}')" style="border-style:dashed">
-          ＋ Nuevo grupo
-        </div>
+        <div class="grupo-opt" onclick="crearGrupoCustom('${leadId}')" style="border-style:dashed">＋ Nuevo grupo</div>
       </div>
     </div>
-
-    <!-- ANOTACIONES -->
     <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:16px">
       <div style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-bottom:10px">
-        Historial de anotaciones
-        ${anotaciones.length>0?`<span style="color:var(--muted);font-weight:400;text-transform:none"> · ${anotaciones.length} nota${anotaciones.length>1?'s':''}</span>`:''}
+        Historial de anotaciones${anotaciones.length>0?` <span style="color:var(--muted);font-weight:400;text-transform:none">· ${anotaciones.length} nota${anotaciones.length>1?'s':''}</span>`:''}
       </div>
       <div class="anotaciones-list" id="anotaciones-list-${leadId}">
-        ${anotaciones.length===0
-          ? '<div style="font-size:0.8rem;color:var(--muted);font-style:italic">Sin anotaciones todavía</div>'
-          : anotaciones.map((a,i) => `
-            <div class="anotacion-item ${a.agente==='Fernando'?'propia':''}">
-              <div class="anotacion-meta">
-                <span class="anotacion-autor">👤 ${a.agente||'Tú'}</span>
-                <span>
-                  ${new Date(a.ts).toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}
-                  <button class="anotacion-del" onclick="borrarAnotacion('${leadId}',${i})" title="Borrar">✕</button>
-                </span>
-              </div>
-              <div class="anotacion-texto">${escapeHtml(a.texto)}</div>
-            </div>`).join('')
-        }
+        ${renderAnotacionesList(leadId, anotaciones)}
       </div>
-      <!-- Nota rápida -->
       <div class="nota-rapida-area">
-        <textarea id="nota-input-${leadId}" placeholder="Escribe una anotación... ej: Llamado, muy interesado. Llama mañana a las 10h." onkeydown="if(event.ctrlKey&&event.key==='Enter')guardarAnotacion('${leadId}')"></textarea>
+        <textarea id="nota-input-${leadId}" placeholder="Escribe una anotación... (Ctrl+↵ para guardar)" onkeydown="if(event.ctrlKey&&event.key==='Enter')guardarAnotacion('${leadId}')"></textarea>
         <button onclick="guardarAnotacion('${leadId}')">Guardar<br><span style="font-size:0.65rem;opacity:0.7">Ctrl+↵</span></button>
       </div>
     </div>`;
 }
 
-function escapeHtml(str) {
-  return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-function toggleLeadGrupo(leadId, grupoId) {
+async function toggleLeadGrupo(leadId, grupoId) {
   const current = getLeadGrupo(leadId);
   const nuevo   = current === grupoId ? '' : grupoId;
-  setLeadGrupo(leadId, nuevo);
-  // Re-render sección grupos en ficha
+  await setLeadGrupo(leadId, nuevo);
   const sel = document.getElementById('grupos-sel-' + leadId);
   if (sel) {
-    const allG = getAllGrupos();
-    sel.innerHTML = allG.map(g => `
+    sel.innerHTML = getAllGrupos().map(g => `
       <div class="grupo-opt ${nuevo===g.id?'selected':''}"
            style="${nuevo===g.id?`background:${g.bg};border-color:${g.border};color:${g.color}`:''}"
            onclick="toggleLeadGrupo('${leadId}','${g.id}')">
         ${g.label}
-        ${gruposCustom.find(c=>c.id===g.id) ? `<span onclick="event.stopPropagation();eliminarGrupoCustom('${g.id}','${leadId}')" style="margin-left:4px;opacity:0.5;font-size:0.75rem" title="Eliminar grupo">✕</span>` : ''}
+        ${gruposCustom.find(c=>c.id===g.id)?`<span onclick="event.stopPropagation();eliminarGrupoCustom('${g.id}','${leadId}')" style="margin-left:4px;opacity:0.5;font-size:0.75rem">✕</span>`:''}
       </div>`).join('') +
       `<div class="grupo-opt" onclick="crearGrupoCustom('${leadId}')" style="border-style:dashed">＋ Nuevo grupo</div>`;
   }
-  // Re-render tabla para mostrar badge
   renderAll();
-  showToast(nuevo ? `✅ Lead clasificado como "${getGrupo(nuevo).label}"` : '↩ Grupo eliminado', 'success');
+  showToast(nuevo ? `✅ "${getGrupo(nuevo).label}"` : '↩ Grupo eliminado', 'success');
 }
 
-function eliminarGrupoCustom(grupoId, leadId) {
-  if (!confirm('¿Eliminar este grupo? Los leads que lo tenían asignado quedarán sin grupo.')) return;
-  gruposCustom = gruposCustom.filter(g => g.id !== grupoId);
-  saveGruposCustom();
-  // Si algún lead tenía este grupo, quitárselo
-  // (localStorage — buscamos todas las claves)
-  Object.keys(localStorage).forEach(k => {
-    if (k.startsWith(LEAD_GRUPO_KEY) && localStorage.getItem(k) === grupoId) {
-      localStorage.removeItem(k);
-    }
-  });
-  showToast('🗑 Grupo eliminado', 'success');
-  // Re-render ficha
-  const ficha = document.getElementById('ficha-body');
-  if (ficha && leadId) {
-    const l = leads.find(x => x.id === leadId);
-    if (l) openFicha(leadId);
-  }
-  renderAll();
-}
-
-function crearGrupoCustom(leadId) {
+async function crearGrupoCustom(leadId) {
   const nombre = prompt('Nombre del nuevo grupo:');
   if (!nombre || !nombre.trim()) return;
   const colores = ['#22c55e','#14b8a6','#8b5cf6','#ec4899','#06b6d4','#84cc16'];
   const color   = colores[gruposCustom.length % colores.length];
-  const id      = 'custom_' + Date.now();
-  gruposCustom.push({ id, label: nombre.trim(), color, bg: color+'18', border: color+'33' });
-  saveGruposCustom();
-  toggleLeadGrupo(leadId, id);
+  const grupo   = { id:'custom_'+Date.now(), label:nombre.trim(), color, bg:color+'18', border:color+'33' };
+  await saveGrupoCustomDB(grupo);
+  toggleLeadGrupo(leadId, grupo.id);
 }
 
-function guardarAnotacion(leadId) {
-  const input  = document.getElementById('nota-input-' + leadId);
-  const texto  = input?.value.trim();
+async function eliminarGrupoCustom(grupoId, leadId) {
+  if (!confirm('¿Eliminar este grupo?')) return;
+  leads.forEach(l => { if (l.grupo === grupoId) l.grupo = ''; });
+  await deleteGrupoCustomDB(grupoId);
+  showToast('🗑 Grupo eliminado', 'success');
+  openFicha(leadId);
+  renderAll();
+}
+
+async function guardarAnotacion(leadId) {
+  const input = document.getElementById('nota-input-' + leadId);
+  const texto = input?.value.trim();
   if (!texto) { showToast('⚠️ Escribe algo primero', 'error'); return; }
-  const anotaciones = getAnotaciones(leadId);
-  anotaciones.unshift({
-    texto,
-    agente: 'Fernando',
-    ts: Date.now(),
-  });
-  saveAnotaciones(leadId, anotaciones);
+  await addAnotacionDB(leadId, texto, 'Fernando');
   if (input) input.value = '';
-  // Re-render lista
   const lista = document.getElementById('anotaciones-list-' + leadId);
-  if (lista) {
-    lista.innerHTML = anotaciones.map((a,i) => `
-      <div class="anotacion-item ${a.agente==='Fernando'?'propia':''}">
-        <div class="anotacion-meta">
-          <span class="anotacion-autor">👤 ${a.agente||'Tú'}</span>
-          <span>
-            ${new Date(a.ts).toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}
-            <button class="anotacion-del" onclick="borrarAnotacion('${leadId}',${i})" title="Borrar">✕</button>
-          </span>
-        </div>
-        <div class="anotacion-texto">${escapeHtml(a.texto)}</div>
-      </div>`).join('');
-  }
-  showToast('📝 Anotación guardada', 'success');
+  if (lista) lista.innerHTML = renderAnotacionesList(leadId, getAnotaciones(leadId));
+  showToast('📝 Anotación guardada y sincronizada', 'success');
 }
 
-function borrarAnotacion(leadId, idx) {
+async function borrarAnotacion(anotacionId, leadId) {
   if (!confirm('¿Borrar esta anotación?')) return;
-  const lista = getAnotaciones(leadId);
-  lista.splice(idx, 1);
-  saveAnotaciones(leadId, lista);
-  // Re-render
-  const container = document.getElementById('anotaciones-list-' + leadId);
-  if (container) {
-    container.innerHTML = lista.length === 0
-      ? '<div style="font-size:0.8rem;color:var(--muted);font-style:italic">Sin anotaciones todavía</div>'
-      : lista.map((a,i) => `
-        <div class="anotacion-item ${a.agente==='Fernando'?'propia':''}">
-          <div class="anotacion-meta">
-            <span class="anotacion-autor">👤 ${a.agente||'Tú'}</span>
-            <span>
-              ${new Date(a.ts).toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}
-              <button class="anotacion-del" onclick="borrarAnotacion('${leadId}',${i})">✕</button>
-            </span>
-          </div>
-          <div class="anotacion-texto">${escapeHtml(a.texto)}</div>
-        </div>`).join('');
-  }
+  await deleteAnotacionDB(anotacionId);
+  const lista = document.getElementById('anotaciones-list-' + leadId);
+  if (lista) lista.innerHTML = renderAnotacionesList(leadId, getAnotaciones(leadId));
 }
+
 const NOTIF_LAST_KEY = 'ancor_last_lead_check';
 
 async function requestNotificationPermission() {
@@ -2645,11 +2626,13 @@ async function loadLeads() {
       estado:   l.estado   || 'No contactado',
       fecha:    l.fecha    || '',
       hora:     l.hora     || '',
+      grupo:    l.grupo    || '',
       notas:    l.notas    || '',
     }));
 
     setSyncStatus('ok', 'Sincronizado · ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'}));
     checkForNewLeads(leads);
+    await loadGruposYAnotaciones();
     renderAll();
 
   } catch(e) {
@@ -4945,6 +4928,7 @@ initSetup();
 loadInversores();
 loadProspectos();
 loadActivos();
+loadGruposYAnotaciones();
 // ═══════════════════════════════════════════════════════════════════
 
 let activos       = [];
