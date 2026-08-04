@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="favicon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Leads · Ancor Investment</title>
 <style>
@@ -814,7 +815,24 @@
     .cal-title { font-size:0.82rem; min-width:130px; }
   }
 
-  /* ── GRUPOS Y ANOTACIONES DE LEADS ── */
+  /* ── WHATSAPP MODAL ── */
+  .wa-modal { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:0; width:100%; max-width:480px; overflow:hidden; }
+  .wa-modal-header { background:linear-gradient(135deg,#25d366,#128c7e); padding:18px 20px; }
+  .wa-modal-title { color:white; font-weight:700; font-size:1rem; margin-bottom:2px; }
+  .wa-modal-sub { color:rgba(255,255,255,0.8); font-size:0.78rem; }
+  .wa-modal-body { padding:20px; }
+  .wa-msg-tabs { display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap; }
+  .wa-msg-tab { padding:5px 12px; border-radius:20px; border:1px solid var(--border); background:var(--surface2); cursor:pointer; font-size:0.75rem; font-weight:600; color:var(--muted2); transition:all 0.15s; }
+  .wa-msg-tab:hover { border-color:#25d366; color:#25d366; }
+  .wa-msg-tab.active { background:#25d36618; border-color:#25d36644; color:#25d366; }
+  .wa-msg-preview { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:14px; font-size:0.82rem; line-height:1.6; white-space:pre-wrap; margin-bottom:12px; min-height:100px; color:var(--text); }
+  .wa-msg-edit { width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:12px; border-radius:12px; font-size:0.82rem; font-family:Inter,sans-serif; outline:none; resize:vertical; min-height:100px; transition:border-color 0.15s; margin-bottom:12px; }
+  .wa-msg-edit:focus { border-color:#25d366; }
+  .wa-actions { display:flex; gap:8px; }
+  .wa-btn-send { flex:1; background:linear-gradient(135deg,#25d366,#128c7e); color:white; border:none; border-radius:10px; padding:12px; font-size:0.88rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; text-decoration:none; transition:opacity 0.15s; }
+  .wa-btn-send:hover { opacity:0.88; }
+  .wa-btn-copy { background:var(--surface2); color:var(--text); border:1px solid var(--border); border-radius:10px; padding:12px 16px; font-size:0.82rem; font-weight:600; cursor:pointer; transition:border-color 0.15s; }
+  .wa-btn-copy:hover { border-color:#25d366; }
   .grupo-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; cursor:pointer; transition:opacity 0.15s; }
   .grupo-badge:hover { opacity:0.8; }
   .grupos-selector { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
@@ -1315,7 +1333,33 @@
 
 </div><!-- /page-calendario -->
 
-<!-- POPUP EVENTO CALENDARIO -->
+<!-- MODAL WHATSAPP -->
+<div class="modal-overlay" id="wa-modal-overlay" onclick="closeWAModalOutside(event)">
+  <div class="wa-modal">
+    <div class="wa-modal-header">
+      <div class="wa-modal-title">💬 Enviar WhatsApp</div>
+      <div class="wa-modal-sub" id="wa-modal-sub">—</div>
+    </div>
+    <div class="wa-modal-body">
+      <!-- Selector de plantilla -->
+      <div style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-bottom:8px">Plantilla de mensaje</div>
+      <div class="wa-msg-tabs" id="wa-msg-tabs"></div>
+      <!-- Editor del mensaje -->
+      <div style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-bottom:6px">Mensaje a enviar</div>
+      <textarea class="wa-msg-edit" id="wa-msg-edit" placeholder="Escribe o edita el mensaje..."></textarea>
+      <div class="wa-actions">
+        <button class="wa-btn-copy" onclick="copyWAMsg()" title="Copiar mensaje">📋 Copiar</button>
+        <a class="wa-btn-send" id="wa-send-link" href="#" target="_blank">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.122.554 4.116 1.528 5.849L0 24l6.335-1.505A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.6c-1.938 0-3.746-.528-5.295-1.44l-.379-.225-3.928.933.984-3.835-.247-.395A9.558 9.558 0 012.4 12C2.4 6.7 6.7 2.4 12 2.4S21.6 6.7 21.6 12 17.3 21.6 12 21.6z"/></svg>
+          Abrir en WhatsApp
+        </a>
+      </div>
+      <div style="margin-top:12px;text-align:center">
+        <button class="btn-outline" onclick="closeWAModal()" style="font-size:0.78rem">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="cal-popup-overlay" id="cal-popup-overlay" onclick="closeCalPopup(event)">
   <div class="cal-popup" id="cal-popup">
     <button class="cal-popup-close" onclick="closeCalPopup()">✕</button>
@@ -2068,6 +2112,7 @@
       <div class="ficha-actions">
         <button class="btn-outline" onclick="closeFicha()">✕</button>
         <button class="btn-outline" onclick="convertirEnInversor()" style="color:#c9a84c;border-color:#c9a84c44" title="Promover este lead a inversor cualificado">💼 Convertir</button>
+        <button class="btn" onclick="openWhatsAppModal()" style="background:linear-gradient(135deg,#25d366,#128c7e);border:none">💬 WhatsApp</button>
         <button class="btn" onclick="editFromFicha()">✏ Editar</button>
       </div>
     </div>
@@ -4923,7 +4968,180 @@ function renderCalUpcoming() {
   }).join('');
 }
 
-// ── ACTUALIZAR CARD DE CAPTACIÓN con banner de matches ──
+// ═══════════════════════════════════════════════════════════════════
+// WHATSAPP — Mensajes predefinidos y modal
+// ═══════════════════════════════════════════════════════════════════
+
+const WA_TEMPLATES_KEY = 'ancor_wa_templates';
+
+// Plantillas por defecto
+const WA_TEMPLATES_DEFAULT = [
+  {
+    id: 'generic',
+    nombre: '👋 Saludo genérico',
+    fijo: true,
+    mensaje: `Hola {nombre}, soy Fernando Benítez de Ancor Investments.\n\nHe recibido tu consulta y me pongo en contacto contigo para poder ayudarte.\n\n¿Cuándo sería un buen momento para hablar?`,
+  },
+  {
+    id: 'solar',
+    nombre: '🌍 Solar Vilafranca',
+    fijo: true,
+    mensaje: `Hola {nombre}, soy Fernando de Ancor Investments.\n\nTe escribo en relación a tu interés en el Solar de Vilafranca del Penedès.\n\nEs un activo con una oportunidad muy interesante. ¿Tienes unos minutos para comentarlo?`,
+  },
+  {
+    id: 'local',
+    nombre: '🏬 Local comercial',
+    fijo: true,
+    mensaje: `Hola {nombre}, soy Fernando de Ancor Investments.\n\nMe pongo en contacto contigo por tu consulta sobre el local comercial.\n\n¿Cuándo podríamos agendar una visita?`,
+  },
+  {
+    id: 'inversor',
+    nombre: '💼 Perfil inversor',
+    fijo: true,
+    mensaje: `Hola {nombre}, soy Fernando de Ancor Investments.\n\nTenemos activos que podrían encajar con tu perfil inversor. Me gustaría presentarte algunas opciones.\n\n¿Tienes disponibilidad esta semana para una llamada?`,
+  },
+  {
+    id: 'followup',
+    nombre: '📞 Seguimiento',
+    fijo: true,
+    mensaje: `Hola {nombre}, soy Fernando de Ancor Investments.\n\nQuería hacer un seguimiento de nuestra conversación anterior.\n\n¿Has tenido oportunidad de pensarlo? Estoy a tu disposición para resolver cualquier duda.`,
+  },
+];
+
+function loadWATemplates() {
+  try {
+    const custom = JSON.parse(localStorage.getItem(WA_TEMPLATES_KEY) || '[]');
+    return [...WA_TEMPLATES_DEFAULT, ...custom];
+  } catch(e) { return WA_TEMPLATES_DEFAULT; }
+}
+
+function saveWATemplate(tpl) {
+  try {
+    const custom = JSON.parse(localStorage.getItem(WA_TEMPLATES_KEY) || '[]');
+    const idx = custom.findIndex(t => t.id === tpl.id);
+    if (idx >= 0) custom[idx] = tpl;
+    else custom.push(tpl);
+    localStorage.setItem(WA_TEMPLATES_KEY, JSON.stringify(custom));
+  } catch(e) {}
+}
+
+function deleteWATemplate(id) {
+  try {
+    const custom = JSON.parse(localStorage.getItem(WA_TEMPLATES_KEY) || '[]');
+    localStorage.setItem(WA_TEMPLATES_KEY, JSON.stringify(custom.filter(t => t.id !== id)));
+  } catch(e) {}
+}
+
+let _waCurrentLead   = null;
+let _waCurrentTplId  = 'generic';
+
+function openWhatsAppModal() {
+  const lead = leads.find(l => l.id === fichaLeadId);
+  if (!lead) return;
+  _waCurrentLead  = lead;
+  _waCurrentTplId = 'generic';
+
+  // Header
+  const tel = (lead.telefono || '').replace(/\s/g, '');
+  document.getElementById('wa-modal-sub').textContent =
+    `📞 ${lead.telefono || 'Sin teléfono'} · ${lead.nombre}`;
+
+  // Renderizar tabs
+  renderWATabs();
+
+  // Seleccionar primera plantilla
+  selectWATemplate('generic');
+
+  document.getElementById('wa-modal-overlay').classList.add('open');
+}
+
+function renderWATabs() {
+  const templates = loadWATemplates();
+  const tabs = document.getElementById('wa-msg-tabs');
+  tabs.innerHTML = templates.map(t => `
+    <div class="wa-msg-tab ${t.id===_waCurrentTplId?'active':''}"
+         onclick="selectWATemplate('${t.id}')">
+      ${t.nombre}
+      ${!t.fijo ? `<span onclick="event.stopPropagation();deleteWATemplateUI('${t.id}')" style="margin-left:4px;opacity:0.5;font-size:0.7rem">✕</span>` : ''}
+    </div>`).join('') +
+    `<div class="wa-msg-tab" onclick="addWATemplate()" style="border-style:dashed">＋ Nueva</div>`;
+}
+
+function selectWATemplate(id) {
+  _waCurrentTplId = id;
+  const templates = loadWATemplates();
+  const tpl = templates.find(t => t.id === id);
+  if (!tpl || !_waCurrentLead) return;
+
+  // Rellenar {nombre} con el nombre del lead
+  const msg = tpl.mensaje.replace(/\{nombre\}/g, _waCurrentLead.nombre || 'cliente');
+  document.getElementById('wa-msg-edit').value = msg;
+
+  // Actualizar link de WhatsApp
+  updateWALink();
+
+  // Actualizar tabs activos
+  document.querySelectorAll('.wa-msg-tab').forEach(t => t.classList.remove('active'));
+  renderWATabs();
+}
+
+function updateWALink() {
+  const tel = (_waCurrentLead?.telefono || '').replace(/\D/g, '');
+  // Añadir prefijo 34 si es español y no lo tiene
+  const telFull = tel.startsWith('34') ? tel : '34' + tel;
+  const msg     = encodeURIComponent(document.getElementById('wa-msg-edit').value);
+  const link    = tel ? `https://wa.me/${telFull}?text=${msg}` : `https://wa.me/?text=${msg}`;
+  document.getElementById('wa-send-link').href = link;
+}
+
+// Actualizar link cuando se edita el mensaje
+document.addEventListener('DOMContentLoaded', () => {
+  const edit = document.getElementById('wa-msg-edit');
+  if (edit) edit.addEventListener('input', updateWALink);
+});
+
+function addWATemplate() {
+  const nombre = prompt('Nombre de la plantilla:');
+  if (!nombre?.trim()) return;
+  const mensaje = prompt('Escribe el mensaje (usa {nombre} para el nombre del lead):');
+  if (!mensaje?.trim()) return;
+  const tpl = {
+    id:     'custom_' + Date.now(),
+    nombre: nombre.trim(),
+    fijo:   false,
+    mensaje: mensaje.trim(),
+  };
+  saveWATemplate(tpl);
+  _waCurrentTplId = tpl.id;
+  renderWATabs();
+  selectWATemplate(tpl.id);
+  showToast('✅ Plantilla guardada', 'success');
+}
+
+function deleteWATemplateUI(id) {
+  if (!confirm('¿Eliminar esta plantilla?')) return;
+  deleteWATemplate(id);
+  _waCurrentTplId = 'generic';
+  renderWATabs();
+  selectWATemplate('generic');
+  showToast('🗑 Plantilla eliminada', 'success');
+}
+
+function copyWAMsg() {
+  const msg = document.getElementById('wa-msg-edit').value;
+  navigator.clipboard.writeText(msg)
+    .then(() => showToast('📋 Mensaje copiado', 'success'))
+    .catch(() => showToast('⚠️ Selecciona el texto manualmente', 'error'));
+}
+
+function closeWAModal() {
+  document.getElementById('wa-modal-overlay').classList.remove('open');
+  _waCurrentLead = null;
+}
+
+function closeWAModalOutside(e) {
+  if (e.target === document.getElementById('wa-modal-overlay')) closeWAModal();
+}
 function injectMatchBanners() {
   if (!activos.length || !inversores.length) return;
   updateMatchingBadge();
