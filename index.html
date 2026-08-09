@@ -2852,6 +2852,35 @@ function loadCache() {
   } catch(e) { return null; }
 }
 
+// Convierte hora del Sheet al formato HH:MM
+// El Sheet a veces devuelve "1899-12-30T10:00:00.000Z" o "10:00:00" o "10:00"
+function normalizeHora(val) {
+  if (!val) return '';
+  const s = String(val).trim();
+  // Si contiene 1899-12-30 (fecha base de Excel para horas)
+  if (s.includes('1899-12-30') || s.includes('1899/12/30')) {
+    try {
+      const d = new Date(s);
+      const h = String(d.getUTCHours()).padStart(2,'0');
+      const m = String(d.getUTCMinutes()).padStart(2,'0');
+      return `${h}:${m}`;
+    } catch(e) { return ''; }
+  }
+  // Si es HH:MM:SS → HH:MM
+  const match = s.match(/^(\d{1,2}):(\d{2})(:\d{2})?$/);
+  if (match) return `${match[1].padStart(2,'0')}:${match[2]}`;
+  // Si es una fecha ISO completa con hora
+  if (s.includes('T') && s.includes(':')) {
+    try {
+      const d = new Date(s);
+      const h = String(d.getHours()).padStart(2,'0');
+      const m = String(d.getMinutes()).padStart(2,'0');
+      return `${h}:${m}`;
+    } catch(e) { return ''; }
+  }
+  return '';
+}
+
 function applyData(d) {
   // Activos/productos
   if (d.products?.length > 0) {
@@ -2884,7 +2913,7 @@ function applyData(d) {
     agente:   l.agente   || '',
     estado:   l.estado   || 'No contactado',
     fecha:    l.fecha    || '',
-    hora:     l.hora     || '',
+    hora:     normalizeHora(l.hora),
     grupo:    l.grupo    || (prevLeads.find(x => x.id === l.id)?.grupo) || '',
     notas:    l.notas    || '',
   }));
@@ -3427,7 +3456,7 @@ function openFicha(id) {
     const icon  = tieneCita ? '📅' : '📋';
     const lbl   = tieneCita ? 'Cita agendada' : 'Fecha de visita';
     // Normalizar hora — quitar segundos si los tiene (HH:MM:SS → HH:MM)
-    const horaClean = (l.hora||'').replace(/^(\d{2}:\d{2}):\d{2}$/, '$1');
+    const horaClean = normalizeHora(l.hora);
     body += `<div class="ficha-cita-banner" style="background:${bg};border-color:${bc}">
       <div class="icon">${icon}</div>
       <div>
@@ -4979,7 +5008,7 @@ function getCalEvents() {
     const cancelada = l.estado === 'Visita cancelada';
     const prod = products.find(p=>p.id===l.producto)||{name:l.producto||'—',icon:'📦'};
     const evId = 'ev_lead_' + l.id;
-    const horaLead = (l.hora||'').replace(/^(\d{2}:\d{2}):\d{2}$/, '$1');
+    const horaLead = normalizeHora(l.hora);
     const ev = {
       date:     d,
       hora:     horaLead,
@@ -5005,7 +5034,7 @@ function getCalEvents() {
     if (!d) return;
     const cancelada = a.visitado === 'Visita cancelada';
     const evId = 'ev_capt_' + a.id;
-    const horaActivo = (a.hora_visita||'').replace(/^(\d{2}:\d{2}):\d{2}$/, '$1');
+    const horaActivo = normalizeHora(a.hora_visita);
     const ev = {
       date:     d,
       hora:     horaActivo,
