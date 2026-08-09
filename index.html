@@ -2299,11 +2299,13 @@
         <div class="ficha-nombre" id="ficha-nombre">—</div>
         <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap" id="ficha-badges"></div>
       </div>
-      <div class="ficha-actions">
-        <button class="btn-outline" onclick="closeFicha()">✕</button>
-        <button class="btn-outline" onclick="convertirEnInversor()" style="color:#c9a84c;border-color:#c9a84c44" title="Promover este lead a inversor cualificado">💼 Convertir</button>
-        <button class="btn" onclick="openWhatsAppModal()" style="background:linear-gradient(135deg,#25d366,#128c7e);border:none">💬 WhatsApp</button>
-        <button class="btn" onclick="editFromFicha()">✏ Editar</button>
+      <div class="ficha-actions" style="flex-direction:column;gap:6px;align-items:stretch">
+        <div style="display:flex;gap:6px">
+          <button class="btn-outline" onclick="closeFicha()">✕</button>
+          <button class="btn" onclick="openWhatsAppModal()" style="background:linear-gradient(135deg,#25d366,#128c7e);border:none;flex:1">💬 WhatsApp</button>
+          <button class="btn" onclick="editFromFicha()" style="flex:1">✏ Editar</button>
+        </div>
+        <button class="btn-outline" onclick="convertirEnInversor()" style="color:#c9a84c;border-color:#c9a84c44;width:100%;font-size:0.78rem">💼 Convertir en Inversor</button>
       </div>
     </div>
     <div class="ficha-body" id="ficha-body"></div>
@@ -3415,7 +3417,11 @@ function openModal(id = null) {
   fechaEl.value = '';
   if (lead?.fecha) { setTimeout(() => { fechaEl.value = toInputDate(lead.fecha); }, 50); }
   const horaEl = document.getElementById('f-hora');
-  if (horaEl) horaEl.value = lead?.hora || '';
+  if (horaEl) {
+    // normalizeHora ya limpia el valor — aseguramos que sea HH:MM puro
+    const horaVal = normalizeHora(lead?.hora || '');
+    horaEl.value = horaVal;
+  }
   document.getElementById('modal-overlay').classList.add('open');
 }
 
@@ -5189,7 +5195,7 @@ function renderCalSemana() {
     const isToday = isSameDay(d, today);
     html += `<div class="cal-week-cell ${isToday?'today-col':''}" style="padding:4px">
       ${evs.length === 0 ? '' : evs.map(ev =>
-        `<span class="cal-event ev-${ev.tipo}" onclick="openCalPopup('${ev.evId}')">${ev.hora?`<strong>${ev.hora}</strong> `:ev.tipo==='capt'?'🏠 ':'👤 '}${ev.titulo}</span>`
+        `<span class="cal-event ev-${ev.tipo}" onclick="openCalPopup('${ev.evId}')" title="${ev.titulo}">${ev.hora?`<strong>${ev.hora}</strong> `:ev.tipo==='capt'?'🏠 ':'👤 '}${ev.titulo.split(' ')[0]}</span>`
       ).join('')}
     </div>`;
   });
@@ -5250,7 +5256,7 @@ function renderCalMes() {
     html += `<div class="cal-month-day ${isToday?'today':''}">
       <span class="cal-day-num ${isToday?'today-num':''}">${i}</span>
       ${evs.slice(0,3).map(ev =>
-        `<span class="cal-event ev-${ev.tipo}" onclick="openCalPopup('${ev.evId}')">${ev.hora?`<strong>${ev.hora}</strong> `:''}${ev.titulo}</span>`
+        `<span class="cal-event ev-${ev.tipo}" onclick="openCalPopup('${ev.evId}')" title="${ev.titulo}">${ev.hora?`<strong>${ev.hora}</strong> `:''}${ev.titulo.split(' ')[0]}</span>`
       ).join('')}
       ${evs.length > 3 ? `<span style="font-size:0.62rem;color:var(--muted)">+${evs.length-3} más</span>` : ''}
     </div>`;
@@ -6291,7 +6297,7 @@ function openCaptModal(id=null) {
     set('capt-visitado',            a.visitado || 'No');
     if (a.fecha_visita) setTimeout(() => { if(fv) fv.value = toInputDate(a.fecha_visita); }, 50);
     const hv = document.getElementById('capt-hora-visita');
-    if (hv) hv.value = a.hora_visita || '';
+    if (hv) hv.value = normalizeHora(a.hora_visita || '');
     set('capt-agencia',             a.agencia || 'No');
     set('capt-agencia-tiempo',      a.agencia_tiempo);
     set('capt-notas',               a.notas);
@@ -6366,6 +6372,24 @@ function openCaptModal(id=null) {
 
 function closeCaptModal() { document.getElementById('capt-modal-overlay').classList.remove('open'); editCaptId=null; selectedCaptTipo=''; }
 function closeCaptModalOutside(e) { if (e.target===document.getElementById('capt-modal-overlay')) closeCaptModal(); }
+</script>
+
+<!-- BOTÓN VOLVER ARRIBA -->
+<button id="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})"
+  style="display:none;position:fixed;bottom:24px;right:20px;z-index:999;
+  width:44px;height:44px;border-radius:50%;border:none;
+  background:linear-gradient(135deg,#c9a84c,#a8863a);
+  color:#0a0c12;font-size:1.2rem;font-weight:700;cursor:pointer;
+  box-shadow:0 4px 16px rgba(201,168,76,0.4);
+  display:flex;align-items:center;justify-content:center">
+  ↑
+</button>
+
+<script>
+window.addEventListener('scroll', function() {
+  const btn = document.getElementById('scroll-top-btn');
+  if (btn) btn.style.display = window.scrollY > 300 ? 'flex' : 'none';
+});
 </script>
 </body>
 </html>
