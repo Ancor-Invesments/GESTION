@@ -847,6 +847,23 @@
   .score-high   { background: #22c55e18; color: #22c55e; border: 1px solid #22c55e44; }
   .score-medium { background: #f59e0b18; color: #f59e0b; border: 1px solid #f59e0b44; }
   .score-low    { background: #64748b18; color: #64748b; border: 1px solid #64748b33; }
+  /* ── BUSCADOR GLOBAL ── */
+  .global-search-wrap { position:relative; width:100%; max-width:440px; margin:0 auto 16px; }
+  .global-search-input { width:100%; background:var(--surface); border:1px solid var(--border); color:var(--text); padding:10px 16px 10px 40px; border-radius:12px; font-size:0.84rem; font-family:'Inter',sans-serif; outline:none; transition:border-color 0.15s; box-sizing:border-box; }
+  .global-search-input:focus { border-color:var(--accent); box-shadow:0 0 0 2px #c9a84c18; }
+  .global-search-icon { position:absolute; left:13px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:0.9rem; pointer-events:none; }
+  .global-results { position:absolute; top:calc(100% + 6px); left:0; right:0; background:var(--surface); border:1px solid var(--border); border-radius:14px; box-shadow:0 8px 32px rgba(0,0,0,0.4); z-index:500; max-height:420px; overflow-y:auto; display:none; }
+  .global-results.open { display:block; animation:fadeDown 0.15s ease; }
+  .global-result-section { padding:8px 14px 4px; font-size:0.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; font-weight:600; }
+  .global-result-item { display:flex; align-items:center; gap:10px; padding:10px 14px; cursor:pointer; transition:background 0.1s; border-bottom:1px solid var(--border); }
+  .global-result-item:last-child { border-bottom:none; }
+  .global-result-item:hover { background:var(--surface2); }
+  .global-result-icon { font-size:1rem; width:20px; text-align:center; flex-shrink:0; }
+  .global-result-name { font-size:0.82rem; font-weight:600; color:var(--text); }
+  .global-result-sub  { font-size:0.72rem; color:var(--muted2); margin-top:1px; }
+  .global-result-badge { margin-left:auto; font-size:0.65rem; background:var(--surface2); color:var(--muted); padding:2px 8px; border-radius:10px; flex-shrink:0; }
+  .global-no-results { padding:20px; text-align:center; color:var(--muted); font-size:0.82rem; }
+
   /* ── CALENDARIO / AGENDA ── */
   .cal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
   .cal-nav { display:flex; align-items:center; gap:10px; }
@@ -1124,6 +1141,18 @@
 </div>
 
 <!-- ══════════════════════════════════════ -->
+<!-- BUSCADOR GLOBAL -->
+<div style="padding:8px 16px 0;position:relative">
+  <div class="global-search-wrap">
+    <span class="global-search-icon">🔍</span>
+    <input type="text" class="global-search-input" id="global-search-input"
+      placeholder="Buscar leads, inversores, activos..."
+      oninput="globalSearch(this.value)"
+      onblur="setTimeout(()=>closeGlobalSearch(),200)">
+    <div class="global-results" id="global-results"></div>
+  </div>
+</div>
+
 <!-- PAGE: LEADS                           -->
 <!-- ══════════════════════════════════════ -->
 <div class="page active" id="page-leads">
@@ -3020,6 +3049,14 @@ async function saveLead() {
     notas:    document.getElementById('f-notas').value.trim(),
   };
 
+  // Registrar cambio de estado si es una edición
+  if (editRowId) {
+    const leadAnterior = leads.find(l => l.id === editRowId);
+    if (leadAnterior && leadAnterior.estado !== lead.estado) {
+      addEstadoHistory(editRowId, leadAnterior.estado, lead.estado, lead.agente);
+    }
+  }
+
   isSaving = true;
   const btn = document.getElementById('btn-save-lead');
   btn.disabled = true; btn.textContent = 'Guardando…';
@@ -3435,6 +3472,7 @@ function openFicha(id) {
   }
 
   body += renderGruposAnotaciones(l.id);
+  body += renderEstadoHistory(l.id);
   document.getElementById('ficha-body').innerHTML = body;
   document.getElementById('ficha-overlay').classList.add('open');
 }
@@ -5392,6 +5430,153 @@ function closeWAModal() {
 function closeWAModalOutside(e) {
   if (e.target === document.getElementById('wa-modal-overlay')) closeWAModal();
 }
+// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+// BUSCADOR GLOBAL
+// ═══════════════════════════════════════════════════════════════════
+
+function globalSearch(query) {
+  const q = query.trim().toLowerCase();
+  const results = document.getElementById('global-results');
+  if (!results) return;
+  if (q.length < 2) { results.classList.remove('open'); return; }
+
+  const sections = [];
+
+  // Leads
+  const rLeads = leads.filter(l =>
+    l.nombre.toLowerCase().includes(q) ||
+    (l.telefono||'').includes(q) ||
+    (l.email||'').toLowerCase().includes(q)
+  ).slice(0, 5);
+
+  if (rLeads.length) {
+    sections.push(`<div class="global-result-section">👤 Leads</div>`);
+    rLeads.forEach(l => {
+      sections.push(`<div class="global-result-item" onclick="globalGoTo('lead','${l.id}')">
+        <span class="global-result-icon">👤</span>
+        <div style="min-width:0;flex:1">
+          <div class="global-result-name">${highlight(l.nombre, q)}</div>
+          <div class="global-result-sub">${l.telefono||''}${l.email?' · '+l.email:''}</div>
+        </div>
+        <span class="global-result-badge">${l.estado||'—'}</span>
+      </div>`);
+    });
+  }
+
+  // Inversores
+  const rInv = inversores.filter(i =>
+    i.nombre.toLowerCase().includes(q) ||
+    (i.empresa||'').toLowerCase().includes(q) ||
+    (i.telefono||'').includes(q)
+  ).slice(0, 4);
+
+  if (rInv.length) {
+    sections.push(`<div class="global-result-section">💼 Inversores</div>`);
+    rInv.forEach(i => {
+      sections.push(`<div class="global-result-item" onclick="globalGoTo('inversor','${i.id}')">
+        <span class="global-result-icon">💼</span>
+        <div style="min-width:0;flex:1">
+          <div class="global-result-name">${highlight(i.nombre, q)}</div>
+          <div class="global-result-sub">${i.empresa||''}${i.capital?' · '+i.capital:''}</div>
+        </div>
+        <span class="global-result-badge">${i.prioridad||'—'}</span>
+      </div>`);
+    });
+  }
+
+  // Activos captados
+  const rActivos = activos.filter(a =>
+    (a.direccion||'').toLowerCase().includes(q) ||
+    (a.contacto||'').toLowerCase().includes(q)
+  ).slice(0, 4);
+
+  if (rActivos.length) {
+    sections.push(`<div class="global-result-section">🏠 Activos captados</div>`);
+    rActivos.forEach(a => {
+      const icon = {local:'🏬',traspaso:'🏪',vivienda:'🏡',suelo:'🌍'}[a.tipo]||'🏢';
+      sections.push(`<div class="global-result-item" onclick="globalGoTo('activo','${a.id}')">
+        <span class="global-result-icon">${icon}</span>
+        <div style="min-width:0;flex:1">
+          <div class="global-result-name">${highlight(a.direccion||'', q)}</div>
+          <div class="global-result-sub">${a.contacto||''}${a.telefono?' · '+a.telefono:''}</div>
+        </div>
+        <span class="global-result-badge">${a.estado||'—'}</span>
+      </div>`);
+    });
+  }
+
+  results.innerHTML = sections.length
+    ? sections.join('')
+    : `<div class="global-no-results">Sin resultados para "${query}"</div>`;
+  results.classList.add('open');
+}
+
+function highlight(text, query) {
+  if (!query || !text) return text;
+  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  if (idx < 0) return text;
+  return text.slice(0, idx) +
+    `<mark style="background:#c9a84c33;color:var(--accent);border-radius:3px">${text.slice(idx, idx+query.length)}</mark>` +
+    text.slice(idx+query.length);
+}
+
+function globalGoTo(tipo, id) {
+  closeGlobalSearch();
+  document.getElementById('global-search-input').value = '';
+  if (tipo === 'lead') {
+    navGoTo('leads', 'Leads');
+    setTimeout(() => openFicha(id), 200);
+  } else if (tipo === 'inversor') {
+    navGoTo('inversores', 'Inversores');
+    setTimeout(() => openInvFicha(id), 200);
+  } else if (tipo === 'activo') {
+    navGoTo('captacion', 'Captación');
+    setTimeout(() => openCaptFicha(id), 200);
+  }
+}
+
+function closeGlobalSearch() {
+  const r = document.getElementById('global-results');
+  if (r) r.classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// HISTORIAL DE CAMBIOS DE ESTADO
+// ═══════════════════════════════════════════════════════════════════
+
+const ESTADO_HISTORY_KEY = 'ancor_estado_history';
+
+function getEstadoHistory(leadId) {
+  try { return JSON.parse(localStorage.getItem(ESTADO_HISTORY_KEY + '_' + leadId) || '[]'); }
+  catch(e) { return []; }
+}
+
+function addEstadoHistory(leadId, estadoAnterior, estadoNuevo, agente) {
+  if (!estadoNuevo || estadoAnterior === estadoNuevo) return;
+  const history = getEstadoHistory(leadId);
+  history.unshift({ de: estadoAnterior||'—', a: estadoNuevo, agente: agente||'Fernando', ts: Date.now() });
+  localStorage.setItem(ESTADO_HISTORY_KEY + '_' + leadId, JSON.stringify(history.slice(0, 20)));
+}
+
+function renderEstadoHistory(leadId) {
+  const history = getEstadoHistory(leadId);
+  if (!history.length) return '';
+  return `<div style="border-top:1px solid var(--border);padding-top:16px;margin-top:16px">
+    <div style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-bottom:10px">📊 Historial de estados</div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      ${history.map(h => `
+        <div style="display:flex;align-items:center;gap:8px;font-size:0.75rem;flex-wrap:wrap">
+          <span style="color:var(--muted);min-width:100px;font-size:0.68rem">${new Date(h.ts).toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</span>
+          <span style="background:var(--surface2);padding:2px 8px;border-radius:10px;color:var(--muted2)">${h.de}</span>
+          <span style="color:var(--muted)">→</span>
+          <span style="background:#c9a84c18;color:var(--accent);padding:2px 8px;border-radius:10px;font-weight:600">${h.a}</span>
+          <span style="color:var(--muted);margin-left:auto;font-size:0.68rem">${h.agente}</span>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // HAMBURGER MENU
 // ═══════════════════════════════════════════════════════════════════
