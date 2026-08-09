@@ -2835,13 +2835,13 @@ function setSyncStatus(state, text) {
 // ─────────────────────────────────────────────
 // CACHE — clave de localStorage para datos
 // ─────────────────────────────────────────────
-const CACHE_KEY = 'ancor_crm_cache';
+const CACHE_KEY = 'ancor_crm_cache_v2';
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutos
 
 function saveCache(data) {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
-  } catch(e) {}
+  } catch(e) { console.log('Cache save error:', e); }
 }
 
 function loadCache() {
@@ -2849,9 +2849,14 @@ function loadCache() {
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
     const { ts, data } = JSON.parse(raw);
-    if (Date.now() - ts > CACHE_TTL) return null; // expirado
+    // Caché válida por 5 minutos
+    if (Date.now() - ts > CACHE_TTL) return null;
     return data;
   } catch(e) { return null; }
+}
+
+function clearCache() {
+  try { localStorage.removeItem(CACHE_KEY); } catch(e) {}
 }
 
 // Convierte hora del Sheet al formato HH:MM
