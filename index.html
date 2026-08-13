@@ -1551,6 +1551,29 @@
     </div>
   </div>
 </div>
+<div class="modal-overlay" id="wa-tpl-modal-overlay" onclick="closeNewTemplateModalOutside(event)">
+  <div class="wa-modal" style="max-width:480px">
+    <div class="wa-modal-header">
+      <div class="wa-modal-title">＋ Nueva plantilla</div>
+      <div class="wa-modal-sub">Se guardará junto a las demás plantillas de WhatsApp</div>
+    </div>
+    <div class="wa-modal-body">
+      <div style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-bottom:6px">Nombre de la plantilla</div>
+      <input type="text" id="wa-tpl-nombre" placeholder="Ej: Primer contacto, Seguimiento visita..."
+             style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:12px;border-radius:12px;font-size:0.82rem;font-family:Inter,sans-serif;outline:none;margin-bottom:14px;box-sizing:border-box">
+      <div style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-bottom:6px">Mensaje</div>
+      <textarea id="wa-tpl-mensaje" placeholder="Escribe el mensaje aquí. Puedes usar varios párrafos, enlaces y saltos de línea con tranquilidad."
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:12px;border-radius:12px;font-size:0.82rem;font-family:Inter,sans-serif;outline:none;resize:vertical;min-height:220px;box-sizing:border-box"></textarea>
+      <div style="font-size:0.7rem;color:var(--muted);margin-top:8px;line-height:1.5">
+        💡 Escribe <code style="background:#00000033;padding:1px 5px;border-radius:4px;color:#c9a84c">{nombre}</code> en cualquier parte del mensaje y se sustituirá automáticamente por el nombre del lead al usar la plantilla. También puedes pegar URLs directamente, se enviarán tal cual.
+      </div>
+      <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn-outline" onclick="closeNewTemplateModal()" style="font-size:0.78rem">Cancelar</button>
+        <button class="btn" onclick="confirmNewTemplate()" style="font-size:0.78rem;background:linear-gradient(135deg,#25d366,#128c7e);border:none">Guardar plantilla</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="cal-popup-overlay" id="cal-popup-overlay" onclick="closeCalPopup(event)">
   <div class="cal-popup" id="cal-popup">
     <button class="cal-popup-close" onclick="closeCalPopup()">✕</button>
@@ -5467,10 +5490,25 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function addWATemplate() {
-  const nombre = prompt('Nombre de la plantilla:');
-  if (!nombre?.trim()) return;
-  const mensaje = prompt('Escribe el mensaje (usa {nombre} para el nombre del lead):');
-  if (!mensaje?.trim()) return;
+  document.getElementById('wa-tpl-nombre').value = '';
+  document.getElementById('wa-tpl-mensaje').value = '';
+  document.getElementById('wa-tpl-modal-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('wa-tpl-nombre').focus(), 50);
+}
+
+function closeNewTemplateModal() {
+  document.getElementById('wa-tpl-modal-overlay').classList.remove('open');
+}
+
+function closeNewTemplateModalOutside(e) {
+  if (e.target === document.getElementById('wa-tpl-modal-overlay')) closeNewTemplateModal();
+}
+
+function confirmNewTemplate() {
+  const nombre  = document.getElementById('wa-tpl-nombre').value;
+  const mensaje = document.getElementById('wa-tpl-mensaje').value;
+  if (!nombre?.trim())  { showToast('⚠️ Ponle un nombre a la plantilla', 'error'); return; }
+  if (!mensaje?.trim()) { showToast('⚠️ Escribe el mensaje', 'error'); return; }
   const tpl = {
     id:     'custom_' + Date.now(),
     nombre: nombre.trim(),
@@ -5479,6 +5517,7 @@ function addWATemplate() {
   };
   saveWATemplate(tpl);
   _waCurrentTplId = tpl.id;
+  closeNewTemplateModal();
   renderWATabs();
   selectWATemplate(tpl.id);
   showToast('✅ Plantilla guardada', 'success');
