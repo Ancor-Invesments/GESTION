@@ -972,6 +972,12 @@
   .grupo-opt:hover { border-color:var(--accent); }
   .grupo-opt.selected { font-weight:700; }
   .portal-opt { padding:8px 16px; border-radius:20px; border:1px solid var(--border); background:var(--surface2); cursor:pointer; font-size:0.8rem; font-weight:700; color:var(--muted2); transition:all 0.15s; }
+  .perfil-toggle { display:inline-flex; align-items:center; gap:3px; vertical-align:middle; margin-left:6px; }
+  .perfil-icon { opacity:0.55; }
+  .perfil-btn { width:18px; height:18px; border-radius:50%; border:1px solid var(--border); background:var(--surface2); color:var(--muted2); font-size:0.62rem; font-weight:800; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.15s; line-height:1; }
+  .perfil-btn:hover { border-color:var(--accent); }
+  .perfil-btn.active.finalista { background:#c9a84c; border-color:#c9a84c; color:#1a2340; }
+  .perfil-btn.active.inversor  { background:#4f7cff; border-color:#4f7cff; color:#fff; }
   .portal-opt:hover { border-color:var(--accent); }
   .portal-opt.selected.idealista { background:#c9367818; border-color:#c93678; color:#e05a9e; }
   .portal-opt.selected.fotocasa  { background:#00a6a618; border-color:#00a6a6; color:#2dd4d4; }
@@ -2593,6 +2599,36 @@ function getLeadGrupoCustom(leadId) {
 }
 function esGrupoFijo(id) { return GRUPOS_FIJOS.some(g => g.id === id); }
 
+// ── PERFIL DE CLIENTE: Finalista (F) / Inversor (I) ──────────────
+const PERFIL_ICON_SVG = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" class="perfil-icon" style="vertical-align:-2px"><path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zm0 2.4c-3.3 0-9.8 1.6-9.8 4.9v2.5h19.6v-2.5c0-3.3-6.5-4.9-9.8-4.9z" fill="currentColor" fill-opacity="0.6"/></svg>';
+
+function renderPerfilToggle(leadId, tipoCliente) {
+  return `<span class="perfil-toggle" onclick="event.stopPropagation()">
+    ${PERFIL_ICON_SVG}
+    <span class="perfil-btn ${tipoCliente==='finalista'?'active finalista':''}" title="Finalista" onclick="togglePerfilCliente('${leadId}','finalista')">F</span>
+    <span class="perfil-btn ${tipoCliente==='inversor'?'active inversor':''}" title="Inversor" onclick="togglePerfilCliente('${leadId}','inversor')">I</span>
+  </span>`;
+}
+
+async function togglePerfilCliente(leadId, tipo) {
+  const lead = leads.find(l => l.id === leadId);
+  if (!lead) return;
+  const nuevo = lead.tipoCliente === tipo ? '' : tipo;
+  lead.tipoCliente = nuevo;
+
+  // Actualizar todos los toggles visibles de este lead (tarjeta + ficha si está abierta)
+  document.querySelectorAll(`[data-perfil-toggle="${leadId}"]`).forEach(el => {
+    el.outerHTML = renderPerfilToggle(leadId, nuevo).replace('<span class="perfil-toggle"', `<span class="perfil-toggle" data-perfil-toggle="${leadId}"`);
+  });
+
+  try {
+    await fetch(scriptUrl, { method:'POST', body: JSON.stringify({ action:'updateLeadPerfil', lead_id: leadId, tipoCliente: nuevo }) });
+  } catch(e) {
+    showToast('⚠️ No se pudo sincronizar el perfil', 'error');
+  }
+}
+
+
 async function setLeadGrupo(leadId, grupoId) {
   if (!scriptUrl) return;
   try {
@@ -3001,6 +3037,7 @@ function applyData(d) {
     hora:     normalizeHora(l.hora),
     grupo:    l.grupo    || (prevLeads.find(x => x.id === l.id)?.grupo) || '',
     grupoCustom: l.grupoCustom || (prevLeads.find(x => x.id === l.id)?.grupoCustom) || '',
+    tipoCliente: l.tipoCliente || (prevLeads.find(x => x.id === l.id)?.tipoCliente) || '',
     notas:    l.notas    || '',
   }));
 
@@ -3462,7 +3499,7 @@ function renderTable() {
     return `<div class="lead-card ${tieneCita?'has-cita':''}" onclick="openFicha('${l.id}')">
       <div class="card-top">
         <div style="min-width:0;flex:1">
-          <div class="card-name">${l.nombre}${esInversor ? ' <span style="font-size:0.65rem;background:#c9a84c22;color:#c9a84c;border:1px solid #c9a84c44;padding:1px 6px;border-radius:10px;font-weight:700">💼 INVERSOR</span>' : ''}</div>
+          <div class="card-name">${l.nombre}<span class="perfil-toggle" data-perfil-toggle="${l.id}" onclick="event.stopPropagation()">${PERFIL_ICON_SVG}<span class="perfil-btn ${l.tipoCliente==='finalista'?'active finalista':''}" title="Finalista" onclick="togglePerfilCliente('${l.id}','finalista')">F</span><span class="perfil-btn ${l.tipoCliente==='inversor'?'active inversor':''}" title="Inversor" onclick="togglePerfilCliente('${l.id}','inversor')">I</span></span>${esInversor ? ' <span style="font-size:0.65rem;background:#c9a84c22;color:#c9a84c;border:1px solid #c9a84c44;padding:1px 6px;border-radius:10px;font-weight:700">💼 INVERSOR</span>' : ''}</div>
           ${(grupoObj || grupoCustomObj) ? `<div style="margin-top:3px;display:flex;gap:4px;flex-wrap:wrap">${grupoObj ? `<span style="font-size:0.65rem;background:${grupoObj.bg};color:${grupoObj.color};border:1px solid ${grupoObj.border};padding:2px 8px;border-radius:10px;font-weight:700">${grupoObj.label}</span>` : ''}${grupoCustomObj ? `<span style="font-size:0.65rem;background:${grupoCustomObj.bg};color:${grupoCustomObj.color};border:1px solid ${grupoCustomObj.border};padding:2px 8px;border-radius:10px;font-weight:700">${grupoCustomObj.label}</span>` : ''}</div>` : ''}
           ${l.telefono ? `<div class="card-phone">📞 ${l.telefono}</div>` : ''}
           ${l.email    ? `<div class="card-email-line">${ICONO_EMAIL} ${l.email}</div>` : ''}
@@ -3770,6 +3807,7 @@ async function removeProduct(id) {
       showToast('🗑 Activo eliminado', 'success');
       await loadLeads();
       renderProductsList();
+      renderAll();
     } else {
       showToast('❌ Error al eliminar: ' + (data.error||''), 'error');
     }
