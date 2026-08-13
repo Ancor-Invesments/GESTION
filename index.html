@@ -971,6 +971,20 @@
   .grupo-opt { padding:5px 12px; border-radius:20px; border:1px solid var(--border); background:var(--surface2); cursor:pointer; font-size:0.75rem; font-weight:600; color:var(--muted2); transition:all 0.15s; display:flex; align-items:center; gap:5px; }
   .grupo-opt:hover { border-color:var(--accent); }
   .grupo-opt.selected { font-weight:700; }
+  .portal-opt { padding:8px 16px; border-radius:20px; border:1px solid var(--border); background:var(--surface2); cursor:pointer; font-size:0.8rem; font-weight:700; color:var(--muted2); transition:all 0.15s; }
+  .portal-opt:hover { border-color:var(--accent); }
+  .portal-opt.selected.idealista { background:#c9367818; border-color:#c93678; color:#e05a9e; }
+  .portal-opt.selected.fotocasa  { background:#00a6a618; border-color:#00a6a6; color:#2dd4d4; }
+  .portal-opt.selected.meta      { background:#0866ff18; border-color:#0866ff; color:#5b9bff; }
+  .portal-url-row { display:flex; gap:8px; align-items:center; margin-top:6px; }
+  .portal-url-row input { flex:1; background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:8px 10px; border-radius:8px; font-size:0.78rem; }
+  .breakdown-portal-pill { display:inline-flex; align-items:center; gap:4px; font-size:0.62rem; font-weight:700; padding:2px 8px; border-radius:10px; text-decoration:none; margin-top:6px; margin-right:4px; }
+  .breakdown-portal-pill.idealista { background:#c9367822; color:#e05a9e; border:1px solid #c9367855; }
+  .breakdown-portal-pill.fotocasa  { background:#00a6a622; color:#2dd4d4; border:1px solid #00a6a655; }
+  .breakdown-portal-pill.meta      { background:#0866ff22; color:#5b9bff; border:1px solid #0866ff55; cursor:default; }
+  .breakdown-card-delete { position:absolute; top:6px; right:6px; width:20px; height:20px; border-radius:50%; background:#00000055; color:var(--muted2); border:none; cursor:pointer; font-size:0.7rem; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.15s; }
+  .breakdown-card:hover .breakdown-card-delete { opacity:1; }
+  .breakdown-card-delete:hover { background:#ef444455; color:#fff; }
   .anotaciones-list { display:flex; flex-direction:column; gap:8px; margin-top:8px; }
   .anotacion-item { background:var(--surface2); border-radius:10px; padding:12px 14px; border-left:3px solid var(--border); position:relative; }
   .anotacion-item.propia { border-left-color:var(--accent); }
@@ -1697,7 +1711,7 @@
       </div>
       <div class="form-group">
         <label>Estado</label>
-        <select id="capt-estado">
+        <select id="capt-estado" onchange="onCaptEstadoChange()" style="background:#c9a84c12;border-color:#c9a84c44;color:var(--accent);font-weight:700">
           <option value="Nuevo lead">Nuevo lead</option>
           <option value="En análisis">En análisis</option>
           <option value="Mandato firmado">Mandato firmado</option>
@@ -1706,6 +1720,19 @@
           <option value="Cerrado">Cerrado</option>
           <option value="Descartado">Descartado</option>
         </select>
+      </div>
+      <div class="form-group" id="capt-publicaciones-block" style="display:none">
+        <label>¿Dónde está publicado?</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+          <div class="portal-opt" id="portal-opt-idealista" onclick="togglePortal('idealista')">Idealista</div>
+          <div class="portal-opt" id="portal-opt-fotocasa" onclick="togglePortal('fotocasa')">Fotocasa</div>
+          <div class="portal-opt" id="portal-opt-meta" onclick="togglePortal('meta')">Meta</div>
+        </div>
+        <div id="portal-urls"></div>
+      </div>
+      <div class="form-group" id="capt-monto-cierre-block" style="display:none">
+        <label>Importe de cierre (€)</label>
+        <input type="number" id="capt-monto-cierre" placeholder="Ej: 1150000" step="0.01">
       </div>
       <div class="form-group">
         <label>¿Hemos visitado el activo?</label>
@@ -2948,6 +2975,8 @@ function applyData(d) {
       zona:    p.zona    || '',
       precio:  p.precio  || '',
       capt_id: p.capt_id || '',
+      estado:  p.estado  || '',
+      publicaciones: (() => { try { return JSON.parse(p.publicaciones || '[]') || []; } catch(e) { return []; } })(),
       ...(PRODUCT_COLORS[i % PRODUCT_COLORS.length]),
     }));
   } else if (products.length === 0) {
@@ -3288,12 +3317,18 @@ function renderProductFilter() {
 function renderBreakdown() {
   const total = leads.length;
   const activeFilter = document.getElementById('filter-producto').value;
+  const ESTADO_BG = { 'Publicado': '#22c55e22', 'En negociación': '#c084fc22' };
+  const ESTADO_BORDER = { 'Publicado': '#22c55e', 'En negociación': '#c084fc' };
+  const nombresPortal = { idealista:'Idealista', fotocasa:'Fotocasa', meta:'Meta' };
   document.getElementById('breakdown-cards').innerHTML = products.map(p => {
     const pLeads   = leads.filter(l => l.producto === p.id);
     const pVisitas = pLeads.filter(l => ['Visita agendada','Visita realizada','Negociación','Cerrado'].includes(l.estado)).length;
     const pct      = total > 0 ? Math.round(pLeads.length / total * 100) : 0;
     const sel      = activeFilter === p.id;
-    return `<div class="breakdown-card ${sel?'selected':''}" onclick="toggleProductFilter('${p.id}')">
+    const estadoBg = ESTADO_BG[p.estado];
+    const estadoBorder = ESTADO_BORDER[p.estado];
+    return `<div class="breakdown-card ${sel?'selected':''}" style="position:relative;${estadoBg?`background:${estadoBg};`:''}${estadoBorder && !sel?`border-color:${estadoBorder}66;`:''}" onclick="toggleProductFilter('${p.id}')">
+      <button class="breakdown-card-delete" onclick="event.stopPropagation();removeProduct('${p.id}')" title="Eliminar activo">✕</button>
       <div class="breakdown-icon" style="background:${p.bg||'#4f7cff18'}">${iconoTipo(p.tipo, p.icon)}</div>
       <div class="breakdown-data">
         <div class="breakdown-name">${p.name}</div>
@@ -3305,6 +3340,12 @@ function renderBreakdown() {
           ${p.tipo?`<span style="font-size:0.6rem;background:#c9a84c18;color:#c9a84c;border:1px solid #c9a84c33;padding:1px 5px;border-radius:6px">${TIPOS_ACTIVO.find(t=>t.id===p.tipo)?.icon||''} ${TIPOS_ACTIVO.find(t=>t.id===p.tipo)?.label||p.tipo}</span>`:''}
           ${p.zona?`<span style="font-size:0.6rem;background:#4f7cff18;color:#818cf8;border:1px solid #4f7cff33;padding:1px 5px;border-radius:6px">${ZONAS.find(z=>z.id===p.zona)?.icon||''} ${ZONAS.find(z=>z.id===p.zona)?.label||p.zona}</span>`:''}
         </div>`:''}
+        ${(p.publicaciones && p.publicaciones.length) ? `<div onclick="event.stopPropagation()">
+          ${p.publicaciones.map(pub => pub.url
+            ? `<a href="${pub.url}" target="_blank" class="breakdown-portal-pill ${pub.portal}">${nombresPortal[pub.portal]||pub.portal} ↗</a>`
+            : `<span class="breakdown-portal-pill ${pub.portal}">${nombresPortal[pub.portal]||pub.portal}</span>`
+          ).join('')}
+        </div>` : ''}
         <div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${pct}%;background:${p.bar||'var(--accent)'}"></div></div>
       </div>
     </div>`;
@@ -5953,6 +5994,8 @@ async function saveCaptActivo() {
     precio_suelo_total:tipo==='suelo'   ? g('capt-precio-suelo-total','-')        : '-',
     precio_m2_suelo:  tipo==='suelo'    ? g('capt-precio-m2-suelo',   '-')        : '-',
     precio_m2_techo:  tipo==='suelo'    ? g('capt-precio-m2-techo',   '-')        : '-',
+    publicaciones:    JSON.stringify(_captPortalesSeleccionados),
+    montoCierre:      gs('capt-estado','')==='Cerrado' ? (g('capt-monto-cierre','0')) : (editCaptId ? (activos.find(x=>x.id===editCaptId)?.montoCierre||'') : ''),
   };
 
   isSavingCapt = true;
@@ -5969,10 +6012,10 @@ async function saveCaptActivo() {
       closeCaptModal();
       await loadActivos();
 
-      // ── Auto-promoción a Activos en mandato ──
+      // ── Sincronización con Activos en Leads (crea/actualiza/elimina según estado) ──
+      await syncActivoConProducts(a);
       if (a.estado === 'Mandato firmado') {
-        await autoPromoverAMandato(a, !!editCaptId);
-        // ── Matching automático ──
+        // ── Matching automático (solo al conseguir el mandato) ──
         await triggerAutoMatch(a);
       }
     }
@@ -5991,10 +6034,14 @@ async function deleteCaptActivo() {
   } catch(e) { showToast('❌ Error','error'); }
 }
 
-// ── AUTO-PROMOCIÓN A ACTIVOS EN MANDATO ──────────────────────────
-// Cuando un activo captado pasa a "Mandato firmado", se añade
-// automáticamente a la lista de activos disponibles en Leads.
-async function autoPromoverAMandato(a, esEdicion) {
+// ── SINCRONIZACIÓN CAPTACIÓN → ACTIVOS EN LEADS ──────────────────
+// - "Mandato firmado" (primera vez): crea el producto en Leads
+// - Cualquier estado posterior, si ya existe el producto: lo actualiza
+//   (color por estado, publicaciones, etc.)
+// - "Cerrado": elimina el producto de Leads (ya no se puede asignar a
+//   leads nuevos) — el importe de cierre queda guardado en el propio
+//   activo de Captación para el cómputo de Cierres.
+async function syncActivoConProducts(a) {
   // Recargar products frescos del Sheet antes de comprobar duplicados
   await loadLeads();
 
@@ -6004,57 +6051,50 @@ async function autoPromoverAMandato(a, esEdicion) {
     p.name?.toLowerCase().trim() === a.direccion?.toLowerCase().trim()
   );
 
-  if (yaExiste) {
-    // Actualizar datos si es edición
-    const tipoMap = { local:'local', traspaso:'traspaso', vivienda:'piso', suelo:'solar' };
-    const iconMap = { local:'🏬', traspaso:'🏪', vivienda:'🏡', suelo:'🌍' };
-    const updated = {
-      ...yaExiste,
-      name:    a.direccion,
-      icon:    iconMap[a.tipo] || yaExiste.icon || '📦',
-      tipo:    tipoMap[a.tipo] || yaExiste.tipo || '',
-      zona:    a.zona          || yaExiste.zona || '',
-      precio:  a.precio_matching || a.precio_local || a.precio_traspaso || a.precio_viv || a.precio_suelo_total || '',
-      capt_id: a.id,
-    };
-    try {
-      const res  = await fetch(scriptUrl, { method:'POST', body: JSON.stringify({ action:'addProduct', product: updated }) });
-      const data = await res.json();
-      if (data.ok) {
+  // ── Estado "Cerrado": si existía en Leads, lo retiramos ──
+  if (a.estado === 'Cerrado') {
+    if (yaExiste) {
+      try {
+        await fetch(scriptUrl, { method:'POST', body: JSON.stringify({ action:'deleteProduct', product:{ id: yaExiste.id } }) });
         await loadLeads();
-        showToast(`✅ Activo "${a.direccion}" actualizado en Leads`, 'success');
+        showToast(`✅ "${a.direccion}" cerrado — retirado de Leads`, 'success');
+      } catch(e) {
+        showToast('⚠️ No se pudo retirar el activo de Leads', 'error');
       }
-    } catch(e) {
-      showToast('⚠️ No se pudo actualizar el activo en Leads', 'error');
     }
     return;
   }
 
-  // Crear nuevo producto en la hoja Activos
-  const iconMap = { local:'🏬', traspaso:'🏪', vivienda:'🏡', suelo:'🌍' };
-  const tipoMap = { local:'local', traspaso:'traspaso', vivienda:'piso', suelo:'solar' };
+  // ── Si aún no existe en Leads y todavía no hay mandato firmado, no se crea ──
+  if (!yaExiste && a.estado !== 'Mandato firmado') return;
 
-  const newProd = {
-    id:      'prod_' + Date.now(),
-    capt_id: a.id,
-    name:    a.direccion,
-    icon:    iconMap[a.tipo] || '📦',
-    tipo:    tipoMap[a.tipo] || '',
-    zona:    a.zona || '',
-    precio:  a.precio_matching || a.precio_local || a.precio_traspaso || a.precio_viv || a.precio_suelo_total || '',
+  const tipoMap = { local:'local', traspaso:'traspaso', vivienda:'piso', suelo:'solar' };
+  const iconMap = { local:'🏬', traspaso:'🏪', vivienda:'🏡', suelo:'🌍' };
+  const precio  = a.precio_matching || a.precio_local || a.precio_traspaso || a.precio_viv || a.precio_suelo_total || '';
+
+  const producto = {
+    id:            yaExiste?.id || ('prod_' + Date.now()),
+    capt_id:       a.id,
+    name:          a.direccion,
+    icon:          iconMap[a.tipo] || yaExiste?.icon || '📦',
+    tipo:          tipoMap[a.tipo] || yaExiste?.tipo || '',
+    zona:          a.zona || yaExiste?.zona || '',
+    precio:        precio || yaExiste?.precio || '',
+    estado:        a.estado,
+    publicaciones: a.publicaciones || '[]',
   };
 
   try {
-    const res  = await fetch(scriptUrl, { method:'POST', body: JSON.stringify({ action:'addProduct', product: newProd }) });
+    const res  = await fetch(scriptUrl, { method:'POST', body: JSON.stringify({ action:'addProduct', product: producto }) });
     const data = await res.json();
     if (data.ok) {
       await loadLeads();
-      showToast(`🎉 "${a.direccion}" añadido a Leads automáticamente`, 'success');
+      showToast(yaExiste ? `✅ Activo "${a.direccion}" actualizado en Leads` : `🎉 "${a.direccion}" añadido a Leads automáticamente`, 'success');
     } else {
-      showToast('❌ Error al añadir a Leads: ' + (data.error||''), 'error');
+      showToast('❌ Error al sincronizar con Leads: ' + (data.error||''), 'error');
     }
   } catch(e) {
-    showToast('⚠️ Mandato guardado. Añade el activo manualmente en ⚙ Activos si no aparece en Leads.', 'error');
+    showToast('⚠️ No se pudo sincronizar el activo con Leads', 'error');
   }
 }
 
@@ -6297,6 +6337,55 @@ function selectCaptTipo(tipo, el) {
   });
 }
 
+let _captPortalesSeleccionados = []; // [{portal:'idealista', url:'https://...'}, ...]
+
+function onCaptEstadoChange() {
+  const estado = document.getElementById('capt-estado').value;
+  document.getElementById('capt-publicaciones-block').style.display = estado === 'Publicado' ? '' : 'none';
+  document.getElementById('capt-monto-cierre-block').style.display  = estado === 'Cerrado'   ? '' : 'none';
+  renderPortalOpts();
+  renderPortalUrls();
+}
+
+function renderPortalOpts() {
+  ['idealista','fotocasa','meta'].forEach(portal => {
+    const activo = _captPortalesSeleccionados.some(p => p.portal === portal);
+    const el = document.getElementById('portal-opt-' + portal);
+    if (el) el.className = 'portal-opt' + (activo ? ' selected ' + portal : '');
+  });
+}
+
+function togglePortal(portal) {
+  const idx = _captPortalesSeleccionados.findIndex(p => p.portal === portal);
+  if (idx > -1) {
+    _captPortalesSeleccionados.splice(idx, 1);
+  } else {
+    _captPortalesSeleccionados.push({ portal, url: '' });
+  }
+  renderPortalOpts();
+  renderPortalUrls();
+}
+
+function updatePortalUrl(portal, url) {
+  const p = _captPortalesSeleccionados.find(p => p.portal === portal);
+  if (p) p.url = url;
+}
+
+function renderPortalUrls() {
+  const nombres = { idealista:'Idealista', fotocasa:'Fotocasa', meta:'Meta' };
+  const c = document.getElementById('portal-urls');
+  if (!c) return;
+  c.innerHTML = _captPortalesSeleccionados.map(p => {
+    if (p.portal === 'meta') {
+      return `<div style="font-size:0.72rem;color:var(--muted);margin-top:4px">ℹ️ Meta no lleva enlace — se mostrará solo como informativo en Leads.</div>`;
+    }
+    return `<div class="portal-url-row">
+      <input type="text" placeholder="URL de ${nombres[p.portal]}..." value="${p.url||''}"
+             oninput="updatePortalUrl('${p.portal}', this.value)">
+    </div>`;
+  }).join('');
+}
+
 function openCaptModal(id=null) {
   editCaptId = id;
   const a = id ? activos.find(x=>x.id===id) : null;
@@ -6316,6 +6405,9 @@ function openCaptModal(id=null) {
     'capt-precio-suelo-total','capt-precio-m2-suelo','capt-precio-m2-techo',
   ];
   clearFields.forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  const montoCierreEl = document.getElementById('capt-monto-cierre');
+  if (montoCierreEl) montoCierreEl.value = '';
+  _captPortalesSeleccionados = a?.publicaciones ? (() => { try { return JSON.parse(a.publicaciones) || []; } catch(e) { return []; } })() : [];
 
   // Resetear selects a sus valores por defecto
   const setDefault = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
@@ -6369,6 +6461,8 @@ function openCaptModal(id=null) {
     set('capt-idealista-urls',      a.idealista_urls);
     set('capt-propietario',         a.propietario || 'Propietario');
     set('capt-estado',              a.estado || 'Nuevo lead');
+    const mc = document.getElementById('capt-monto-cierre');
+    if (mc) mc.value = a.montoCierre || '';
     set('capt-agente',              a.agente || 'Fernando');
     set('capt-visitado',            a.visitado || 'No');
     if (a.fecha_visita) setTimeout(() => { if(fv) fv.value = toInputDate(a.fecha_visita); }, 50);
@@ -6443,6 +6537,7 @@ function openCaptModal(id=null) {
   };
 
   document.getElementById('capt-btn-delete').style.display = a ? 'inline-flex' : 'none';
+  onCaptEstadoChange();
   document.getElementById('capt-modal-overlay').classList.add('open');
 }
 
