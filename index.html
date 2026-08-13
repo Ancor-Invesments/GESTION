@@ -976,8 +976,8 @@
   .perfil-icon { opacity:0.55; }
   .perfil-btn { width:18px; height:18px; border-radius:50%; border:1px solid var(--border); background:var(--surface2); color:var(--muted2); font-size:0.62rem; font-weight:800; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.15s; line-height:1; }
   .perfil-btn:hover { border-color:var(--accent); }
-  .perfil-btn.active.finalista { background:#c9a84c; border-color:#c9a84c; color:#1a2340; }
-  .perfil-btn.active.inversor  { background:#4f7cff; border-color:#4f7cff; color:#fff; }
+  .perfil-btn.active.finalista { background:#4f7cff; border-color:#4f7cff; color:#fff; }
+  .perfil-btn.active.inversor  { background:#c9a84c; border-color:#c9a84c; color:#1a2340; }
   .portal-opt:hover { border-color:var(--accent); }
   .portal-opt.selected.idealista { background:#c9367818; border-color:#c93678; color:#e05a9e; }
   .portal-opt.selected.fotocasa  { background:#00a6a618; border-color:#00a6a6; color:#2dd4d4; }
@@ -2640,17 +2640,17 @@ function renderPerfilFicha(leadId, tipoCliente) {
     <div id="ficha-perfil-sel" style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px;background:linear-gradient(135deg,#1e2d4a,#1a2a40);border-radius:12px;padding:16px;margin-top:8px;border:1px solid #2a4060">
       <div style="font-size:0.68rem;color:#60a5fa;text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-bottom:10px">👤 Perfil de cliente <span style="color:var(--muted);font-weight:400;font-size:0.62rem;text-transform:none">(toca para cambiar)</span></div>
       <div style="display:flex;gap:8px">
-        <div onclick="togglePerfilCliente('${leadId}','finalista')" style="flex:1;cursor:pointer;padding:10px 12px;border-radius:10px;border:1px solid ${tipoCliente==='finalista'?'#c9a84c':'var(--border)'};background:${tipoCliente==='finalista'?'#c9a84c1a':'var(--surface2)'};display:flex;align-items:center;gap:8px">
+        <div onclick="togglePerfilCliente('${leadId}','finalista')" style="flex:1;cursor:pointer;padding:10px 12px;border-radius:10px;border:1px solid ${tipoCliente==='finalista'?'#4f7cff':'var(--border)'};background:${tipoCliente==='finalista'?'#4f7cff1a':'var(--surface2)'};display:flex;align-items:center;gap:8px">
           <span class="perfil-btn ${tipoCliente==='finalista'?'active finalista':''}" style="pointer-events:none">F</span>
           <div>
-            <div style="font-size:0.8rem;font-weight:700;color:${tipoCliente==='finalista'?'#c9a84c':'var(--text)'}">Finalista</div>
+            <div style="font-size:0.8rem;font-weight:700;color:${tipoCliente==='finalista'?'#4f7cff':'var(--text)'}">Finalista</div>
             <div style="font-size:0.68rem;color:var(--muted)">Compra o alquila para usarlo él mismo</div>
           </div>
         </div>
-        <div onclick="togglePerfilCliente('${leadId}','inversor')" style="flex:1;cursor:pointer;padding:10px 12px;border-radius:10px;border:1px solid ${tipoCliente==='inversor'?'#4f7cff':'var(--border)'};background:${tipoCliente==='inversor'?'#4f7cff1a':'var(--surface2)'};display:flex;align-items:center;gap:8px">
+        <div onclick="togglePerfilCliente('${leadId}','inversor')" style="flex:1;cursor:pointer;padding:10px 12px;border-radius:10px;border:1px solid ${tipoCliente==='inversor'?'#c9a84c':'var(--border)'};background:${tipoCliente==='inversor'?'#c9a84c1a':'var(--surface2)'};display:flex;align-items:center;gap:8px">
           <span class="perfil-btn ${tipoCliente==='inversor'?'active inversor':''}" style="pointer-events:none">I</span>
           <div>
-            <div style="font-size:0.8rem;font-weight:700;color:${tipoCliente==='inversor'?'#4f7cff':'var(--text)'}">Inversor</div>
+            <div style="font-size:0.8rem;font-weight:700;color:${tipoCliente==='inversor'?'#c9a84c':'var(--text)'}">Inversor</div>
             <div style="font-size:0.68rem;color:var(--muted)">Busca rentabilidad, no lo usa él</div>
           </div>
         </div>
@@ -3483,7 +3483,7 @@ function renderTable() {
     const grupoCustomId = getLeadGrupoCustom(l.id);
     const grupoCustomObj = grupoCustomId ? getGrupo(grupoCustomId) : null;
     return `<tr onclick="openFicha('${l.id}')" style="cursor:pointer">
-      <td class="name">${l.nombre}${esInversor ? ' <span style="font-size:0.62rem;background:#c9a84c22;color:#c9a84c;border:1px solid #c9a84c44;padding:1px 6px;border-radius:10px;font-weight:700;vertical-align:middle">💼</span>' : ''}${grupoObj ? ` <span style="font-size:0.62rem;background:${grupoObj.bg};color:${grupoObj.color};border:1px solid ${grupoObj.border};padding:1px 6px;border-radius:10px;font-weight:700;vertical-align:middle">${grupoObj.label}</span>` : ''}${grupoCustomObj ? ` <span style="font-size:0.62rem;background:${grupoCustomObj.bg};color:${grupoCustomObj.color};border:1px solid ${grupoCustomObj.border};padding:1px 6px;border-radius:10px;font-weight:700;vertical-align:middle">${grupoCustomObj.label}</span>` : ''}</td>
+      <td class="name">${renderPerfilToggle(l.id, l.tipoCliente).replace('<span class="perfil-toggle"', `<span class="perfil-toggle" data-perfil-toggle="${l.id}" style="margin-left:0;margin-right:6px"`)}${l.nombre}${esInversor ? ' <span style="font-size:0.62rem;background:#c9a84c22;color:#c9a84c;border:1px solid #c9a84c44;padding:1px 6px;border-radius:10px;font-weight:700;vertical-align:middle">💼</span>' : ''}${grupoObj ? ` <span style="font-size:0.62rem;background:${grupoObj.bg};color:${grupoObj.color};border:1px solid ${grupoObj.border};padding:1px 6px;border-radius:10px;font-weight:700;vertical-align:middle">${grupoObj.label}</span>` : ''}${grupoCustomObj ? ` <span style="font-size:0.62rem;background:${grupoCustomObj.bg};color:${grupoCustomObj.color};border:1px solid ${grupoCustomObj.border};padding:1px 6px;border-radius:10px;font-weight:700;vertical-align:middle">${grupoCustomObj.label}</span>` : ''}</td>
       <td class="phone">${l.telefono||'—'}</td>
       <td style="color:var(--muted2);font-size:0.75rem">${l.email ? `<a href="mailto:${l.email}" style="color:var(--accent);text-decoration:none" onclick="event.stopPropagation()">${l.email}</a>` : '—'}</td>
       <td><span class="badge" style="background:${prod.bg};color:${prod.text};border:1px solid ${prod.border}">${prod.icon} ${prod.name}</span></td>
