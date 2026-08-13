@@ -1226,6 +1226,11 @@
     <option value="">Todos los grupos</option>
     <option value="__sin_grupo__">Sin grupo</option>
   </select>
+  <select id="filter-perfil" onchange="renderAll()">
+    <option value="">Finalista / Inversor</option>
+    <option value="finalista">F — Finalista</option>
+    <option value="inversor">I — Inversor</option>
+  </select>
   <select id="filter-canal" onchange="renderAll()">
     <option value="">Todos los canales</option>
     <option value="Idealista">Idealista</option>
@@ -2620,6 +2625,8 @@ async function togglePerfilCliente(leadId, tipo) {
   document.querySelectorAll(`[data-perfil-toggle="${leadId}"]`).forEach(el => {
     el.outerHTML = renderPerfilToggle(leadId, nuevo).replace('<span class="perfil-toggle"', `<span class="perfil-toggle" data-perfil-toggle="${leadId}"`);
   });
+  const fichaSel = document.getElementById('ficha-perfil-sel');
+  if (fichaSel) fichaSel.outerHTML = renderPerfilFicha(leadId, nuevo);
 
   try {
     await fetch(scriptUrl, { method:'POST', body: JSON.stringify({ action:'updateLeadPerfil', lead_id: leadId, tipoCliente: nuevo }) });
@@ -2627,6 +2634,30 @@ async function togglePerfilCliente(leadId, tipo) {
     showToast('⚠️ No se pudo sincronizar el perfil', 'error');
   }
 }
+
+function renderPerfilFicha(leadId, tipoCliente) {
+  return `
+    <div id="ficha-perfil-sel" style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px;background:linear-gradient(135deg,#1e2d4a,#1a2a40);border-radius:12px;padding:16px;margin-top:8px;border:1px solid #2a4060">
+      <div style="font-size:0.68rem;color:#60a5fa;text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-bottom:10px">👤 Perfil de cliente <span style="color:var(--muted);font-weight:400;font-size:0.62rem;text-transform:none">(toca para cambiar)</span></div>
+      <div style="display:flex;gap:8px">
+        <div onclick="togglePerfilCliente('${leadId}','finalista')" style="flex:1;cursor:pointer;padding:10px 12px;border-radius:10px;border:1px solid ${tipoCliente==='finalista'?'#c9a84c':'var(--border)'};background:${tipoCliente==='finalista'?'#c9a84c1a':'var(--surface2)'};display:flex;align-items:center;gap:8px">
+          <span class="perfil-btn ${tipoCliente==='finalista'?'active finalista':''}" style="pointer-events:none">F</span>
+          <div>
+            <div style="font-size:0.8rem;font-weight:700;color:${tipoCliente==='finalista'?'#c9a84c':'var(--text)'}">Finalista</div>
+            <div style="font-size:0.68rem;color:var(--muted)">Compra o alquila para usarlo él mismo</div>
+          </div>
+        </div>
+        <div onclick="togglePerfilCliente('${leadId}','inversor')" style="flex:1;cursor:pointer;padding:10px 12px;border-radius:10px;border:1px solid ${tipoCliente==='inversor'?'#4f7cff':'var(--border)'};background:${tipoCliente==='inversor'?'#4f7cff1a':'var(--surface2)'};display:flex;align-items:center;gap:8px">
+          <span class="perfil-btn ${tipoCliente==='inversor'?'active inversor':''}" style="pointer-events:none">I</span>
+          <div>
+            <div style="font-size:0.8rem;font-weight:700;color:${tipoCliente==='inversor'?'#4f7cff':'var(--text)'}">Inversor</div>
+            <div style="font-size:0.68rem;color:var(--muted)">Busca rentabilidad, no lo usa él</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
 
 
 async function setLeadGrupo(leadId, grupoId) {
@@ -3299,6 +3330,7 @@ function getFiltered() {
   const estado   = document.getElementById('filter-estado').value;
   const search   = document.getElementById('filter-search').value.toLowerCase();
   const grupo    = document.getElementById('filter-grupo')?.value || '';
+  const perfil   = document.getElementById('filter-perfil')?.value || '';
 
   return leads.filter(l => {
     if (producto === '__sin_activo__') {
@@ -3310,6 +3342,7 @@ function getFiltered() {
     if (canal    && l.canal    !== canal)     return false;
     if (estado   && l.estado   !== estado)   return false;
     if (search   && !l.nombre.toLowerCase().includes(search)) return false;
+    if (perfil   && l.tipoCliente !== perfil) return false;
     if (grupo) {
       const g  = getLeadGrupo(l.id);
       const gc = getLeadGrupoCustom(l.id);
@@ -3335,7 +3368,7 @@ function renderAll() {
   renderKPIs();
   renderTable();
   // Resaltar filtros activos
-  ['filter-producto','filter-agente','filter-grupo','filter-canal','filter-estado'].forEach(id => {
+  ['filter-producto','filter-agente','filter-grupo','filter-perfil','filter-canal','filter-estado'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('active-filter', el.value !== '');
   });
@@ -3648,6 +3681,7 @@ function openFicha(id) {
     </div>`;
   }
 
+  body += renderPerfilFicha(l.id, l.tipoCliente);
   body += renderGruposAnotaciones(l.id);
   body += renderEstadoHistory(l.id);
   document.getElementById('ficha-body').innerHTML = body;
