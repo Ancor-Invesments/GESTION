@@ -225,9 +225,21 @@
   input[type="text"] { width: 190px; }
 
   /* ── TABLE (escritorio) ── */
-  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
-  table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
-  thead tr { background: var(--surface2); border-bottom: 1px solid var(--border); }
+  .table-wrap {
+    background: var(--navy);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    --text: #F3EEE2;
+    --muted: rgba(243,238,226,0.55);
+    --muted2: rgba(243,238,226,0.42);
+    --border: rgba(255,255,255,0.10);
+    --surface2: rgba(255,255,255,0.06);
+  }
+  table { width: 100%; min-width: 900px; border-collapse: collapse; font-size: 0.78rem; }
+  thead tr { background: rgba(255,255,255,0.04); border-bottom: 1px solid var(--border); }
   th { padding: 11px 14px; text-align: left; font-weight: 600; color: var(--muted2); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
   tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; cursor: pointer; }
   tbody tr:last-child { border-bottom: none; }
