@@ -150,19 +150,22 @@
 
   /* ── KPIs ── */
   .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 24px; }
-  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; position: relative; overflow: hidden; }
-  .kpi::before { content:''; position:absolute; top:0;left:0;right:0; height:3px; border-radius:12px 12px 0 0; }
-  .kpi.accent::before { background: var(--accent); }
-  .kpi.green::before { background: var(--green); }
-  .kpi.orange::before { background: var(--accent2); }
-  .kpi.purple::before { background: var(--purple); }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; position: relative; overflow: hidden; }
+  .kpi-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+  .kpi-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .kpi-icon svg { width: 18px; height: 18px; }
+  .kpi-spark { width: 84px; height: 30px; flex-shrink: 0; }
+  .kpi.accent .kpi-icon { background: #c9a84c22; }
+  .kpi.accent .kpi-icon svg { stroke: var(--accent); }
+  .kpi.green .kpi-icon { background: #2F6B4F22; }
+  .kpi.green .kpi-icon svg { stroke: var(--green); }
+  .kpi.orange .kpi-icon { background: #a8863a22; }
+  .kpi.orange .kpi-icon svg { stroke: var(--accent2); }
+  .kpi.purple .kpi-icon { background: #6b4fa022; }
+  .kpi.purple .kpi-icon svg { stroke: var(--purple); }
   .kpi-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
-  .kpi-value { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.03em; }
+  .kpi-value { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.03em; color: var(--navy); }
   .kpi-sub { font-size: 0.7rem; color: var(--muted2); margin-top: 2px; }
-  .kpi.accent .kpi-value { color: var(--accent); }
-  .kpi.green .kpi-value { color: var(--green); }
-  .kpi.orange .kpi-value { color: var(--accent2); }
-  .kpi.purple .kpi-value { color: var(--purple); }
 
   /* ── FILTERS ── */
   .filters {
@@ -611,7 +614,7 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 14px;
-    padding: 18px;
+    padding: 18px 20px;
     cursor: pointer;
     transition: border-color 0.15s, transform 0.1s;
     position: relative;
@@ -619,21 +622,36 @@
   }
   .inv-card::before {
     content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
+    position: absolute; top: 0; right: 0;
+    width: 0; height: 0;
+    border-style: solid;
+    border-width: 0 18px 18px 0;
+    border-color: transparent var(--accent) transparent transparent;
+    opacity: 0.85;
   }
-  .inv-card.perfil-patrimonialista::before { background: #c9a84c; }
-  .inv-card.perfil-inversor::before       { background: #4f7cff; }
-  .inv-card.perfil-uso-propio::before     { background: #22c55e; }
-  .inv-card.perfil-traspaso::before       { background: #ff6b35; }
-  .inv-card.perfil-family::before         { background: #a855f7; }
-  .inv-card.perfil-oportunista::before    { background: #14b8a6; }
+  .inv-card::after {
+    content: '';
+    position: absolute; top: 0; left: 0; bottom: 0;
+    width: 3px;
+  }
+  .inv-card.perfil-patrimonialista::after { background: #c9a84c; }
+  .inv-card.perfil-inversor::after       { background: #4f7cff; }
+  .inv-card.perfil-uso-propio::after     { background: #22c55e; }
+  .inv-card.perfil-traspaso::after       { background: #ff6b35; }
+  .inv-card.perfil-family::after         { background: #a855f7; }
+  .inv-card.perfil-oportunista::after    { background: #14b8a6; }
   .inv-card:hover { border-color: #c9a84c55; transform: translateY(-1px); }
 
-  .inv-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 8px; }
-  .inv-card-name { font-weight: 700; font-size: 0.95rem; }
-  .inv-card-contact { font-size: 0.73rem; color: var(--muted2); margin-top: 2px; }
+  .inv-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; gap: 8px; }
+  .inv-card-name {
+    font-weight: 800; font-size: 1.02rem; letter-spacing: -0.01em; color: var(--navy);
+    position: relative; padding-bottom: 8px; display: inline-block;
+  }
+  .inv-card-name::after {
+    content: ''; position: absolute; left: 0; bottom: 0;
+    width: 28px; height: 2px; background: var(--accent); border-radius: 2px;
+  }
+  .inv-card-contact { font-size: 0.74rem; font-weight: 500; color: var(--muted); margin-top: 3px; }
 
   .inv-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
 
@@ -799,18 +817,35 @@
     background:var(--surface);
     border:1px solid var(--border);
     border-radius:14px;
-    padding:18px;
+    padding:18px 20px;
     cursor:pointer;
     transition:border-color 0.15s;
     border-left:3px solid #ff6b35;
     position:relative;
+    overflow:hidden;
+  }
+  .prosp-card::before {
+    content: '';
+    position: absolute; top: 0; right: 0;
+    width: 0; height: 0;
+    border-style: solid;
+    border-width: 0 18px 18px 0;
+    border-color: transparent var(--accent) transparent transparent;
+    opacity: 0.85;
   }
   .prosp-card:hover { border-color:#ff6b3588; }
 
-  .prosp-card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; gap:8px; }
-  .prosp-card-name { font-weight:700; font-size:0.95rem; }
-  .prosp-card-company { font-size:0.78rem; color:#ff6b35; font-weight:600; margin-top:2px; }
-  .prosp-card-contact { font-size:0.73rem; color:var(--muted2); margin-top:2px; }
+  .prosp-card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; gap:8px; }
+  .prosp-card-name {
+    font-weight:800; font-size:1.02rem; letter-spacing:-0.01em; color:var(--navy);
+    position:relative; padding-bottom:8px; display:inline-block;
+  }
+  .prosp-card-name::after {
+    content:''; position:absolute; left:0; bottom:0;
+    width:28px; height:2px; background:var(--accent); border-radius:2px;
+  }
+  .prosp-card-company { font-size: 0.78rem; color: #ff6b35; font-weight: 700; margin-top: 6px; }
+  .prosp-card-contact { font-size: 0.74rem; font-weight: 500; color: var(--muted); margin-top: 3px; }
 
   .badge-tipo-prosp { padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700;
     background:#ff6b3518; color:#ff6b35; border:1px solid #ff6b3533; }
@@ -1068,7 +1103,16 @@
   .capt-filters { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; align-items:center; }
   .capt-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; }
 
-  .capt-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; cursor:pointer; transition:border-color 0.15s; }
+  .capt-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px 20px; cursor:pointer; transition:border-color 0.15s; position:relative; overflow:hidden; }
+  .capt-card::before {
+    content: '';
+    position: absolute; top: 0; right: 0;
+    width: 0; height: 0;
+    border-style: solid;
+    border-width: 0 18px 18px 0;
+    border-color: transparent var(--accent) transparent transparent;
+    opacity: 0.85;
+  }
   .capt-card:hover { border-color:#14b8a644; }
   .capt-card.tipo-local    { border-left:3px solid #14b8a6; }
   .capt-card.tipo-traspaso { border-left:3px solid #f59e0b; }
@@ -1077,9 +1121,16 @@
   .capt-card.descartado .capt-card-dir a,
   .capt-card.descartado .capt-card-dir { text-decoration:line-through; color:var(--muted2) !important; }
 
-  .capt-card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; gap:8px; }
-  .capt-card-dir { font-weight:700; font-size:0.92rem; }
-  .capt-card-sub { font-size:0.73rem; color:var(--muted2); margin-top:2px; }
+  .capt-card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; gap:8px; }
+  .capt-card-dir {
+    font-weight:800; font-size:1rem; letter-spacing:-0.01em; color:var(--navy);
+    position:relative; padding-bottom:8px; display:inline-block;
+  }
+  .capt-card-dir::after {
+    content:''; position:absolute; left:0; bottom:0;
+    width:28px; height:2px; background:var(--accent); border-radius:2px;
+  }
+  .capt-card-sub { font-size: 0.74rem; font-weight: 500; color: var(--muted); margin-top: 3px; }
 
   .badge-tipo-capt { padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; }
   .btc-local    { background:#14b8a618; color:#14b8a6; border:1px solid #14b8a633; }
@@ -1237,21 +1288,37 @@
 <!-- KPIs -->
 <div class="kpis">
   <div class="kpi accent">
+    <div class="kpi-top">
+      <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V7a2 2 0 0 1 2-2h4V3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2h4a2 2 0 0 1 2 2v14"/><path d="M9 21v-4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4"/><path d="M9 9h.01M9 13h.01M15 9h.01M15 13h.01"/></svg></div>
+      <div class="kpi-spark" id="kpi-spark-total"></div>
+    </div>
     <div class="kpi-label">Leads visibles</div>
     <div class="kpi-value" id="kpi-total">—</div>
     <div class="kpi-sub" id="kpi-total-sub">total en pipeline</div>
   </div>
   <div class="kpi green">
+    <div class="kpi-top">
+      <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="m9 16 2 2 4-4"/></svg></div>
+      <div class="kpi-spark" id="kpi-spark-visitas"></div>
+    </div>
     <div class="kpi-label">Visitas agendadas</div>
     <div class="kpi-value" id="kpi-visitas">—</div>
     <div class="kpi-sub" id="kpi-visitas-sub">estado "Visita agendada"</div>
   </div>
   <div class="kpi orange">
+    <div class="kpi-top">
+      <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11 3 6l6-5"/><path d="M3 6h13a4 4 0 0 1 0 8H8"/><path d="m9 21-6-5 6-5"/></svg></div>
+      <div class="kpi-spark" id="kpi-spark-realizadas"></div>
+    </div>
     <div class="kpi-label">Visitas realizadas</div>
     <div class="kpi-value" id="kpi-realizadas">—</div>
     <div class="kpi-sub" id="kpi-realizadas-sub">Realizada / Negociación / Cerrado</div>
   </div>
   <div class="kpi purple">
+    <div class="kpi-top">
+      <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-4 4"/></svg></div>
+      <div class="kpi-spark" id="kpi-spark-conv"></div>
+    </div>
     <div class="kpi-label">% Conversión</div>
     <div class="kpi-value" id="kpi-conv">—</div>
     <div class="kpi-sub" id="kpi-conv-sub">leads con visita / total</div>
@@ -3497,6 +3564,55 @@ function renderKPIs() {
     realizadas === 0 ? 'ninguna aún' : `Visita realizada / Negociación / Cerrado`;
   document.getElementById('kpi-conv-sub').textContent =
     conv !== null ? `${agendadas + realizadas} de ${total} leads` : 'sin datos';
+
+  renderKpiSparklines(filtered);
+}
+
+// ── SPARKLINES DE ACTIVIDAD REAL (últimos 14 días) ────────────────
+function renderKpiSparklines(filtered) {
+  const DIAS = 14;
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const dias = [];
+  for (let i = DIAS - 1; i >= 0; i--) {
+    const d = new Date(hoy); d.setDate(d.getDate() - i);
+    dias.push(d);
+  }
+  const mismodia = (a, b) => a && b && a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+
+  // Leads nuevos por día (según fecha del lead)
+  const leadsPorDia = dias.map(d => filtered.filter(l => mismodia(parseDate(l.fecha), d)).length);
+  // Visitas agendadas por día (leads en ese estado, con fecha de visita ese día)
+  const agendadasPorDia = dias.map(d => filtered.filter(l => l.estado === 'Visita agendada' && mismodia(parseDate(l.fecha), d)).length);
+  // Visitas realizadas por día
+  const realizadasPorDia = dias.map(d => filtered.filter(l => ['Visita realizada','Negociación','Cerrado'].includes(l.estado) && mismodia(parseDate(l.fecha), d)).length);
+  // Conversión diaria (agendadas+realizadas / leads ese día), 0 si no hubo leads
+  const convPorDia = dias.map((d, i) => leadsPorDia[i] > 0 ? Math.round((agendadasPorDia[i] + realizadasPorDia[i]) / leadsPorDia[i] * 100) : 0);
+
+  drawSparkline('kpi-spark-total', leadsPorDia, '#c9a84c');
+  drawSparkline('kpi-spark-visitas', agendadasPorDia, '#2F6B4F');
+  drawSparkline('kpi-spark-realizadas', realizadasPorDia, '#a8863a');
+  drawSparkline('kpi-spark-conv', convPorDia, '#6b4fa0');
+}
+
+function drawSparkline(elId, values, color) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const w = 84, h = 30, pad = 3;
+  const max = Math.max(...values, 1);
+  const step = (w - pad * 2) / (values.length - 1 || 1);
+  const points = values.map((v, i) => {
+    const x = pad + i * step;
+    const y = h - pad - (v / max) * (h - pad * 2);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+  const line = points.join(' ');
+  const area = `${pad},${h} ${line} ${w - pad},${h}`;
+  const lastPoint = points[points.length - 1].split(',');
+  el.innerHTML = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="100%">
+    <polygon points="${area}" fill="${color}" fill-opacity="0.14" stroke="none"/>
+    <polyline points="${line}" fill="none" stroke="${color}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${lastPoint[0]}" cy="${lastPoint[1]}" r="2.2" fill="${color}"/>
+  </svg>`;
 }
 
 function renderTable() {
