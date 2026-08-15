@@ -4555,25 +4555,38 @@ async function renderHomeMapMarkers() {
     return;
   }
 
-  statusEl.textContent = 'Ubicando activos en el mapa…';
+  // Separamos: los que ya tienen coordenadas guardadas en la hoja (rápido,
+  // fiable) de los que aún no las tienen (hay que geolocalizarlos ahora).
+  const conCoords  = activosMandato.filter(a => a.lat && a.lng);
+  const sinCoords  = activosMandato.filter(a => !(a.lat && a.lng));
 
-  let ubicados = 0, fallidos = 0;
-  for (const a of activosMandato) {
-    const coords = await geocodeAddress(a.direccion);
-    if (coords) {
-      addHomeMapMarker(a, coords);
-      ubicados++;
-    } else {
-      fallidos++;
+  conCoords.forEach(a => {
+    addHomeMapMarker(a, { lat: parseFloat(a.lat), lng: parseFloat(a.lng) });
+    markHomeAssetListItem(a.id, 'ok');
+  });
+
+  let ubicados = conCoords.length, fallidos = 0;
+
+  if (sinCoords.length === 0) {
+    statusEl.textContent = `${ubicados} activo${ubicados===1?'':'s'} ubicado${ubicados===1?'':'s'} correctamente`;
+  } else {
+    statusEl.textContent = 'Ubicando ' + sinCoords.length + ' activo' + (sinCoords.length===1?'':'s') + ' nuevo' + (sinCoords.length===1?'':'s') + ' en el mapa…';
+    for (const a of sinCoords) {
+      const coords = await geocodeAddress(a.direccion);
+      if (coords) {
+        addHomeMapMarker(a, coords);
+        ubicados++;
+      } else {
+        fallidos++;
+      }
+      markHomeAssetListItem(a.id, coords ? 'ok' : 'fail');
+      // Respeta el límite de uso gratuito de Nominatim (máx. ~1 petición/seg)
+      await new Promise(r => setTimeout(r, 1100));
     }
-    markHomeAssetListItem(a.id, coords ? 'ok' : 'fail');
-    // Respeta el límite de uso gratuito de Nominatim (máx. ~1 petición/seg)
-    await new Promise(r => setTimeout(r, 1100));
+    statusEl.textContent = fallidos > 0
+      ? `${ubicados} activo${ubicados===1?'':'s'} ubicado${ubicados===1?'':'s'} · ${fallidos} sin poder geolocalizar (revisa que la dirección esté completa, o guarda el activo de nuevo para que el servidor lo geolocalice)`
+      : `${ubicados} activo${ubicados===1?'':'s'} ubicado${ubicados===1?'':'s'} correctamente`;
   }
-
-  statusEl.textContent = fallidos > 0
-    ? `${ubicados} activo${ubicados===1?'':'s'} ubicado${ubicados===1?'':'s'} · ${fallidos} sin poder geolocalizar (revisa que la dirección esté completa)`
-    : `${ubicados} activo${ubicados===1?'':'s'} ubicado${ubicados===1?'':'s'} correctamente`;
 
   if (_homeMapMarkers.length > 0) {
     const group = L.featureGroup(_homeMapMarkers);
@@ -4595,7 +4608,7 @@ function renderHomeAssetList(activosMandato) {
       <div class="home-asset-card" id="home-asset-${a.id}" onclick="focusHomeAsset('${a.id}')"
         style="flex:0 0 auto;min-width:190px;max-width:220px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 14px;cursor:pointer;transition:border-color 0.15s;position:relative">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-          <span id="home-asset-dot-${a.id}" style="width:8px;height:8px;border-radius:50%;background:var(--muted2);flex-shrink:0"></span>
+          <span id="home-asset-dot-${a.id}" style="width:8px;height:8px;border-radius:50%;background:${a.lat && a.lng ? '#2F6B4F' : 'var(--muted2)'};flex-shrink:0"></span>
           <span style="font-size:0.68rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:0.03em">${tipoIcon} ${tipoLabel}</span>
         </div>
         <div style="font-size:0.82rem;font-weight:800;color:var(--navy);line-height:1.25;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${a.direccion}</div>
