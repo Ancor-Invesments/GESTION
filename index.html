@@ -255,8 +255,8 @@
   .cards-wrap { display: none; flex-direction: column; gap: 10px; }
 
   .lead-card {
-    background: #c9c9c9;
-    border: 1px solid #b3b3b3;
+    background: #f0d4d4;
+    border: 1px solid #dba8a8;
     border-radius: 14px;
     padding: 18px 20px;
     cursor: pointer;
@@ -273,7 +273,7 @@
     border-color: transparent var(--accent) transparent transparent;
     opacity: 0.85;
   }
-  .lead-card:active { background: #d6d6d6; }
+  .lead-card:active { background: #e8c2c2; }
   .lead-card.has-cita { border-left: 3px solid var(--green); }
 
   .card-top {
@@ -369,6 +369,8 @@
   }
   @keyframes slideUp { from { transform: translateY(40px); opacity:0; } to { transform: translateY(0); opacity:1; } }
 
+  #ficha-panel { background: #d8d3c8; }
+
   .ficha-handle {
     width: 40px; height: 4px;
     background: var(--border);
@@ -418,7 +420,7 @@
     gap: 10px;
   }
   .ficha-field {
-    background: #c9c9c9;
+    background: var(--surface2);
     border-radius: 10px;
     padding: 10px 14px;
   }
@@ -428,7 +430,7 @@
   .ficha-field-value.muted { color: var(--muted); font-style: italic; }
 
   .ficha-notas {
-    background: #c9c9c9;
+    background: var(--surface2);
     border-radius: 10px;
     padding: 12px 14px;
     font-size: 0.83rem;
