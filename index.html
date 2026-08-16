@@ -247,6 +247,10 @@
   tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; cursor: pointer; }
   tbody tr:last-child { border-bottom: none; }
   tbody tr:hover { background: var(--surface2); }
+  tbody tr.row-perfil-inversor  { background:#f5e9c822; }
+  tbody tr.row-perfil-inversor:hover  { background:#f5e9c840; }
+  tbody tr.row-perfil-finalista { background:#4f7cff14; }
+  tbody tr.row-perfil-finalista:hover { background:#4f7cff28; }
   td { padding: 12px 14px; color: var(--text); white-space: nowrap; }
   td.name { font-weight: 600; }
   td.phone { color: var(--muted2); font-size: 0.75rem; }
@@ -275,6 +279,8 @@
   }
   .lead-card:active { background: #e8c2c2; }
   .lead-card.has-cita { border-left: 3px solid var(--green); }
+  .lead-card.perfil-inversor  { background:#f5e9c8; border-color:#dcb955; }
+  .lead-card.perfil-finalista { background:#dde6fb; border-color:#a8bdf0; }
 
   .card-top {
     display: flex;
@@ -370,6 +376,19 @@
   @keyframes slideUp { from { transform: translateY(40px); opacity:0; } to { transform: translateY(0); opacity:1; } }
 
   #ficha-panel { background: #d8d3c8; }
+
+  /* Ficha y modal de edición de Captación en gris oscuro */
+  #capt-ficha-panel, #capt-modal-panel {
+    background: #2b2b2b;
+    --text: #F3EEE2;
+    --muted: rgba(243,238,226,0.55);
+    --muted2: rgba(243,238,226,0.42);
+    --border: rgba(255,255,255,0.12);
+    --surface: #383838;
+    --surface2: rgba(255,255,255,0.08);
+    --navy: #F3EEE2;
+  }
+  #capt-ficha-panel .ficha-header, #capt-modal-panel { border-color: rgba(255,255,255,0.12); }
 
   .ficha-handle {
     width: 40px; height: 4px;
@@ -1852,9 +1871,12 @@
         <div class="ficha-nombre" id="capt-ficha-dir">—</div>
         <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap" id="capt-ficha-badges"></div>
       </div>
-      <div class="ficha-actions">
-        <button class="btn-outline" onclick="closeCaptFicha()">✕</button>
-        <button class="btn" onclick="editFromCaptFicha()" style="background:linear-gradient(135deg,#14b8a6,#22c55e);border:none">✏ Editar</button>
+      <div class="ficha-actions" style="flex-direction:column;gap:6px;align-items:stretch">
+        <div style="display:flex;gap:6px">
+          <button class="btn-outline" onclick="closeCaptFicha()">✕</button>
+          <button class="btn" onclick="openWhatsAppModalCapt()" style="background:linear-gradient(135deg,#25d366,#128c7e);border:none;flex:1">💬 WhatsApp</button>
+          <button class="btn" onclick="editFromCaptFicha()" style="background:linear-gradient(135deg,#14b8a6,#22c55e);border:none;flex:1">✏ Editar</button>
+        </div>
       </div>
     </div>
     <div class="ficha-body" id="capt-ficha-body"></div>
@@ -1863,7 +1885,7 @@
 
 <!-- ══ MODAL CAPTACIÓN ══ -->
 <div class="modal-overlay" id="capt-modal-overlay" onclick="closeCaptModalOutside(event)">
-  <div class="modal" style="max-width:640px">
+  <div class="modal" id="capt-modal-panel" style="max-width:640px">
     <h2 id="capt-modal-title">🏠 Nuevo activo captado</h2>
 
     <!-- Selector tipo -->
@@ -3760,7 +3782,7 @@ function renderTable() {
     const grupoObj = grupo ? getGrupo(grupo) : null;
     const grupoCustomId = getLeadGrupoCustom(l.id);
     const grupoCustomObj = grupoCustomId ? getGrupo(grupoCustomId) : null;
-    return `<tr onclick="openFicha('${l.id}')" style="cursor:pointer">
+    return `<tr onclick="openFicha('${l.id}')" style="cursor:pointer" class="${l.tipoCliente==='inversor'?'row-perfil-inversor':l.tipoCliente==='finalista'?'row-perfil-finalista':''}">
       <td class="name">${renderPerfilToggle(l.id, l.tipoCliente).replace('<span class="perfil-toggle"', `<span class="perfil-toggle" data-perfil-toggle="${l.id}" style="margin-left:0;margin-right:6px"`)}${l.nombre}${esInversor ? ' <span style="font-size:0.62rem;background:#c9a84c22;color:#c9a84c;border:1px solid #c9a84c44;padding:1px 6px;border-radius:10px;font-weight:700;vertical-align:middle">💼</span>' : ''}${grupoObj ? ` <span style="font-size:0.62rem;background:${grupoObj.bg};color:${grupoObj.color};border:1px solid ${grupoObj.border};padding:1px 6px;border-radius:10px;font-weight:700;vertical-align:middle">${grupoObj.label}</span>` : ''}${grupoCustomObj ? ` <span style="font-size:0.62rem;background:${grupoCustomObj.bg};color:${grupoCustomObj.color};border:1px solid ${grupoCustomObj.border};padding:1px 6px;border-radius:10px;font-weight:700;vertical-align:middle">${grupoCustomObj.label}</span>` : ''}</td>
       <td class="phone">${l.telefono||'—'}</td>
       <td style="color:var(--muted2);font-size:0.75rem">${l.email ? `<a href="mailto:${l.email}" style="color:var(--accent);text-decoration:none" onclick="event.stopPropagation()">${l.email}</a>` : '—'}</td>
@@ -3807,7 +3829,7 @@ function renderTable() {
     const grupoCustomId  = getLeadGrupoCustom(l.id);
     const grupoCustomObj = grupoCustomId ? getGrupo(grupoCustomId) : null;
 
-    return `<div class="lead-card ${tieneCita?'has-cita':''}" onclick="openFicha('${l.id}')">
+    return `<div class="lead-card ${tieneCita?'has-cita':''} ${l.tipoCliente==='inversor'?'perfil-inversor':l.tipoCliente==='finalista'?'perfil-finalista':''}" onclick="openFicha('${l.id}')">
       <div class="card-top">
         <div style="min-width:0;flex:1">
           <div class="card-name">${l.nombre}<span class="perfil-toggle" data-perfil-toggle="${l.id}" onclick="event.stopPropagation()">${PERFIL_ICON_SVG}<span class="perfil-btn ${l.tipoCliente==='finalista'?'active finalista':''}" title="Finalista" onclick="togglePerfilCliente('${l.id}','finalista')">F</span><span class="perfil-btn ${l.tipoCliente==='inversor'?'active inversor':''}" title="Inversor" onclick="togglePerfilCliente('${l.id}','inversor')">I</span></span>${esInversor ? ' <span style="font-size:0.65rem;background:#c9a84c22;color:#c9a84c;border:1px solid #c9a84c44;padding:1px 6px;border-radius:10px;font-weight:700">💼 INVERSOR</span>' : ''}</div>
@@ -4743,7 +4765,7 @@ function addHomeMapMarker(activo, coords) {
       <div style="font-weight:800;font-size:0.92rem;color:#1a2340;margin-bottom:4px">${activo.direccion}</div>
       ${tipoLabel ? `<div style="font-size:0.72rem;color:#c9a84c;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px">${tipoLabel}</div>` : ''}
       ${precio ? `<div style="font-size:0.85rem;font-weight:700;color:#1a2340;margin-bottom:8px">${formatPrice(String(precio))}</div>` : ''}
-      <button onclick="switchTab('captacion');setTimeout(()=>openCaptModal('${activo.id}'),200)"
+      <button onclick="switchTab('captacion');setTimeout(()=>openCaptFicha('${activo.id}'),200)"
         style="background:#1a2340;color:#c9a84c;border:none;padding:6px 12px;border-radius:8px;font-size:0.76rem;font-weight:700;cursor:pointer;width:100%">
         Ver ficha completa
       </button>
@@ -6038,6 +6060,24 @@ function openWhatsAppModal() {
   renderWATabs();
 
   // Seleccionar primera plantilla
+  selectWATemplate('generic');
+
+  document.getElementById('wa-modal-overlay').classList.add('open');
+}
+
+// Igual que openWhatsAppModal() pero para un activo de Captación (usa
+// contacto/teléfono del propietario en vez de un lead). Reutiliza el mismo
+// modal y plantillas compartidas de WhatsApp.
+function openWhatsAppModalCapt() {
+  const a = activos.find(x => x.id === fichaCaptId);
+  if (!a) return;
+  _waCurrentLead  = { nombre: a.contacto || a.direccion, telefono: a.telefono };
+  _waCurrentTplId = 'generic';
+
+  document.getElementById('wa-modal-sub').textContent =
+    `📞 ${a.telefono || 'Sin teléfono'} · ${a.contacto || a.direccion}`;
+
+  renderWATabs();
   selectWATemplate('generic');
 
   document.getElementById('wa-modal-overlay').classList.add('open');
