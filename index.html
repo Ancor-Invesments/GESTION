@@ -1123,31 +1123,39 @@
   .nota-rapida-area textarea:focus { border-color:var(--accent); }
   .nota-rapida-area button { background:var(--accent); color:white; border:none; padding:10px 16px; border-radius:10px; font-size:0.82rem; font-weight:600; cursor:pointer; white-space:nowrap; }
 
-  .capt-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:12px; margin-bottom:24px; }
-  .capt-kpi { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:14px; position:relative; overflow:hidden; }
-  .capt-kpi-top { display:flex; justify-content:flex-start; margin-bottom:10px; }
-  .capt-kpi-icon { width:32px; height:32px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .capt-kpi-icon svg { width:16px; height:16px; }
-  .capt-kpi-label { font-size:0.66rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px; }
-  .capt-kpi-value { font-size:1.5rem; font-weight:800; color:var(--navy); letter-spacing:-0.03em; }
-  .capt-kpi-sub { font-size:0.68rem; color:var(--muted2); margin-top:2px; }
-  .capt-kpi.accent .capt-kpi-icon { background:#c9a84c22; }
-  .capt-kpi.accent .capt-kpi-icon svg { stroke:var(--accent); }
-  .capt-kpi.green .capt-kpi-icon { background:#22c55e22; }
-  .capt-kpi.green .capt-kpi-icon svg { stroke:#22c55e; }
-  .capt-kpi.teal .capt-kpi-icon { background:#14b8a622; }
-  .capt-kpi.teal .capt-kpi-icon svg { stroke:#14b8a6; }
-  .capt-kpi.orange .capt-kpi-icon { background:#a8863a22; }
-  .capt-kpi.orange .capt-kpi-icon svg { stroke:var(--accent2); }
-  .capt-kpi.purple .capt-kpi-icon { background:#6b4fa022; }
-  .capt-kpi.purple .capt-kpi-icon svg { stroke:var(--purple); }
+  .capt-kpis { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+  .capt-kpi { display:flex; align-items:center; gap:7px; padding:9px 16px; border-radius:10px; border:1px solid var(--border); background:var(--surface); font-size:0.8rem; font-weight:500; color:var(--muted2); }
+  .capt-kpi-icon-mini { width:16px; height:16px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+  .capt-kpi-icon-mini svg { width:14px; height:14px; }
+  .capt-kpi.accent .capt-kpi-icon-mini svg { stroke:var(--accent); }
+  .capt-kpi.orange .capt-kpi-icon-mini svg { stroke:var(--accent2); }
+  .capt-kpi.purple .capt-kpi-icon-mini svg { stroke:var(--purple); }
+  .capt-kpi.green .capt-kpi-icon-mini svg { stroke:#22c55e; }
+  .capt-kpi.teal .capt-kpi-icon-mini svg { stroke:#14b8a6; }
+  .capt-kpi-value-mini { background:var(--surface2); color:var(--navy); font-weight:800; padding:1px 9px; border-radius:10px; font-size:0.78rem; }
 
-  .capt-tipo-tabs { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
-  .capt-tipo-tab { display:flex; align-items:center; gap:7px; padding:9px 18px; border-radius:10px; border:1px solid var(--border); background:var(--surface); cursor:pointer; font-size:0.8rem; font-weight:500; color:var(--muted2); transition:all 0.15s; user-select:none; }
-  .capt-tipo-tab:hover { border-color:#14b8a6; color:var(--text); }
-  .capt-tipo-tab.active { border-color:#14b8a6; background:#14b8a618; color:var(--text); font-weight:700; }
-  .capt-tipo-tab .count { background:var(--surface2); color:var(--muted); padding:1px 8px; border-radius:10px; font-size:0.7rem; }
-  .capt-tipo-tab.active .count { background:#14b8a622; color:#14b8a6; }
+  .capt-tipo-tabs { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:12px; margin-bottom:24px; }
+  .capt-tipo-tab { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; cursor:pointer; transition:border-color 0.15s, box-shadow 0.15s; position:relative; overflow:hidden; user-select:none; text-align:left; }
+  .capt-tipo-tab:hover { border-color:#14b8a6; }
+  .capt-tipo-tab.active { border-color:#14b8a6; background:#14b8a60d; box-shadow:0 0 0 1px #14b8a6; }
+  .capt-tipo-tab-icon { width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; margin-bottom:14px; }
+  .capt-tipo-tab.accent .capt-tipo-tab-icon { background:#c9a84c22; }
+  .capt-tipo-tab.orange .capt-tipo-tab-icon { background:#a8863a22; }
+  .capt-tipo-tab.purple .capt-tipo-tab-icon { background:#6b4fa022; }
+  .capt-tipo-tab.green .capt-tipo-tab-icon  { background:#22c55e22; }
+  .capt-tipo-tab.teal .capt-tipo-tab-icon   { background:#14b8a622; }
+  .capt-tipo-tab-label { font-size:0.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; }
+  .capt-tipo-tab-count { font-size:1.8rem; font-weight:800; color:var(--navy); letter-spacing:-0.03em; }
+  .capt-tipo-tab.active .capt-tipo-tab-count { color:#14b8a6; }
+
+  /* Selector de estado del activo — recuadro con color según el estado elegido */
+  .capt-estado-select { font-weight:700; border-width:2px !important; border-radius:10px; transition: background 0.15s, border-color 0.15s, color 0.15s; }
+  .capt-estado-select.est-nuevo      { background:#fdf6e3; border-color:#f0d878 !important; color:#8a6d1a; }
+  .capt-estado-select.est-analisis   { background:#f3ecfa; border-color:#d9bdf0 !important; color:#7c3aed; }
+  .capt-estado-select.est-mandato    { background:#e3f6ee; border-color:#7ed9a8 !important; color:#15803d; }
+  .capt-estado-select.est-publicado  { background:#e3f6ee; border-color:#7ed9a8 !important; color:#15803d; }
+  .capt-estado-select.est-cerrado    { background:#d3f0df; border-color:#4fbf7f !important; color:#166534; }
+  .capt-estado-select.est-descartado { background:#f7e3e3; border-color:#e39a9a !important; color:#991b1b; }
 
   .capt-filters { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; align-items:center; }
   .capt-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; }
@@ -1166,6 +1174,11 @@
   .capt-card.tipo-local    { border-left:3px solid #14b8a6; }
   .capt-card.tipo-traspaso { border-left:3px solid #f59e0b; }
   .capt-card.tipo-vivienda { border-left:3px solid #a855f7; }
+  .capt-card.estado-nuevo     { background:#fdf6e3; border-color:#f0d878; }
+  .capt-card.estado-analisis  { background:#f3ecfa; border-color:#d9bdf0; }
+  .capt-card.estado-mandato   { background:#e3f6ee; border-color:#a8e0c8; }
+  .capt-card.estado-publicado { background:#e3f6ee; border-color:#a8e0c8; }
+  .capt-card.estado-cerrado   { background:#c9f0da; border-color:#5ecb8f; }
   .capt-card.descartado    { opacity:0.45; filter:grayscale(0.4); }
   .capt-card.descartado .capt-card-dir a,
   .capt-card.descartado .capt-card-dir { text-decoration:line-through; color:var(--muted2) !important; }
@@ -1193,11 +1206,10 @@
   .badge-idealista.multiple { background:#f59e0b18; color:#f59e0b; border-color:#f59e0b33; }
 
   .badge-estado-capt { padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; }
-  .bec-nuevo       { background:#1e2a3a; color:#60a5fa; }
-  .bec-analisis    { background:#2a2a1e; color:#fbbf24; }
+  .bec-nuevo       { background:#2a2a1e; color:#fbbf24; }
+  .bec-analisis    { background:#2a1e2a; color:#c084fc; }
   .bec-mandato     { background:#1a2d2a; color:#34d399; }
   .bec-publicado   { background:#1e3a1e; color:#4ade80; }
-  .bec-negociacion { background:#2a1e2a; color:#c084fc; }
   .bec-cerrado     { background:#1e2a1e; color:#22c55e; }
   .bec-descartado  { background:#2a1e1e; color:#f87171; }
 
@@ -1668,23 +1680,43 @@
 <!-- ══════════════════════════════════════════════ -->
 <div class="page" id="page-captacion">
 
-  <!-- KPIs -->
-  <div class="capt-kpis">
-    <div class="capt-kpi accent"><div class="capt-kpi-top"><div class="capt-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M3 9h18"/></svg></div></div><div class="capt-kpi-label">Total activos</div><div class="capt-kpi-value" id="capt-kpi-total">0</div><div class="capt-kpi-sub">captados</div></div>
-    <div class="capt-kpi orange"><div class="capt-kpi-top"><div class="capt-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1m4 0h1M9 13h1m4 0h1M9 21v-4h6v4"/></svg></div></div><div class="capt-kpi-label">Locales</div><div class="capt-kpi-value" id="capt-kpi-local">0</div><div class="capt-kpi-sub">venta / alquiler</div></div>
-    <div class="capt-kpi purple"><div class="capt-kpi-top"><div class="capt-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></div></div><div class="capt-kpi-label">Traspasos</div><div class="capt-kpi-value" id="capt-kpi-traspaso">0</div><div class="capt-kpi-sub">negocios en activo</div></div>
-    <div class="capt-kpi green"><div class="capt-kpi-top"><div class="capt-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M9 22V12h6v10"/></svg></div></div><div class="capt-kpi-label">Viviendas</div><div class="capt-kpi-value" id="capt-kpi-vivienda">0</div><div class="capt-kpi-sub">residencial</div></div>
-    <div class="capt-kpi teal"><div class="capt-kpi-top"><div class="capt-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div></div><div class="capt-kpi-label">En Idealista</div><div class="capt-kpi-value" id="capt-kpi-idealista">0</div><div class="capt-kpi-sub">publicados</div></div>
-    <div class="capt-kpi accent"><div class="capt-kpi-top"><div class="capt-kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg></div></div><div class="capt-kpi-label">Con mandato</div><div class="capt-kpi-value" id="capt-kpi-mandato">0</div><div class="capt-kpi-sub">firmados</div></div>
+  <!-- Filtros tipo (tarjetas grandes) -->
+  <div class="capt-tipo-tabs">
+    <div class="capt-tipo-tab active accent" id="capt-tab-todos" onclick="setCaptTipo('')">
+      <div class="capt-tipo-tab-icon"><span id="capt-icon-todos"></span></div>
+      <div class="capt-tipo-tab-label">Todos</div>
+      <div class="capt-tipo-tab-count" id="capt-cnt-todos">0</div>
+    </div>
+    <div class="capt-tipo-tab orange" id="capt-tab-local" onclick="setCaptTipo('local')">
+      <div class="capt-tipo-tab-icon"><span id="capt-icon-local"></span></div>
+      <div class="capt-tipo-tab-label">Locales</div>
+      <div class="capt-tipo-tab-count" id="capt-cnt-local">0</div>
+    </div>
+    <div class="capt-tipo-tab purple" id="capt-tab-traspaso" onclick="setCaptTipo('traspaso')">
+      <div class="capt-tipo-tab-icon"><span id="capt-icon-traspaso"></span></div>
+      <div class="capt-tipo-tab-label">Traspasos</div>
+      <div class="capt-tipo-tab-count" id="capt-cnt-traspaso">0</div>
+    </div>
+    <div class="capt-tipo-tab green" id="capt-tab-vivienda" onclick="setCaptTipo('vivienda')">
+      <div class="capt-tipo-tab-icon"><span id="capt-icon-vivienda"></span></div>
+      <div class="capt-tipo-tab-label">Viviendas</div>
+      <div class="capt-tipo-tab-count" id="capt-cnt-vivienda">0</div>
+    </div>
+    <div class="capt-tipo-tab teal" id="capt-tab-suelo" onclick="setCaptTipo('suelo')">
+      <div class="capt-tipo-tab-icon"><span id="capt-icon-suelo"></span></div>
+      <div class="capt-tipo-tab-label">Suelos</div>
+      <div class="capt-tipo-tab-count" id="capt-cnt-suelo">0</div>
+    </div>
   </div>
 
-  <!-- Filtros tipo -->
-  <div class="capt-tipo-tabs">
-    <div class="capt-tipo-tab active" id="capt-tab-todos" onclick="setCaptTipo('')"><span id="capt-icon-todos"></span> Todos <span class="count" id="capt-cnt-todos">0</span></div>
-    <div class="capt-tipo-tab" id="capt-tab-local" onclick="setCaptTipo('local')"><span id="capt-icon-local"></span> Locales <span class="count" id="capt-cnt-local">0</span></div>
-    <div class="capt-tipo-tab" id="capt-tab-traspaso" onclick="setCaptTipo('traspaso')"><span id="capt-icon-traspaso"></span> Traspasos <span class="count" id="capt-cnt-traspaso">0</span></div>
-    <div class="capt-tipo-tab" id="capt-tab-vivienda" onclick="setCaptTipo('vivienda')"><span id="capt-icon-vivienda"></span> Viviendas <span class="count" id="capt-cnt-vivienda">0</span></div>
-    <div class="capt-tipo-tab" id="capt-tab-suelo" onclick="setCaptTipo('suelo')"><span id="capt-icon-suelo"></span> Suelos <span class="count" id="capt-cnt-suelo">0</span></div>
+  <!-- KPIs (chips compactos) -->
+  <div class="capt-kpis">
+    <div class="capt-kpi accent"><span class="capt-kpi-icon-mini"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M3 9h18"/></svg></span>Total activos <span class="capt-kpi-value-mini" id="capt-kpi-total">0</span></div>
+    <div class="capt-kpi orange"><span class="capt-kpi-icon-mini"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1m4 0h1M9 13h1m4 0h1M9 21v-4h6v4"/></svg></span>Locales <span class="capt-kpi-value-mini" id="capt-kpi-local">0</span></div>
+    <div class="capt-kpi purple"><span class="capt-kpi-icon-mini"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></span>Traspasos <span class="capt-kpi-value-mini" id="capt-kpi-traspaso">0</span></div>
+    <div class="capt-kpi green"><span class="capt-kpi-icon-mini"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M9 22V12h6v10"/></svg></span>Viviendas <span class="capt-kpi-value-mini" id="capt-kpi-vivienda">0</span></div>
+    <div class="capt-kpi teal"><span class="capt-kpi-icon-mini"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>En Idealista <span class="capt-kpi-value-mini" id="capt-kpi-idealista">0</span></div>
+    <div class="capt-kpi accent"><span class="capt-kpi-icon-mini"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg></span>Con mandato <span class="capt-kpi-value-mini" id="capt-kpi-mandato">0</span></div>
   </div>
 
   <!-- Filtros adicionales -->
@@ -1695,7 +1727,6 @@
       <option value="En análisis">En análisis</option>
       <option value="Mandato firmado">Mandato firmado</option>
       <option value="Publicado">Publicado</option>
-      <option value="En negociación">En negociación</option>
       <option value="Cerrado">Cerrado</option>
       <option value="Descartado">Descartado</option>
     </select>
@@ -1921,12 +1952,11 @@
       </div>
       <div class="form-group">
         <label>Estado</label>
-        <select id="capt-estado" onchange="onCaptEstadoChange()" style="background:#c9a84c12;border-color:#c9a84c44;color:var(--accent);font-weight:700">
+        <select id="capt-estado" class="capt-estado-select" onchange="onCaptEstadoChange()">
           <option value="Nuevo lead">Nuevo lead</option>
           <option value="En análisis">En análisis</option>
           <option value="Mandato firmado">Mandato firmado</option>
           <option value="Publicado">Publicado</option>
-          <option value="En negociación">En negociación</option>
           <option value="Cerrado">Cerrado</option>
           <option value="Descartado">Descartado</option>
         </select>
@@ -3586,8 +3616,8 @@ function renderProductFilter() {
 function renderBreakdown() {
   const total = leads.length;
   const activeFilter = document.getElementById('filter-producto').value;
-  const ESTADO_BG = { 'Publicado': '#22c55e22', 'En negociación': '#c084fc22' };
-  const ESTADO_BORDER = { 'Publicado': '#22c55e', 'En negociación': '#c084fc' };
+  const ESTADO_BG = { 'Publicado': '#22c55e22', 'Mandato firmado': '#22c55e22' };
+  const ESTADO_BORDER = { 'Publicado': '#22c55e', 'Mandato firmado': '#22c55e' };
   const nombresPortal = { idealista:'Idealista', fotocasa:'Fotocasa', meta:'Meta' };
   document.getElementById('breakdown-cards').innerHTML = products.map(p => {
     const pLeads   = leads.filter(l => l.producto === p.id);
@@ -4596,7 +4626,7 @@ function initHomeMap() {
 async function renderHomeMapMarkers() {
   const statusEl = document.getElementById('home-map-status');
   const countEl  = document.getElementById('home-map-count');
-  const activosMandato = (activos || []).filter(a => a.estado === 'Mandato firmado' && a.direccion);
+  const activosMandato = (activos || []).filter(a => (a.estado === 'Mandato firmado' || a.estado === 'Publicado') && a.direccion);
 
   // Limpiar marcadores previos (por si se llama de nuevo, ej. botón "Reintentar")
   _homeMapMarkers.forEach(m => _homeMap && _homeMap.removeLayer(m));
@@ -6374,7 +6404,6 @@ const ESTADO_CAPT_CLS = {
   'En análisis':   'bec-analisis',
   'Mandato firmado':'bec-mandato',
   'Publicado':     'bec-publicado',
-  'En negociación':'bec-negociacion',
   'Cerrado':       'bec-cerrado',
   'Descartado':    'bec-descartado',
 };
@@ -6565,12 +6594,13 @@ async function deleteCaptActivo() {
 }
 
 // ── SINCRONIZACIÓN CAPTACIÓN → ACTIVOS EN LEADS ──────────────────
-// - "Mandato firmado" (primera vez): crea el producto en Leads
+// - "Mandato firmado" o "Publicado" (primera vez): crea el producto en Leads
+//   y lo hace visible en el mapa de Home — ambos estados están al mismo nivel.
 // - Cualquier estado posterior, si ya existe el producto: lo actualiza
 //   (color por estado, publicaciones, etc.)
-// - "Cerrado": elimina el producto de Leads (ya no se puede asignar a
-//   leads nuevos) — el importe de cierre queda guardado en el propio
-//   activo de Captación para el cómputo de Cierres.
+// - "Cerrado" o "Descartado": elimina el producto de Leads (ya no se puede
+//   asignar a leads nuevos) y desaparece del mapa — el importe de cierre
+//   queda guardado en el propio activo de Captación para el cómputo de Cierres.
 async function syncActivoConProducts(a) {
   // Recargar products frescos del Sheet antes de comprobar duplicados
   await loadLeads();
@@ -6581,13 +6611,15 @@ async function syncActivoConProducts(a) {
     p.name?.toLowerCase().trim() === a.direccion?.toLowerCase().trim()
   );
 
-  // ── Estado "Cerrado": si existía en Leads, lo retiramos ──
-  if (a.estado === 'Cerrado') {
+  // ── Estado "Cerrado" o "Descartado": si existía en Leads, lo retiramos ──
+  if (a.estado === 'Cerrado' || a.estado === 'Descartado') {
     if (yaExiste) {
       try {
         await fetch(scriptUrl, { method:'POST', body: JSON.stringify({ action:'deleteProduct', product:{ id: yaExiste.id } }) });
         await loadLeads();
-        showToast(`✅ "${a.direccion}" cerrado — retirado de Leads`, 'success');
+        showToast(a.estado === 'Cerrado'
+          ? `✅ "${a.direccion}" cerrado — retirado de Leads`
+          : `🗑 "${a.direccion}" descartado — retirado de Leads`, 'success');
       } catch(e) {
         showToast('⚠️ No se pudo retirar el activo de Leads', 'error');
       }
@@ -6595,8 +6627,8 @@ async function syncActivoConProducts(a) {
     return;
   }
 
-  // ── Si aún no existe en Leads y todavía no hay mandato firmado, no se crea ──
-  if (!yaExiste && a.estado !== 'Mandato firmado') return;
+  // ── Si aún no existe en Leads y todavía no hay mandato firmado ni publicado, no se crea ──
+  if (!yaExiste && a.estado !== 'Mandato firmado' && a.estado !== 'Publicado') return;
 
   const tipoMap = { local:'local', traspaso:'traspaso', vivienda:'piso', suelo:'solar' };
   const iconMap = { local:'🏬', traspaso:'🏪', vivienda:'🏡', suelo:'🌍' };
@@ -6698,7 +6730,7 @@ function renderCaptacion() {
     const matchBanner = (a.estado === 'Mandato firmado' && inversores.length)
       ? renderMatchBannersForActivo(a) : '';
 
-    return `<div class="capt-card tipo-${a.tipo}${a.estado==="Descartado"?" descartado":""}" onclick="openCaptFicha('${a.id}')">
+    return `<div class="capt-card tipo-${a.tipo} estado-${CAPT_ESTADO_SLUG[a.estado]||'nuevo'}${a.estado==="Descartado"?" descartado":""}" onclick="openCaptFicha('${a.id}')">
       <div class="capt-card-top">
         <div style="min-width:0;flex:1">
           <div class="capt-card-dir">
@@ -6708,7 +6740,7 @@ function renderCaptacion() {
           </div>
           <div class="capt-card-sub">${a.contacto||''}${a.contacto&&a.telefono?' · ':''}${a.telefono||''}</div>
         </div>
-        <span class="badge-estado-capt ${estadoCls}">${a.estado}</span>
+        <span class="badge-estado-capt ${estadoCls}">${a.estado==='Cerrado'?'✓ Cerrado':a.estado}</span>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
         <span class="badge-tipo-capt ${tipoCls}">${tipoLabel}</span>
@@ -6747,7 +6779,7 @@ function openCaptFicha(id) {
     </a>`;
   document.getElementById('capt-ficha-badges').innerHTML =
     `<span class="badge-tipo-capt ${tipoCls}">${tipoLabel}</span>
-     <span class="badge-estado-capt ${estadoCls}">${a.estado}</span>
+     <span class="badge-estado-capt ${estadoCls}">${a.estado==='Cerrado'?'✓ Cerrado':a.estado}</span>
      ${a.idealista==='si'?'<span class="badge-idealista si">✅ Idealista</span>':a.idealista==='multiple'?'<span class="badge-idealista multiple">⚠️ Idealista ×2+</span>':'<span class="badge-idealista">❌ Sin publicar</span>'}`;
 
   const f = (label, val, full=false) => val && val!=='—' ? `<div class="capt-info-field ${full?'full':''}"><div class="capt-info-label">${label}</div><div class="capt-info-value">${val}</div></div>` : '';
@@ -6869,10 +6901,23 @@ function selectCaptTipo(tipo, el) {
 
 let _captPortalesSeleccionados = []; // [{portal:'idealista', url:'https://...'}, ...]
 
+const CAPT_ESTADO_SLUG = {
+  'Nuevo lead':'nuevo', 'En análisis':'analisis', 'Mandato firmado':'mandato',
+  'Publicado':'publicado', 'Cerrado':'cerrado', 'Descartado':'descartado',
+};
+function paintCaptEstadoSelect() {
+  const sel = document.getElementById('capt-estado');
+  if (!sel) return;
+  Object.values(CAPT_ESTADO_SLUG).forEach(slug => sel.classList.remove('est-'+slug));
+  const slug = CAPT_ESTADO_SLUG[sel.value];
+  if (slug) sel.classList.add('est-'+slug);
+}
+
 function onCaptEstadoChange() {
   const estado = document.getElementById('capt-estado').value;
   document.getElementById('capt-publicaciones-block').style.display = estado === 'Publicado' ? '' : 'none';
   document.getElementById('capt-monto-cierre-block').style.display  = estado === 'Cerrado'   ? '' : 'none';
+  paintCaptEstadoSelect();
   renderPortalOpts();
   renderPortalUrls();
 }
