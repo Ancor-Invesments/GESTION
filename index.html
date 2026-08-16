@@ -255,11 +255,10 @@
   .cards-wrap { display: none; flex-direction: column; gap: 10px; }
 
   .lead-card {
-    background: #eaf2fa;
-    border: 1px solid #cddceb;
-    border-left: 4px solid var(--navy);
+    background: #c9c9c9;
+    border: 1px solid #b3b3b3;
     border-radius: 14px;
-    padding: 18px 20px 18px 17px;
+    padding: 18px 20px;
     cursor: pointer;
     transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
     position: relative;
@@ -274,8 +273,8 @@
     border-color: transparent var(--accent) transparent transparent;
     opacity: 0.85;
   }
-  .lead-card:active { background: #f6fafd; }
-  .lead-card.has-cita { border-left: 4px solid var(--green); }
+  .lead-card:active { background: #d6d6d6; }
+  .lead-card.has-cita { border-left: 3px solid var(--green); }
 
   .card-top {
     display: flex;
@@ -419,7 +418,7 @@
     gap: 10px;
   }
   .ficha-field {
-    background: var(--surface2);
+    background: #c9c9c9;
     border-radius: 10px;
     padding: 10px 14px;
   }
@@ -429,7 +428,7 @@
   .ficha-field-value.muted { color: var(--muted); font-style: italic; }
 
   .ficha-notas {
-    background: var(--surface2);
+    background: #c9c9c9;
     border-radius: 10px;
     padding: 12px 14px;
     font-size: 0.83rem;
@@ -1342,6 +1341,9 @@
   <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap">
     <div id="home-map-status" style="font-size:0.76rem;color:var(--muted)"></div>
     <button onclick="_homeMapLoaded=false;renderHomeMapMarkers()" style="background:none;border:1px solid var(--border);color:var(--accent);font-size:0.7rem;font-weight:700;padding:3px 10px;border-radius:8px;cursor:pointer">↻ Reintentar</button>
+  </div>
+  <div style="text-align:center;font-size:0.68rem;color:var(--muted2);margin-top:22px;padding-top:14px;border-top:1px solid var(--border)">
+    Esta APP / CRM-Inmobiliario. Ha sido creada/desarrollada íntegramente por Fernando Benítez con la asistencia de Claude · permisos Lead Retrieval — Meta en procesos. Todos los derechos reservados · Barcelona - España 2026
   </div>
 </div>
 
@@ -2839,14 +2841,14 @@ function renderPerfilFicha(leadId, tipoCliente) {
           <span class="perfil-btn ${tipoCliente==='finalista'?'active finalista':''}" style="pointer-events:none">F</span>
           <div>
             <div style="font-size:0.8rem;font-weight:700;color:${tipoCliente==='finalista'?'#4f7cff':'var(--text)'}">Finalista</div>
-            <div style="font-size:0.68rem;color:var(--muted)">Compra o alquila para usarlo él mismo</div>
+            <div style="font-size:0.68rem;color:${tipoCliente==='finalista'?'#aab4c7':'var(--muted)'}">Compra o alquila para usarlo él mismo</div>
           </div>
         </div>
         <div onclick="togglePerfilCliente('${leadId}','inversor')" style="flex:1;cursor:pointer;padding:10px 12px;border-radius:10px;border:1px solid ${tipoCliente==='inversor'?'#c9a84c':'var(--border)'};background:${tipoCliente==='inversor'?'#c9a84c1a':'var(--surface2)'};display:flex;align-items:center;gap:8px">
           <span class="perfil-btn ${tipoCliente==='inversor'?'active inversor':''}" style="pointer-events:none">I</span>
           <div>
             <div style="font-size:0.8rem;font-weight:700;color:${tipoCliente==='inversor'?'#c9a84c':'var(--text)'}">Inversor</div>
-            <div style="font-size:0.68rem;color:var(--muted)">Busca rentabilidad, no lo usa él</div>
+            <div style="font-size:0.68rem;color:${tipoCliente==='inversor'?'#aab4c7':'var(--muted)'}">Busca rentabilidad, no lo usa él</div>
           </div>
         </div>
       </div>
