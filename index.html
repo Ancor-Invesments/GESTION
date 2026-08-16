@@ -405,6 +405,21 @@
   #capt-modal-panel h2 { color: #F8F5EC; }
   #capt-ficha-panel .ficha-header, #capt-modal-panel { border-color: rgba(255,255,255,0.12); }
 
+  /* Modal de edición de Prospección en naranja fuerte */
+  #prosp-modal-panel {
+    background: #e8935a;
+    color: #3a2210;
+    --text: #3a2210;
+    --muted: rgba(58,34,16,0.65);
+    --muted2: rgba(58,34,16,0.5);
+    --border: rgba(58,34,16,0.18);
+    --surface: #f0ab7c;
+    --surface2: rgba(255,255,255,0.35);
+    --navy: #3a2210;
+    border-color: rgba(58,34,16,0.15);
+  }
+  #prosp-modal-panel h2 { color: #3a2210; }
+
   .ficha-handle {
     width: 40px; height: 4px;
     background: var(--border);
@@ -888,8 +903,8 @@
   .prosp-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; }
 
   .prosp-card {
-    background:var(--surface);
-    border:1px solid var(--border);
+    background:#ffe0c2;
+    border:1px solid #ff6b3555;
     border-radius:14px;
     padding:18px 20px;
     cursor:pointer;
@@ -1032,6 +1047,7 @@
   .cal-legend { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
   .cal-legend-item { display:flex; align-items:center; gap:6px; font-size:0.74rem; color:var(--muted2); }
   .cal-legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  #cal-grid { overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:6px; }
   .cal-week { display:grid; grid-template-columns:52px repeat(7,1fr); gap:1px; background:var(--border); border-radius:12px; overflow:hidden; }
   .cal-week-header { background:var(--surface2); padding:10px 4px; text-align:center; font-size:0.72rem; font-weight:600; color:var(--muted2); }
   .cal-week-header.today { color:var(--accent); }
@@ -1096,10 +1112,12 @@
   .cal-event-item-sub  { font-size:0.74rem; color:var(--muted2); }
   .cal-empty { text-align:center; padding:48px 24px; color:var(--muted); font-size:0.85rem; }
   @media (max-width:700px) {
-    .cal-week { grid-template-columns:36px repeat(7,1fr); }
-    .cal-week-header,.cal-week-time { font-size:0.6rem; padding:4px 2px; }
-    .cal-month-day { min-height:56px; padding:3px; }
-    .cal-event { font-size:0.6rem; padding:2px 4px; }
+    .cal-week { grid-template-columns:44px repeat(7,84px); min-width:632px; }
+    .cal-week-header,.cal-week-time { font-size:0.68rem; padding:6px 3px; }
+    .cal-month { grid-template-columns:repeat(7,84px); min-width:588px; }
+    .cal-month-dow { font-size:0.68rem; padding:8px 3px; }
+    .cal-month-day { min-height:64px; padding:4px; }
+    .cal-event { font-size:0.66rem; padding:2px 5px; }
     .cal-title { font-size:0.82rem; min-width:130px; }
   }
 
@@ -1267,6 +1285,12 @@
   .capt-info-field.field-blue   { background:#d9e6fb; }
   .capt-info-field.field-pink   { background:#fbdbe6; }
   .capt-info-field.field-gold   { background:#f0e0ad; }
+  .capt-info-field.field-red    { background:#fbdada; }
+  .capt-info-field.field-yellow { background:#fdf0b0; }
+  .capt-info-field.field-purple { background:#e5d9f7; }
+  .capt-info-field.field-gold-strong { background:linear-gradient(135deg,#ffd76a,#f5b940); border:1px solid #d99a1d; }
+  .capt-info-field.field-gold-strong .capt-info-label { color:#7a4e00; }
+  .capt-info-field.field-gold-strong .capt-info-value { color:#4a2e00; font-weight:700; }
   .capt-info-label { font-size:0.65rem; color:var(--muted2); margin-bottom:3px; text-transform:uppercase; letter-spacing:0.04em; }
   .capt-info-value { font-size:0.82rem; font-weight:500; color:var(--text); white-space:pre-wrap; word-break:break-word; }
   .capt-info-value.muted { color:var(--muted); font-style:italic; }
@@ -2314,7 +2338,7 @@
 
 <!-- MODAL PROSPECTO (edición/creación) -->
 <div class="modal-overlay" id="prosp-modal-overlay" onclick="closeProspModalOutside(event)">
-  <div class="modal" style="max-width:580px">
+  <div class="modal" id="prosp-modal-panel" style="max-width:580px">
     <h2 id="prosp-modal-title">📡 Nuevo prospecto</h2>
     <div class="form-grid">
       <div class="form-group">
@@ -6920,13 +6944,13 @@ function openCaptFicha(id) {
   if (a.tipo==='local') {
     body += `<div class="capt-section-divider">Datos del local</div>
       <div class="capt-info-grid">
-        ${f('Modalidad', a.modalidad)}
-        ${f('Superficie', a.superficie)}
-        ${f('¿Planta baja?', a.planta_baja)}
-        ${f('Última actividad', a.ultima_actividad)}
-        ${f('Estado actual', a.estado_local)}
-        ${f('Salida de humos', a.humos)}
-        ${f('Precio', formatPrice(a.precio_local))}
+        ${f('Modalidad', a.modalidad, false, 'field-red')}
+        ${f('Superficie', a.superficie, false, 'field-green')}
+        ${f('¿Planta baja?', a.planta_baja, false, 'field-green')}
+        ${f('Última actividad', a.ultima_actividad, false, 'field-red')}
+        ${f('Estado actual', a.estado_local, false, 'field-purple')}
+        ${f('Salida de humos', a.humos, false, 'field-yellow')}
+        ${f('Precio', formatPrice(a.precio_local), false, 'field-gold-strong')}
       </div>`;
   }
 
@@ -6946,27 +6970,27 @@ function openCaptFicha(id) {
   if (a.tipo==='vivienda') {
     body += `<div class="capt-section-divider">Datos de la vivienda</div>
       <div class="capt-info-grid">
-        ${f('Modalidad', a.modalidad_viv)}
-        ${f('Superficie', a.superficie_viv)}
-        ${f('Habitaciones', a.habitaciones)}
-        ${f('Planta', a.planta_viv)}
-        ${f('Estado inmueble', a.estado_viv)}
-        ${f('Precio expectativa', formatPrice(a.precio_viv))}
+        ${f('Modalidad', a.modalidad_viv, false, 'field-red')}
+        ${f('Superficie', a.superficie_viv, false, 'field-blue')}
+        ${f('Habitaciones', a.habitaciones, false, 'field-gray')}
+        ${f('Planta', a.planta_viv, false, 'field-yellow')}
+        ${f('Estado inmueble', a.estado_viv, false, 'field-green')}
+        ${f('Precio expectativa', formatPrice(a.precio_viv), false, 'field-purple')}
       </div>`;
   }
 
   if (a.tipo==='suelo') {
     body += `<div class="capt-section-divider">Datos del suelo</div>
       <div class="capt-info-grid">
-        ${f('Tipo de suelo', a.tipo_suelo, true)}
-        ${f('Superficie total', a.sup_suelo)}
-        ${f('Edificabilidad', a.edificabilidad)}
-        ${f('Nº viviendas permitidas', a.num_viviendas)}
-        ${f('Calificación urbanística', a.calificacion, true)}
-        ${f('Proyecto / licencia en trámite', a.licencia_tramite)}
-        ${f('Gestión / reparcelación', a.reparcelacion)}
-        ${f('Servicios urbanísticos', a.servicios)}
-        ${f('Cargas / hipotecas', a.cargas)}
+        ${f('Tipo de suelo', a.tipo_suelo, true, 'field-red')}
+        ${f('Superficie total', a.sup_suelo, false, 'field-green')}
+        ${f('Edificabilidad', a.edificabilidad, false, 'field-green')}
+        ${f('Nº viviendas permitidas', a.num_viviendas, false, 'field-red')}
+        ${f('Calificación urbanística', a.calificacion, true, 'field-purple')}
+        ${f('Proyecto / licencia en trámite', a.licencia_tramite, false, 'field-yellow')}
+        ${f('Gestión / reparcelación', a.reparcelacion, false, 'field-gold-strong')}
+        ${f('Servicios urbanísticos', a.servicios, false, 'field-red')}
+        ${f('Cargas / hipotecas', a.cargas, false, 'field-green')}
       </div>
       <div class="capt-section-divider">Precio</div>
       <div class="capt-info-grid">
