@@ -255,12 +255,13 @@
   .cards-wrap { display: none; flex-direction: column; gap: 10px; }
 
   .lead-card {
-    background: #dcf2ee;
-    border: 1px solid #8fd9cb;
+    background: #eaf2fa;
+    border: 1px solid #cddceb;
+    border-left: 4px solid var(--navy);
     border-radius: 14px;
-    padding: 18px 20px;
+    padding: 18px 20px 18px 17px;
     cursor: pointer;
-    transition: border-color 0.15s, box-shadow 0.15s;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
     position: relative;
     overflow: hidden;
   }
@@ -273,8 +274,8 @@
     border-color: transparent var(--accent) transparent transparent;
     opacity: 0.85;
   }
-  .lead-card:active { background: #c8eae3; }
-  .lead-card.has-cita { border-left: 3px solid var(--green); }
+  .lead-card:active { background: #f6fafd; }
+  .lead-card.has-cita { border-left: 4px solid var(--green); }
 
   .card-top {
     display: flex;
