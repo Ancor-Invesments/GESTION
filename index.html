@@ -135,18 +135,16 @@
   }
   .gold-divider { height: 1px; background: linear-gradient(90deg, transparent, #c9a84c99, #c9a84c, #c9a84c99, transparent); margin: 2px 0 26px; }
   .breakdown-card {
-    background: var(--surface); border: 1px solid #c9a84c3d;
-    border-radius: 16px; padding: 18px 20px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 18px;
     display: flex; align-items: center; gap: 14px;
-    cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
-    box-shadow: 0 4px 14px rgba(26,35,64,0.07);
+    cursor: pointer; transition: border-color 0.15s;
   }
-  .breakdown-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:16px 16px 0 0; background: linear-gradient(90deg,#b8975a,#c9a84c); }
-  .breakdown-card:hover { border-color: var(--accent); box-shadow: 0 6px 18px rgba(26,35,64,0.11); }
+  .breakdown-card:hover { border-color: var(--accent); }
   .breakdown-card.selected { border-color: var(--accent); background: #4f7cff0d; }
-  .breakdown-icon { font-size: 1.6rem; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .breakdown-icon { font-size: 2rem; width: 58px; height: 58px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .breakdown-data { flex: 1; }
-  .breakdown-name { font-weight: 800; font-size: 0.95rem; margin-bottom: 4px; color: var(--navy); }
+  .breakdown-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; color: var(--navy); }
   .breakdown-stats { display: flex; gap: 12px; }
   .breakdown-stat { font-size: 0.72rem; color: var(--muted2); }
   .breakdown-stat strong { color: var(--text); font-weight: 600; }
@@ -257,8 +255,8 @@
   .cards-wrap { display: none; flex-direction: column; gap: 10px; }
 
   .lead-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: #eaf3fb;
+    border: 1px solid #cfe2f3;
     border-radius: 14px;
     padding: 18px 20px;
     cursor: pointer;
@@ -275,7 +273,7 @@
     border-color: transparent var(--accent) transparent transparent;
     opacity: 0.85;
   }
-  .lead-card:active { background: var(--surface2); }
+  .lead-card:active { background: #dcebf7; }
   .lead-card.has-cita { border-left: 3px solid var(--green); }
 
   .card-top {
@@ -2657,12 +2655,12 @@ const SCRIPT_URL_KEY = 'ancor_investment_script_url';
 const PRODUCTS_KEY   = 'ancor_investment_products';
 
 const PRODUCT_COLORS = [
-  { bg:'#f59e0b18', text:'#f59e0b', border:'#f59e0b33', bar:'#f59e0b' },
-  { bg:'#14b8a618', text:'#14b8a6', border:'#14b8a633', bar:'#14b8a6' },
-  { bg:'#a855f718', text:'#a855f7', border:'#a855f733', bar:'#a855f7' },
-  { bg:'#ef444418', text:'#ef4444', border:'#ef444433', bar:'#ef4444' },
-  { bg:'#3b82f618', text:'#3b82f6', border:'#3b82f633', bar:'#3b82f6' },
-  { bg:'#ec489918', text:'#ec4899', border:'#ec489933', bar:'#ec4899' },
+  { bg:'#f59e0b30', text:'#f59e0b', border:'#f59e0b33', bar:'#f59e0b' },
+  { bg:'#14b8a630', text:'#14b8a6', border:'#14b8a633', bar:'#14b8a6' },
+  { bg:'#a855f730', text:'#a855f7', border:'#a855f733', bar:'#a855f7' },
+  { bg:'#ef444430', text:'#ef4444', border:'#ef444433', bar:'#ef4444' },
+  { bg:'#3b82f630', text:'#3b82f6', border:'#3b82f633', bar:'#3b82f6' },
+  { bg:'#ec489930', text:'#ec4899', border:'#ec489933', bar:'#ec4899' },
 ];
 
 const ESTADO_CLASS = {
