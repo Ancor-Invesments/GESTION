@@ -377,16 +377,16 @@
 
   #ficha-panel { background: #d8d3c8; }
 
-  /* Ficha y modal de edición de Captación en gris oscuro */
+  /* Ficha y modal de edición de Captación en gris (más claro, ya no negro) */
   #capt-ficha-panel, #capt-modal-panel {
-    background: #2b2b2b;
-    --text: #F3EEE2;
-    --muted: rgba(243,238,226,0.55);
-    --muted2: rgba(243,238,226,0.42);
-    --border: rgba(255,255,255,0.12);
-    --surface: #383838;
-    --surface2: rgba(255,255,255,0.08);
-    --navy: #F3EEE2;
+    background: #55555a;
+    --text: #F8F5EC;
+    --muted: rgba(248,245,236,0.72);
+    --muted2: rgba(248,245,236,0.58);
+    --border: rgba(255,255,255,0.18);
+    --surface: #656569;
+    --surface2: rgba(255,255,255,0.13);
+    --navy: #F8F5EC;
   }
   #capt-ficha-panel .ficha-header, #capt-modal-panel { border-color: rgba(255,255,255,0.12); }
 
@@ -461,6 +461,9 @@
   /* ── RESPONSIVE ── */
   @media (max-width: 700px) {
     body { padding: 16px 12px; }
+
+    .ficha-header { flex-direction: column; align-items: stretch; }
+    .ficha-actions { width: 100%; }
 
     .header { margin-bottom: 16px; }
     .header-left h1 { font-size: 1.1rem; }
@@ -1213,18 +1216,18 @@
   }
   .capt-card-sub { font-size: 0.74rem; font-weight: 500; color: var(--muted); margin-top: 3px; }
 
-  .badge-tipo-capt { padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; }
+  .badge-tipo-capt { padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; white-space:nowrap; display:inline-block; }
   .btc-local    { background:#14b8a618; color:#14b8a6; border:1px solid #14b8a633; }
   .btc-traspaso { background:#f59e0b18; color:#f59e0b; border:1px solid #f59e0b33; }
   .btc-vivienda { background:#a855f718; color:#a855f7; border:1px solid #a855f733; }
   .btc-suelo    { background:#22c55e18; color:#22c55e; border:1px solid #22c55e33; }
   .badge-modalidad { padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; background:var(--surface2); color:var(--muted2); border:1px solid var(--border); }
 
-  .badge-idealista { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; background:#ff650018; color:#ff6500; border:1px solid #ff650033; }
+  .badge-idealista { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; white-space:nowrap; background:#ff650018; color:#ff6500; border:1px solid #ff650033; }
   .badge-idealista.si { background:#22c55e18; color:#22c55e; border-color:#22c55e33; }
   .badge-idealista.multiple { background:#f59e0b18; color:#f59e0b; border-color:#f59e0b33; }
 
-  .badge-estado-capt { padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; }
+  .badge-estado-capt { padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; white-space:nowrap; display:inline-block; }
   .bec-nuevo       { background:#2a2a1e; color:#fbbf24; }
   .bec-analisis    { background:#2a1e2a; color:#c084fc; }
   .bec-mandato     { background:#1a2d2a; color:#34d399; }
@@ -6813,8 +6816,8 @@ function openCaptFicha(id) {
   document.getElementById('capt-ficha-dir').innerHTML =
     `<a href="${a.maps_url || `https://maps.google.com/?q=${encodeURIComponent(a.direccion)}`}"
         target="_blank"
-        style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:8px">
-      📍 ${a.direccion}
+        style="color:inherit;text-decoration:none;display:flex;flex-direction:column;align-items:flex-start;gap:6px">
+      <span>📍 ${a.direccion}</span>
       <span style="font-size:0.7rem;background:#4f7cff22;color:var(--accent);border:1px solid #4f7cff44;padding:2px 8px;border-radius:10px;font-weight:600;white-space:nowrap">Ver en Maps ↗</span>
     </a>`;
   document.getElementById('capt-ficha-badges').innerHTML =
