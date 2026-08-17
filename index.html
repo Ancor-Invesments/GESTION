@@ -388,7 +388,7 @@
   }
   @keyframes slideUp { from { transform: translateY(40px); opacity:0; } to { transform: translateY(0); opacity:1; } }
 
-  #ficha-panel { background: #d8d3c8; }
+  #ficha-panel { background: #c2beb4; }
 
   /* Ficha y modal de edición de Captación en gris (más claro, ya no negro) */
   #capt-ficha-panel, #capt-modal-panel {
@@ -2133,6 +2133,10 @@
         <label>Precio de venta / alquiler</label>
         <input type="text" id="capt-precio-local" placeholder="ej. 350.000€ / 2.500€/mes">
       </div>
+      <div class="form-group capt-campo-local" style="display:none">
+        <label>% Honorarios</label>
+        <input type="text" id="capt-honorarios-pct-local" placeholder="ej. 3" inputmode="decimal">
+      </div>
 
       <!-- ══ CAMPOS TRASPASO ══ -->
       <div class="form-group full capt-campo-traspaso" style="border-top:1px solid #f59e0b33;padding-top:14px;margin-top:4px;display:none">
@@ -2176,6 +2180,10 @@
         <label>Precio de traspaso</label>
         <input type="text" id="capt-precio-traspaso" placeholder="ej. 85.000€" inputmode="decimal">
       </div>
+      <div class="form-group capt-campo-traspaso" style="display:none">
+        <label>% Honorarios</label>
+        <input type="text" id="capt-honorarios-pct-traspaso" placeholder="ej. 5" inputmode="decimal">
+      </div>
 
       <!-- ══ CAMPOS VIVIENDA ══ -->
       <div class="form-group full capt-campo-vivienda" style="border-top:1px solid #a855f733;padding-top:14px;margin-top:4px;display:none">
@@ -2212,6 +2220,10 @@
       <div class="form-group capt-campo-vivienda" style="display:none">
         <label>Precio expectativa</label>
         <input type="text" id="capt-precio-viv" placeholder="ej. 280.000€" inputmode="decimal">
+      </div>
+      <div class="form-group capt-campo-vivienda" style="display:none">
+        <label>% Honorarios</label>
+        <input type="text" id="capt-honorarios-pct-viv" placeholder="ej. 3" inputmode="decimal">
       </div>
 
       <!-- ══ CAMPOS SUELO ══ -->
@@ -2283,6 +2295,10 @@
       <div class="form-group capt-campo-suelo" style="display:none">
         <label>Precio total</label>
         <input type="text" id="capt-precio-suelo-total" placeholder="ej. 1.800.000€" inputmode="decimal">
+      </div>
+      <div class="form-group capt-campo-suelo" style="display:none">
+        <label>% Honorarios</label>
+        <input type="text" id="capt-honorarios-pct-suelo" placeholder="ej. 3" inputmode="decimal">
       </div>
       <div class="form-group capt-campo-suelo" style="display:none">
         <label>Precio €/m² suelo</label>
@@ -2669,7 +2685,7 @@
           <button class="btn" onclick="openWhatsAppModal()" style="background:linear-gradient(135deg,#25d366,#128c7e);border:none;flex:1">💬 WhatsApp</button>
           <button class="btn" onclick="editFromFicha()" style="flex:1">✏ Editar</button>
         </div>
-        <button class="btn-outline" onclick="convertirEnInversor()" style="color:#c9a84c;border-color:#c9a84c44;width:100%;font-size:0.78rem"><img src="data:image/png;base64,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" style="width:16px;height:16px;vertical-align:-3px;object-fit:contain" alt=""> Convertir en Inversor</button>
+        <button class="btn" onclick="convertirEnInversor()" style="background:linear-gradient(135deg,#b8975a,#c9a84c);border:none;color:#fff;width:100%;font-size:0.78rem"><img src="data:image/png;base64,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" style="width:16px;height:16px;vertical-align:-3px;object-fit:contain" alt=""> Convertir en Inversor</button>
       </div>
     </div>
     <div class="ficha-body" id="ficha-body"></div>
@@ -6682,6 +6698,10 @@ async function saveCaptActivo() {
     precio_suelo_total:tipo==='suelo'   ? g('capt-precio-suelo-total','-')        : '-',
     precio_m2_suelo:  tipo==='suelo'    ? g('capt-precio-m2-suelo',   '-')        : '-',
     precio_m2_techo:  tipo==='suelo'    ? g('capt-precio-m2-techo',   '-')        : '-',
+    honorarios_pct:   tipo==='local'    ? g('capt-honorarios-pct-local',    '-') :
+                       tipo==='traspaso'? g('capt-honorarios-pct-traspaso', '-') :
+                       tipo==='vivienda'? g('capt-honorarios-pct-viv',      '-') :
+                       tipo==='suelo'   ? g('capt-honorarios-pct-suelo',    '-') : '-',
     publicaciones:    JSON.stringify(_captPortalesSeleccionados),
     montoCierre:      gs('capt-estado','')==='Cerrado' ? (g('capt-monto-cierre','0')) : (editCaptId ? (activos.find(x=>x.id===editCaptId)?.montoCierre||'') : ''),
   };
@@ -6951,6 +6971,7 @@ function openCaptFicha(id) {
         ${f('Estado actual', a.estado_local, false, 'field-purple')}
         ${f('Salida de humos', a.humos, false, 'field-yellow')}
         ${f('Precio', formatPrice(a.precio_local), false, 'field-gold-strong')}
+        ${f('% Honorarios', a.honorarios_pct ? a.honorarios_pct+'%' : '', false, 'field-gray')}
       </div>`;
   }
 
@@ -6964,6 +6985,7 @@ function openCaptFicha(id) {
         ${f('Duración contrato', a.duracion_contrato, false, 'field-pink')}
         ${f('Renta mensual', formatPrice(a.renta), false, 'field-green')}
         ${f('Precio traspaso', formatPrice(a.precio_traspaso), false, 'field-gold')}
+        ${f('% Honorarios', a.honorarios_pct ? a.honorarios_pct+'%' : '', false, 'field-gray')}
       </div>`;
   }
 
@@ -6976,6 +6998,7 @@ function openCaptFicha(id) {
         ${f('Planta', a.planta_viv, false, 'field-yellow')}
         ${f('Estado inmueble', a.estado_viv, false, 'field-green')}
         ${f('Precio expectativa', formatPrice(a.precio_viv), false, 'field-purple')}
+        ${f('% Honorarios', a.honorarios_pct ? a.honorarios_pct+'%' : '', false, 'field-gray')}
       </div>`;
   }
 
@@ -6997,6 +7020,7 @@ function openCaptFicha(id) {
         ${f('Precio total', formatPrice(a.precio_suelo_total))}
         ${f('Precio €/m² suelo', formatPrice(a.precio_m2_suelo))}
         ${f('Precio €/m² techo', formatPrice(a.precio_m2_techo))}
+        ${f('% Honorarios', a.honorarios_pct ? a.honorarios_pct+'%' : '', false, 'field-gray')}
       </div>`;
   }
 
@@ -7107,6 +7131,7 @@ function openCaptModal(id=null) {
     'capt-superficie-viv','capt-habitaciones','capt-planta-viv','capt-precio-viv',
     'capt-sup-suelo','capt-edificabilidad','capt-num-viviendas','capt-calificacion',
     'capt-precio-suelo-total','capt-precio-m2-suelo','capt-precio-m2-techo',
+    'capt-honorarios-pct-local','capt-honorarios-pct-traspaso','capt-honorarios-pct-viv','capt-honorarios-pct-suelo',
   ];
   clearFields.forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
   const montoCierreEl = document.getElementById('capt-monto-cierre');
@@ -7184,6 +7209,7 @@ function openCaptModal(id=null) {
     set('capt-estado-local',        a.estado_local || 'Vacío');
     set('capt-humos',               a.humos || 'No');
     set('capt-precio-local',        a.precio_local);
+    set('capt-honorarios-pct-local', a.honorarios_pct);
 
     // Campos traspaso
     set('capt-licencia',            a.licencia);
@@ -7193,6 +7219,7 @@ function openCaptModal(id=null) {
     set('capt-duracion-contrato',   a.duracion_contrato);
     set('capt-renta',               a.renta);
     set('capt-precio-traspaso',     a.precio_traspaso);
+    set('capt-honorarios-pct-traspaso', a.honorarios_pct);
 
     // Campos vivienda
     set('capt-modalidad-viv',       a.modalidad_viv || 'Venta');
@@ -7201,6 +7228,7 @@ function openCaptModal(id=null) {
     set('capt-planta-viv',          a.planta_viv);
     set('capt-estado-viv',          a.estado_viv || 'Buen estado');
     set('capt-precio-viv',          a.precio_viv);
+    set('capt-honorarios-pct-viv',  a.honorarios_pct);
 
     // Campos suelo
     set('capt-tipo-suelo',          a.tipo_suelo);
@@ -7215,6 +7243,7 @@ function openCaptModal(id=null) {
     set('capt-precio-suelo-total',  a.precio_suelo_total);
     set('capt-precio-m2-suelo',     a.precio_m2_suelo);
     set('capt-precio-m2-techo',     a.precio_m2_techo);
+    set('capt-honorarios-pct-suelo', a.honorarios_pct);
 
     // Mostrar tipo seleccionado
     if (a.tipo) {
