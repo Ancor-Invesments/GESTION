@@ -7039,6 +7039,9 @@ async function ejecutarGenerarHojaEncargo() {
     document.getElementById('hoja-encargo-numdoc')?.focus();
     return;
   }
+  // Abrimos la pestaña YA (en blanco), en el mismo instante del clic — así el
+  // navegador no la bloquea. En cuanto tengamos la URL real, la redirigimos ahí.
+  const nuevaPestana = window.open('', '_blank');
   const btn = document.getElementById('btn-ejecutar-hoja');
   if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Generando...'; }
   try {
@@ -7048,17 +7051,24 @@ async function ejecutarGenerarHojaEncargo() {
     });
     const data = await res.json();
     if (!data.ok) {
+      if (nuevaPestana) nuevaPestana.close();
       showToast('❌ ' + (data.error || 'No se pudo generar la hoja de encargo'), 'error');
       if (btn) { btn.disabled = false; btn.innerHTML = 'Ejecutar'; }
       return;
     }
     if (data.aviso) showToast('⚠️ ' + data.aviso, 'error');
     else showToast('✅ Hoja de encargo generada', 'success');
-    if (data.url) window.open(data.url, '_blank');
+    if (data.url) {
+      if (nuevaPestana) { nuevaPestana.location.href = data.url; }
+      else { window.open(data.url, '_blank'); }
+    } else if (nuevaPestana) {
+      nuevaPestana.close();
+    }
     cerrarPreviewHojaEncargo();
     await loadActivos();
-    openCaptFicha(id); // refresca la ficha para mostrar "Última generada"
+    openCaptFicha(id); // refresca la ficha para mostrar "Última generada" (con el enlace visible)
   } catch (err) {
+    if (nuevaPestana) nuevaPestana.close();
     showToast('❌ Error de conexión al generar la hoja de encargo', 'error');
     if (btn) { btn.disabled = false; btn.innerHTML = 'Ejecutar'; }
   }
@@ -7191,7 +7201,13 @@ function openCaptFicha(id) {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="15.5" x2="15" y2="15.5"/><line x1="9" y1="19" x2="12.5" y2="19"/></svg>
           Doc Gen
         </button>
-        ${a.hoja_encargo_url ? `<div style="margin-top:10px;font-size:0.78rem;color:var(--muted)">Última generada: ${a.hoja_encargo_fecha||''} · <a href="${a.hoja_encargo_url}" target="_blank" style="color:#ff6500;font-weight:600">Ver documento</a></div>` : ''}
+        ${a.hoja_encargo_url ? `<div style="margin-top:12px">
+          <a href="${a.hoja_encargo_url}" target="_blank" class="btn-docgen" style="text-decoration:none;box-sizing:border-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="15.5" x2="15" y2="15.5"/><line x1="9" y1="19" x2="12.5" y2="19"/></svg>
+            Abrir última hoja generada
+          </a>
+          <div style="margin-top:6px;font-size:0.72rem;color:var(--muted);text-align:center">Generada el ${a.hoja_encargo_fecha||''}</div>
+        </div>` : ''}
       </div>
     </div>`;
 
