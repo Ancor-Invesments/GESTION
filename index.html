@@ -1975,6 +1975,10 @@
     <h2>📄 Hoja de encargo</h2>
     <div id="hoja-encargo-preview-body"></div>
     <div id="hoja-encargo-preview-aviso"></div>
+    <div style="margin-top:16px">
+      <label style="font-size:0.76rem;color:var(--muted2);font-weight:600;display:block;margin-bottom:6px">DNI / NIE del propietario (firmante)</label>
+      <input type="text" id="hoja-encargo-numdoc" placeholder="ej. 12345678A" style="width:100%;box-sizing:border-box">
+    </div>
     <div style="display:flex;gap:10px;margin-top:20px">
       <button class="btn-outline" onclick="cerrarPreviewHojaEncargo()" style="flex:1">Cancelar</button>
       <button class="btn-docgen" onclick="ejecutarGenerarHojaEncargo()" id="btn-ejecutar-hoja" style="flex:1.4">
@@ -7011,6 +7015,9 @@ function abrirPreviewHojaEncargo(id) {
   btnEjecutar.querySelector('svg')?.remove();
   btnEjecutar.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="15.5" x2="15" y2="15.5"/><line x1="9" y1="19" x2="12.5" y2="19"/></svg> Ejecutar`;
 
+  const numDocEl = document.getElementById('hoja-encargo-numdoc');
+  if (numDocEl) numDocEl.value = a.hoja_encargo_num_doc || '';
+
   document.getElementById('hoja-encargo-preview-overlay').classList.add('open');
 }
 
@@ -7026,12 +7033,18 @@ function closeHojaEncargoPreviewOutside(e) {
 async function ejecutarGenerarHojaEncargo() {
   const id = hojaEncargoPreviewId;
   if (!id) return;
+  const numDoc = (document.getElementById('hoja-encargo-numdoc')?.value || '').trim();
+  if (!numDoc) {
+    showToast('❌ Introduce el DNI/NIE del propietario antes de generar', 'error');
+    document.getElementById('hoja-encargo-numdoc')?.focus();
+    return;
+  }
   const btn = document.getElementById('btn-ejecutar-hoja');
   if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Generando...'; }
   try {
     const res  = await fetch(scriptUrl, {
       method: 'POST',
-      body: JSON.stringify({ action: 'generarHojaEncargo', activoId: id })
+      body: JSON.stringify({ action: 'generarHojaEncargo', activoId: id, numDoc: numDoc })
     });
     const data = await res.json();
     if (!data.ok) {
