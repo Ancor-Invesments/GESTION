@@ -128,6 +128,41 @@
   }
   .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
 
+  /* ── BOTÓN DOC GEN (generador de hoja de encargo) ── */
+  .btn-docgen {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; padding: 12px 18px; border-radius: 12px;
+    background: #0f1b3d; border: 2px solid #c9a86a; color: #c9a86a;
+    font-size: 0.86rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    cursor: pointer; transition: background 0.15s, transform 0.1s;
+  }
+  .btn-docgen:hover { background: #16224a; }
+  .btn-docgen:active { transform: scale(0.98); }
+  .btn-docgen:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn-docgen svg { width: 22px; height: 22px; flex-shrink: 0; }
+
+  /* ── POPUP RESUMEN HOJA DE ENCARGO ── */
+  #hoja-encargo-preview-panel {
+    background: #0f1b3d; color: #F8F1DE;
+    --text: #F8F1DE; --muted: rgba(248,241,222,0.72); --muted2: rgba(248,241,222,0.55);
+    --border: rgba(201,168,106,0.35); --surface: #16224a; --surface2: rgba(201,168,106,0.12);
+    border: 2px solid #c9a86a;
+  }
+  #hoja-encargo-preview-panel h2 { color: #c9a86a; }
+  .hoja-resumen-row {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+    padding: 11px 0; border-bottom: 1px solid rgba(201,168,106,0.18);
+  }
+  .hoja-resumen-row:last-child { border-bottom: none; }
+  .hoja-resumen-label { font-size: 0.76rem; color: var(--muted2); font-weight: 600; }
+  .hoja-resumen-valor { font-size: 0.88rem; font-weight: 600; text-align: right; }
+  .hoja-resumen-row.falta .hoja-resumen-valor { color: #f87171; font-weight: 700; }
+  .hoja-resumen-aviso {
+    background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.4);
+    color: #fca5a5; border-radius: 10px; padding: 10px 14px; font-size: 0.78rem;
+    margin-top: 14px; line-height: 1.5;
+  }
+
   /* ── BREAKDOWN ── */
   .breakdown {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -1931,6 +1966,22 @@
       </div>
     </div>
     <div class="ficha-body" id="capt-ficha-body"></div>
+  </div>
+</div>
+
+<!-- ══ POPUP RESUMEN HOJA DE ENCARGO (DOC GEN) ══ -->
+<div class="modal-overlay" id="hoja-encargo-preview-overlay" onclick="closeHojaEncargoPreviewOutside(event)">
+  <div class="modal" id="hoja-encargo-preview-panel" style="max-width:480px">
+    <h2>📄 Hoja de encargo</h2>
+    <div id="hoja-encargo-preview-body"></div>
+    <div id="hoja-encargo-preview-aviso"></div>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="btn-outline" onclick="cerrarPreviewHojaEncargo()" style="flex:1">Cancelar</button>
+      <button class="btn-docgen" onclick="ejecutarGenerarHojaEncargo()" id="btn-ejecutar-hoja" style="flex:1.4">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="15.5" x2="15" y2="15.5"/><line x1="9" y1="19" x2="12.5" y2="19"/></svg>
+        Ejecutar
+      </button>
+    </div>
   </div>
 </div>
 
@@ -6909,6 +6960,85 @@ function renderCaptacion() {
 }
 
 // ── FICHA ──────────────────────────────────────
+let hojaEncargoPreviewId = null;
+
+function abrirPreviewHojaEncargo(id) {
+  const a = activos.find(x => x.id === id);
+  if (!a) return;
+  hojaEncargoPreviewId = id;
+
+  let precio = '';
+  if (a.tipo === 'local')         precio = a.precio_local;
+  else if (a.tipo === 'traspaso') precio = a.precio_traspaso;
+  else if (a.tipo === 'vivienda') precio = a.precio_viv;
+  else if (a.tipo === 'suelo')    precio = a.precio_suelo_total;
+
+  const campos = [
+    { label: 'Propietario',    valor: a.propietario },
+    { label: 'Dirección',      valor: a.direccion },
+    { label: 'Precio',         valor: precio ? formatPrice(precio) : '' },
+    { label: '% Honorarios',   valor: a.honorarios_pct ? a.honorarios_pct + '%' : '' },
+  ];
+
+  const faltantes = campos.filter(c => !c.valor || c.valor === '-');
+
+  document.getElementById('hoja-encargo-preview-body').innerHTML = campos.map(c => `
+    <div class="hoja-resumen-row ${!c.valor || c.valor==='-' ? 'falta' : ''}">
+      <div class="hoja-resumen-label">${c.label}</div>
+      <div class="hoja-resumen-valor">${c.valor && c.valor!=='-' ? c.valor : 'Falta'}</div>
+    </div>`).join('');
+
+  const avisoEl = document.getElementById('hoja-encargo-preview-aviso');
+  const btnEjecutar = document.getElementById('btn-ejecutar-hoja');
+  if (faltantes.length) {
+    avisoEl.innerHTML = `<div class="hoja-resumen-aviso">⚠️ Faltan datos: ${faltantes.map(f=>f.label).join(', ')}. Puedes generar igualmente, pero esos huecos quedarán en blanco en el documento — mejor complétalos primero editando el activo.</div>`;
+  } else {
+    avisoEl.innerHTML = '';
+  }
+  btnEjecutar.disabled = false;
+  btnEjecutar.querySelector('svg')?.remove();
+  btnEjecutar.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="15.5" x2="15" y2="15.5"/><line x1="9" y1="19" x2="12.5" y2="19"/></svg> Ejecutar`;
+
+  document.getElementById('hoja-encargo-preview-overlay').classList.add('open');
+}
+
+function cerrarPreviewHojaEncargo() {
+  document.getElementById('hoja-encargo-preview-overlay').classList.remove('open');
+  hojaEncargoPreviewId = null;
+}
+
+function closeHojaEncargoPreviewOutside(e) {
+  if (e.target === document.getElementById('hoja-encargo-preview-overlay')) cerrarPreviewHojaEncargo();
+}
+
+async function ejecutarGenerarHojaEncargo() {
+  const id = hojaEncargoPreviewId;
+  if (!id) return;
+  const btn = document.getElementById('btn-ejecutar-hoja');
+  if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Generando...'; }
+  try {
+    const res  = await fetch(scriptUrl, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'generarHojaEncargo', activoId: id })
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      showToast('❌ ' + (data.error || 'No se pudo generar la hoja de encargo'), 'error');
+      if (btn) { btn.disabled = false; btn.innerHTML = 'Ejecutar'; }
+      return;
+    }
+    if (data.aviso) showToast('⚠️ ' + data.aviso, 'error');
+    else showToast('✅ Hoja de encargo generada', 'success');
+    if (data.url) window.open(data.url, '_blank');
+    cerrarPreviewHojaEncargo();
+    await loadActivos();
+    openCaptFicha(id); // refresca la ficha para mostrar "Última generada"
+  } catch (err) {
+    showToast('❌ Error de conexión al generar la hoja de encargo', 'error');
+    if (btn) { btn.disabled = false; btn.innerHTML = 'Ejecutar'; }
+  }
+}
+
 function openCaptFicha(id) {
   const a = activos.find(x=>x.id===id);
   if (!a) return;
@@ -7028,6 +7158,17 @@ function openCaptFicha(id) {
     body += `<div class="capt-section-divider">Notas internas</div>
       <div class="capt-info-grid"><div class="capt-info-field full"><div class="capt-info-value">${a.notas}</div></div></div>`;
   }
+
+  body += `<div class="capt-section-divider">Hoja de encargo</div>
+    <div class="capt-info-grid">
+      <div class="capt-info-field full" style="text-align:center;background:transparent;padding:0">
+        <button class="btn-docgen" onclick="abrirPreviewHojaEncargo('${a.id}')" id="btn-generar-hoja">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="15.5" x2="15" y2="15.5"/><line x1="9" y1="19" x2="12.5" y2="19"/></svg>
+          Doc Gen
+        </button>
+        ${a.hoja_encargo_url ? `<div style="margin-top:10px;font-size:0.78rem;color:var(--muted)">Última generada: ${a.hoja_encargo_fecha||''} · <a href="${a.hoja_encargo_url}" target="_blank" style="color:#ff6500;font-weight:600">Ver documento</a></div>` : ''}
+      </div>
+    </div>`;
 
   body += `<div class="capt-section-divider">Gestión</div>
     <div class="capt-info-grid">
