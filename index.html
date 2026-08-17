@@ -1241,6 +1241,7 @@
   /* Selector de estado del activo — recuadro con color según el estado elegido */
   .capt-estado-select { font-weight:700; border-width:2px !important; border-radius:10px; transition: background 0.15s, border-color 0.15s, color 0.15s; }
   .capt-estado-select.est-nuevo      { background:#fdf6e3; border-color:#f0d878 !important; color:#8a6d1a; }
+  .capt-estado-select.est-contactado { background:#e3f2fb; border-color:#7ec8f0 !important; color:#0e6ba8; }
   .capt-estado-select.est-analisis   { background:#f3ecfa; border-color:#d9bdf0 !important; color:#7c3aed; }
   .capt-estado-select.est-mandato    { background:#e3f6ee; border-color:#7ed9a8 !important; color:#15803d; }
   .capt-estado-select.est-publicado  { background:#e3f6ee; border-color:#7ed9a8 !important; color:#15803d; }
@@ -1297,6 +1298,7 @@
 
   .badge-estado-capt { padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; white-space:nowrap; display:inline-block; }
   .bec-nuevo       { background:#2a2a1e; color:#fbbf24; }
+  .bec-contactado  { background:#1a2733; color:#38bdf8; }
   .bec-analisis    { background:#2a1e2a; color:#c084fc; }
   .bec-mandato     { background:#1a2d2a; color:#34d399; }
   .bec-publicado   { background:#1e3a1e; color:#4ade80; }
@@ -1829,6 +1831,7 @@
     <select id="capt-filter-estado" onchange="renderCaptacion()">
       <option value="">Todos los estados</option>
       <option value="Nuevo lead">Nuevo lead</option>
+      <option value="Contactado">Contactado</option>
       <option value="En análisis">En análisis</option>
       <option value="Mandato firmado">Mandato firmado</option>
       <option value="Publicado">Publicado</option>
@@ -2082,6 +2085,7 @@
         <label>Estado</label>
         <select id="capt-estado" class="capt-estado-select" onchange="onCaptEstadoChange()">
           <option value="Nuevo lead">Nuevo lead</option>
+          <option value="Contactado">Contactado</option>
           <option value="En análisis">En análisis</option>
           <option value="Mandato firmado">Mandato firmado</option>
           <option value="Publicado">Publicado</option>
@@ -6613,6 +6617,7 @@ let selectedCaptTipo = '';
 
 const ESTADO_CAPT_CLS = {
   'Nuevo lead':    'bec-nuevo',
+  'Contactado':    'bec-contactado',
   'En análisis':   'bec-analisis',
   'Mandato firmado':'bec-mandato',
   'Publicado':     'bec-publicado',
@@ -7237,7 +7242,7 @@ function selectCaptTipo(tipo, el) {
 let _captPortalesSeleccionados = []; // [{portal:'idealista', url:'https://...'}, ...]
 
 const CAPT_ESTADO_SLUG = {
-  'Nuevo lead':'nuevo', 'En análisis':'analisis', 'Mandato firmado':'mandato',
+  'Nuevo lead':'nuevo', 'Contactado':'contactado', 'En análisis':'analisis', 'Mandato firmado':'mandato',
   'Publicado':'publicado', 'Cerrado':'cerrado', 'Descartado':'descartado',
 };
 function paintCaptEstadoSelect() {
